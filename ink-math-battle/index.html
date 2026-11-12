@@ -66,6 +66,9 @@ svg.art{display:block;overflow:visible}
 .map-head h2{font-size:2rem}
 .curhero{display:flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:4px 12px 4px 4px}
 .curhero svg{height:54px;width:auto}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:2.5px solid var(--ink);border-radius:999px;background:var(--card);padding:6px 16px;font-family:var(--f-display);font-size:1.2rem;font-weight:700}
+.tab.on{background:var(--ink);color:var(--card)}
 .chapters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:14px}
 .chapter{background:var(--card);border:2.5px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;position:relative}
 .chapter h3{font-size:1.6rem}
@@ -315,6 +318,9 @@ svg.art{display:block;overflow:visible}
     <linearGradient id="g-thunder" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a7090"/><stop offset="1" stop-color="#b3abbd"/></linearGradient>
     <linearGradient id="g-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfdde0"/><stop offset="1" stop-color="#efe8d6"/></linearGradient>
     <linearGradient id="g-demon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a2a24"/><stop offset="1" stop-color="#c0644a"/></linearGradient>
+    <linearGradient id="g-clouds" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bcd8ec"/><stop offset="1" stop-color="#f3efe2"/></linearGradient>
+    <linearGradient id="g-ice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c5a74"/><stop offset="1" stop-color="#9ccbdc"/></linearGradient>
+    <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#18244a"/><stop offset="1" stop-color="#4a5a8a"/></linearGradient>
   </defs>
 </svg>
 
@@ -322,7 +328,7 @@ svg.art{display:block;overflow:visible}
   <header class="topbar">
     <button class="brand" id="brandBtn" type="button"><span class="stamp">墨</span>墨侠算术</button>
     <div class="topright">
-      <button class="chipbtn" id="soundBtn" type="button">音效：开</button>
+      <button class="chipbtn" id="musicBtn" type="button">音乐：开</button><button class="chipbtn" id="soundBtn" type="button">音效：开</button>
       <div class="seal" title="金币"><span class="coin-ico" id="coinIco"></span><b id="coinNum">0</b><small>金币</small></div>
     </div>
   </header>
@@ -349,7 +355,7 @@ const INK='#1d1b18',RED='#b5352b',GOLD='#d89b1d',PAPER='#f8f1e2',JADE='#2e6a58';
 
 /* ============ SAVE ============ */
 const SAVE_KEY='moxia-math-save-v1';
-const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0},chests:[],sound:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{}});
+const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{}});
 function load(){try{const r=localStorage.getItem(SAVE_KEY);if(r){const o=JSON.parse(r);const d=defaultSave();return Object.assign(d,o,{prog:Object.assign(d.prog,o.prog||{}),eq:Object.assign(d.eq,o.eq||{}),stats:Object.assign(d.stats,o.stats||{})})}}catch(e){}return defaultSave()}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
 let S=load();
@@ -370,6 +376,25 @@ const SFX={
   skill(){[300,450,600,900].forEach((f,i)=>tone(f,.18,'sawtooth',.06,i*.05))},
   key(){tone(880,.04,'square',.03)}
 };
+
+/* ============ MUSIC (generated, pentatonic) ============ */
+const TRACKS={
+ battle:{bpm:138,lead:'triangle',mel:[74,0,71,69,71,0,74,76,78,0,76,74,71,0,69,0,69,71,74,0,76,74,71,69,66,0,69,71,69,0,0,0],bass:[50,0,0,0,50,0,57,0,47,0,0,0,47,0,54,0,43,0,0,0,43,0,50,0,45,0,0,0,45,0,52,0],drum:'k.h.s.h.k.k.s.h.k.h.s.h.k.k.s.hs'},
+ boss:{bpm:156,lead:'square',mel:[69,72,74,0,76,0,74,72,69,0,67,69,72,0,0,0,76,79,81,0,79,76,74,0,72,74,72,69,67,0,69,0],bass:[45,0,45,0,45,0,48,0,43,0,43,0,43,0,47,0,41,0,41,0,41,0,45,0,40,0,40,0,44,0,40,0],drum:'k.k.s.kkk.k.s.s.k.k.s.kkk.kss.ss'},
+ tower:{bpm:128,lead:'triangle',mel:[76,0,79,0,83,0,81,79,76,0,74,0,71,0,0,0,74,76,79,0,81,0,79,76,74,0,71,74,76,0,0,0],bass:[52,0,0,0,59,0,0,0,50,0,0,0,57,0,0,0,48,0,0,0,55,0,0,0,47,0,0,0,54,0,59,0],drum:'k...h.s.k.k.h.s.k...h.s.k.k.h.s.'}
+};
+const MUSIC={cur:null,timer:null,step:0,next:0,gain:null};
+const mf=m=>440*Math.pow(2,(m-69)/12);
+function mNote(f,t,dur,type,vol){const c=AC,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g);g.connect(MUSIC.gain);o.start(t);o.stop(t+dur+.05)}
+function mNoise(t,dur,freq,vol,typ='bandpass'){const c=AC,n=Math.floor(c.sampleRate*dur),b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=c.createBufferSource();s.buffer=b;const f=c.createBiquadFilter();f.type=typ;f.frequency.value=freq;const g=c.createGain();g.gain.value=vol;s.connect(f);f.connect(g);g.connect(MUSIC.gain);s.start(t)}
+function mKick(t){const c=AC,o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(42,t+.18);g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(g);g.connect(MUSIC.gain);o.start(t);o.stop(t+.3)}
+function playStep(T,i,t,dt){const m=T.mel[i];if(m)mNote(mf(m),t,dt*1.8,T.lead,T.lead==='square'?.05:.11);const b=T.bass[i];if(b)mNote(mf(b),t,dt*1.6,'sine',.22);
+ const d=T.drum[i];if(d==='k')mKick(t);else if(d==='s')mNoise(t,.12,1800,.22);else if(d==='h')mNoise(t,.04,7000,.08,'highpass')}
+function musicStart(name){if(!S.music)return;const c=ac();if(!c)return;if(MUSIC.cur===name&&MUSIC.timer)return;musicStop();
+ MUSIC.cur=name;MUSIC.step=0;MUSIC.next=c.currentTime+.1;MUSIC.gain=c.createGain();MUSIC.gain.gain.value=.32;MUSIC.gain.connect(c.destination);
+ MUSIC.timer=setInterval(()=>{const T=TRACKS[MUSIC.cur];if(!T||!MUSIC.gain)return;const dt=60/T.bpm/2;while(MUSIC.next<AC.currentTime+.2){playStep(T,MUSIC.step%32,MUSIC.next,dt);MUSIC.step++;MUSIC.next+=dt}},50)}
+function musicStop(){if(MUSIC.timer){clearInterval(MUSIC.timer);MUSIC.timer=null}if(MUSIC.gain&&AC){const g=MUSIC.gain;try{g.gain.setTargetAtTime(0,AC.currentTime,.08)}catch(e){}setTimeout(()=>{try{g.disconnect()}catch(e){}},600)}MUSIC.gain=null;MUSIC.cur=null}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)musicStop();else if(screen==='battle'&&B&&!B.over)musicStart(B.isBoss?'boss':(B.C.tower===2?'tower':'battle'))});
 
 /* ============ ART ============ */
 const st=(w,c=INK)=>`fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
@@ -600,6 +625,171 @@ ${[0,1,2,3].map(i=>`<path d="M${84+i*12} 196 L${74+i*12} 212 L${68+i*12} 226" ${
 <path d="M44 206 C26 212 16 200 22 190 L30 200 L34 190 C44 192 48 202 44 206Z" fill="${c}" stroke="${INK}" stroke-width="2.5"/>
 <circle cx="66" cy="184" r="3" fill="${RED}"/><circle cx="72" cy="180" r="2.5" fill="${RED}"/>`)},
 
+cloud:(o={})=>{const C=[[66,112,34],[104,92,40],[142,112,32],[100,128,36],[132,134,24],[70,136,24]];
+return wrap(`<ellipse cx="100" cy="230" rx="44" ry="5" fill="${INK}" opacity=".14"/>
+<polyline points="88,160 78,184 92,186 80,214" ${st(5,GOLD)}/><polyline points="128,158 136,180 124,182 134,206" ${st(5,GOLD)}/>
+<path d="M60 170 l-4 10 M150 168 l-4 10 M110 176 l-4 10" ${st(2.5,'#5fb0d8')}/>
+${C.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${INK}" stroke="${INK}" stroke-width="6"/>`).join('')}
+${C.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${o.c||'#f4f6f8'}"/>`).join('')}
+<path d="M76 104 L96 112 M134 104 L114 112" ${st(4)}/>
+<ellipse cx="90" cy="118" rx="6" ry="7" fill="${INK}"/><ellipse cx="118" cy="118" rx="5.5" ry="6.5" fill="${INK}"/>
+<path d="M88 140 Q104 130 120 140" ${st(3.5)}/>`)},
+
+kite:(o={})=>wrap(`<ellipse cx="100" cy="230" rx="36" ry="5" fill="${INK}" opacity=".14"/>
+<path d="M44 100 L4 56" ${st(1.5)}/>
+<path d="M100 178 C120 196 96 206 118 218 C138 228 130 236 150 236" ${st(2.5)}/>
+${[[112,196],[116,216],[140,232]].map(([x,y])=>`<path d="M${x-8} ${y-6} L${x+8} ${y+6} M${x-8} ${y+6} L${x+8} ${y-6}" ${st(4,RED)}/>`).join('')}
+<polygon points="100,26 162,100 100,180 38,100" fill="${o.c||RED}" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M100 26 L100 180 M38 100 L162 100" ${st(2.5,'#6b4a2a')}/>
+<path d="M70 70 Q100 50 130 70 M66 136 Q100 160 134 136" ${st(3,GOLD)}/>
+<circle cx="82" cy="90" r="11" fill="${PAPER}" stroke="${INK}" stroke-width="2.5"/><circle cx="118" cy="90" r="10" fill="${PAPER}" stroke="${INK}" stroke-width="2.5"/>
+<circle cx="78" cy="92" r="4.5" fill="${INK}"/><circle cx="114" cy="92" r="4" fill="${INK}"/>
+<path d="M84 118 L92 112 L100 120 L108 112 L116 118" ${st(3)}/>`),
+
+gourd:(o={})=>{const c=o.c||'#c99a32';return wrap(`${shadow(100,50)}
+<path d="M100 40 L100 24 M100 30 C114 18 132 22 136 34 C122 36 110 34 100 30Z" stroke="${INK}" stroke-width="3" fill="#5f7d3a"/>
+<circle cx="100" cy="166" r="50" fill="${c}" stroke="${INK}" stroke-width="3.5"/>
+<circle cx="100" cy="82" r="32" fill="${c}" stroke="${INK}" stroke-width="3.5"/>
+<path d="M74 106 Q100 118 126 106 L126 116 Q100 128 74 116Z" fill="${RED}" stroke="${INK}" stroke-width="2.5"/>
+<path d="M120 112 L136 134 L128 136" ${st(3,RED)}/>
+<path d="M70 150 Q60 140 72 132" ${st(2)} opacity=".35"/>
+<ellipse cx="86" cy="158" rx="7" ry="9" fill="${INK}"/><ellipse cx="114" cy="158" rx="6.5" ry="8.5" fill="${INK}"/><circle cx="84" cy="155" r="2.2" fill="${PAPER}"/><circle cx="112" cy="155" r="2" fill="${PAPER}"/>
+<path d="M88 186 Q100 194 112 186" ${st(3)}/>
+<path d="M52 166 L36 152 M148 166 L164 152" ${st(5)}/>
+<path d="M86 214 L82 228 M114 214 L118 228" ${st(5)}/>`)},
+
+crane:(o={})=>wrap(`${shadow(104,50)}
+<path d="M100 170 L96 226 L86 228 M112 170 L118 226 L128 228" ${st(3)}/>
+<path d="M150 140 C176 134 192 150 188 172 C178 160 166 158 150 160Z" fill="${INK}"/>
+<path d="M70 150 C80 120 140 116 160 140 C170 156 150 178 120 178 C96 180 76 168 70 150Z" fill="${PAPER}" stroke="${INK}" stroke-width="3"/>
+<path d="M96 132 C120 110 150 112 168 128 C150 128 140 140 150 152 C130 150 110 146 96 132Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.5"/>
+<path d="M150 152 C140 140 150 128 168 128 C164 140 160 148 150 152Z" fill="${INK}"/>
+<path d="M80 146 C60 118 72 92 64 70" ${st(9)}/><path d="M80 146 C60 118 72 92 64 70" ${st(5,PAPER)}/>
+<circle cx="62" cy="64" r="11" fill="${PAPER}" stroke="${INK}" stroke-width="2.5"/>
+<circle cx="64" cy="55" r="6" fill="${RED}"/>
+<polygon points="54,62 14,70 54,70" fill="#8a8574" stroke="${INK}" stroke-width="2"/>
+<circle cx="60" cy="63" r="2.5" fill="${INK}"/>`),
+
+roc:()=>{const G='#d9a521';const wing=`<path d="M96 120 C70 64 34 40 2 46 C18 62 14 76 6 92 C26 88 36 100 30 118 C50 110 64 120 64 138 Z" fill="${G}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M84 112 L20 60 M76 120 L16 92 M70 130 L34 116" ${st(1.8,'#7a4a07')}/>`;
+return wrap(`${shadow(104,70)}
+${wing}<g transform="translate(212 0) scale(-1 1)">${wing}</g>
+<path d="M90 176 L80 214 L60 222 M118 176 L130 214 L150 222" ${st(6)}/>
+<path d="M60 222 L52 228 M60 222 L58 230 M150 222 L158 228 M150 222 L152 230" ${st(3,G)}/>
+<path d="M92 170 L70 214 L104 196 L138 214 L116 170Z" fill="${G}" stroke="${INK}" stroke-width="2.5"/>
+<ellipse cx="104" cy="142" rx="30" ry="42" fill="#5a3a1a" stroke="${INK}" stroke-width="3"/>
+<path d="M92 124 Q104 136 116 124 M90 140 Q104 152 118 140 M92 156 Q104 168 116 156" ${st(2,G)}/>
+<circle cx="86" cy="94" r="20" fill="#5a3a1a" stroke="${INK}" stroke-width="3"/>
+<path d="M80 74 L74 50 L88 70 L92 46 L98 72" fill="${RED}" stroke="${INK}" stroke-width="2"/>
+<path d="M70 88 C50 84 38 98 46 108 C52 100 60 100 72 102 Z" fill="${G}" stroke="${INK}" stroke-width="2.5"/>
+<path d="M76 88 L86 86 L82 92Z" fill="${RED}"/>`)},
+
+snowman:(o={})=>wrap(`${shadow(100,56)}
+<circle cx="100" cy="184" r="42" fill="#f6fafc" stroke="${INK}" stroke-width="3"/>
+<circle cx="100" cy="128" r="30" fill="#f6fafc" stroke="${INK}" stroke-width="3"/>
+<circle cx="100" cy="84" r="23" fill="#f6fafc" stroke="${INK}" stroke-width="3"/>
+<path d="M76 66 L124 66 L118 34 L82 34Z" fill="#2c2a28" stroke="${INK}" stroke-width="2"/><rect x="70" y="62" width="60" height="7" fill="#2c2a28"/>
+<path d="M80 104 Q100 114 122 104 L124 112 Q100 122 78 112Z" fill="${o.c||RED}" stroke="${INK}" stroke-width="2"/><path d="M116 112 L126 140 L118 142" ${st(5,o.c||RED)}/>
+<circle cx="92" cy="80" r="3.5" fill="${INK}"/><circle cx="110" cy="80" r="3.5" fill="${INK}"/>
+<path d="M86 72 L96 76 M116 72 L106 76" ${st(2.5)}/>
+<polygon points="96,86 66,92 96,94" fill="#e07a2a" stroke="${INK}" stroke-width="1.5"/>
+<circle cx="100" cy="128" r="3" fill="${INK}"/><circle cx="100" cy="142" r="3" fill="${INK}"/><circle cx="100" cy="176" r="3" fill="${INK}"/>
+<path d="M72 124 L40 104 M48 109 L40 96 M128 124 L160 110 M152 114 L162 102" ${st(3.5,'#6b4a2a')}/>
+<circle cx="34" cy="100" r="9" fill="#f6fafc" stroke="${INK}" stroke-width="2"/>`),
+
+spider:(o={})=>{const c=o.c||'#9fd3ea';return wrap(`${shadow(104,70)}
+${[0,1,2,3].map(i=>`<path d="M${92+i*8} 170 L${58-i*4} ${136+i*8} L${40-i*6} ${210+i*4}" ${st(4)}/><path d="M${100+i*8} 170 L${150+i*6} ${130+i*10} L${166+i*6} ${210+i*4}" ${st(4)}/>`).join('')}
+<ellipse cx="128" cy="160" rx="40" ry="32" fill="${c}" stroke="${INK}" stroke-width="3"/>
+<polygon points="112,132 118,108 126,130 134,102 140,132 150,116 148,140" fill="#e8f6fc" stroke="${INK}" stroke-width="2"/>
+<ellipse cx="80" cy="168" rx="24" ry="20" fill="${c}" stroke="${INK}" stroke-width="3"/>
+${[[68,162],[76,158],[84,160],[72,170],[82,170]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.6" fill="${RED}"/>`).join('')}
+<path d="M60 176 L54 186 M68 180 L66 190" ${st(3)}/>`)},
+
+turtle:(o={})=>{const c=o.c||'#a9d6e5';return wrap(`${shadow(104,74)}
+<path d="M66 190 L58 224 L74 224 M140 190 L148 224 L132 224" ${st(10,'#6c8a6a')}/>
+<path d="M60 150 C50 160 26 156 20 146 C26 130 48 128 62 136Z" fill="#6c8a6a" stroke="${INK}" stroke-width="3"/>
+<circle cx="34" cy="140" r="3.5" fill="${RED}"/><path d="M22 148 L36 150" ${st(2)}/>
+<path d="M40 192 C40 120 168 100 176 192Z" fill="${c}" stroke="${INK}" stroke-width="3.5"/>
+<path d="M60 192 L80 150 L120 140 L150 160 L160 192 M80 150 L100 118 M120 140 L130 116 M100 118 L130 116" ${st(2.5)} opacity=".6"/>
+<polygon points="98,118 104,92 110,118" fill="#e8f6fc" stroke="${INK}" stroke-width="2"/><polygon points="128,118 136,96 140,120" fill="#e8f6fc" stroke="${INK}" stroke-width="2"/>
+<path d="M36 192 L180 192" ${st(4)}/>`)},
+
+yeti:(o={})=>{const W='#eef2f4';return wrap(`${shadow(100,70)}
+<path d="M70 190 L64 226 L86 226 L88 196 M130 190 L136 226 L114 226 L112 196" fill="${W}" stroke="${INK}" stroke-width="3"/>
+<path d="M56 110 L48 100 L54 96 L50 84 L62 86 C70 60 130 60 140 86 L152 84 L148 96 L154 100 L146 110 L156 160 L148 168 L152 180 L136 194 L64 194 L48 180 L52 168 L44 160Z" fill="${W}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+<path d="M56 116 L30 150 L26 176 L40 172 L46 150 L64 130" fill="${W}" stroke="${INK}" stroke-width="3"/>
+<path d="M144 116 L170 150 L174 176 L160 172 L154 150 L136 130" fill="${W}" stroke="${INK}" stroke-width="3"/>
+<ellipse cx="92" cy="102" rx="24" ry="18" fill="#8fa3b4" stroke="${INK}" stroke-width="2.5"/>
+<path d="M72 74 L64 52 L80 70 M118 70 L130 50 L126 74" fill="${W}" stroke="${INK}" stroke-width="2.5"/>
+<circle cx="84" cy="98" r="3.5" fill="${RED}"/><circle cx="100" cy="98" r="3.5" fill="${RED}"/>
+<path d="M80 112 L84 108 L88 113 L92 108 L96 113 L100 108 L104 112" ${st(2.5,PAPER)}/>`)},
+
+icegiant:()=>{const A='#7fc4e0',B2='#b9e2f1',D2='#4b8fb0';return wrap(`${shadow(100,76)}
+<polygon points="72,170 60,226 86,226 92,176" fill="${D2}" stroke="${INK}" stroke-width="3"/><polygon points="128,170 140,226 114,226 108,176" fill="${D2}" stroke="${INK}" stroke-width="3"/>
+<polygon points="56,96 100,82 144,96 136,178 64,178" fill="${A}" stroke="${INK}" stroke-width="3.5"/>
+<polygon points="70,104 100,94 130,104 120,150 80,150" fill="${B2}" opacity=".8"/>
+<polygon points="56,96 40,70 52,64 70,88" fill="${B2}" stroke="${INK}" stroke-width="2.5"/><polygon points="144,96 160,66 150,62 132,88" fill="${B2}" stroke="${INK}" stroke-width="2.5"/>
+<polygon points="78,82 84,46 116,46 122,82 100,90" fill="${A}" stroke="${INK}" stroke-width="3"/>
+<polygon points="84,46 90,22 98,44 106,16 112,46" fill="${B2}" stroke="${INK}" stroke-width="2"/>
+<rect x="86" y="58" width="10" height="6" fill="#e8fbff"/><rect x="104" y="58" width="10" height="6" fill="#e8fbff"/>
+<polygon points="56,104 34,150 46,156 66,116" fill="${A}" stroke="${INK}" stroke-width="3"/>
+<polygon points="40,150 20,110 4,60 30,96 48,146" fill="${B2}" stroke="${INK}" stroke-width="3"/>
+<polygon points="144,104 166,150 154,156 134,116" fill="${A}" stroke="${INK}" stroke-width="3"/>`)},
+
+lion:(o={})=>{const S2='#9a948a';return wrap(`${shadow(104,72)}
+<rect x="40" y="206" width="140" height="18" fill="#7d776c" stroke="${INK}" stroke-width="3"/>
+<path d="M110 120 C150 116 172 150 168 206 L94 206 C90 170 92 130 110 120Z" fill="${S2}" stroke="${INK}" stroke-width="3"/>
+<path d="M164 150 C184 140 190 120 178 108" ${st(6,S2)}/><circle cx="178" cy="104" r="8" fill="${S2}" stroke="${INK}" stroke-width="2"/>
+${[[70,70],[60,96],[64,124],[96,62],[118,72],[120,100],[86,140],[112,128]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="14" fill="#857f74" stroke="${INK}" stroke-width="2.5"/><path d="M${x-6} ${y} q6 -8 12 0" ${st(1.5)}/>`).join('')}
+<circle cx="88" cy="102" r="28" fill="${S2}" stroke="${INK}" stroke-width="3"/>
+<path d="M72 92 L84 96 M100 92 L92 96" ${st(3)}/><circle cx="78" cy="100" r="4" fill="${INK}"/><circle cx="96" cy="100" r="4" fill="${INK}"/>
+<ellipse cx="80" cy="114" rx="10" ry="7" fill="#6e685e" stroke="${INK}" stroke-width="2"/>
+<path d="M68 122 Q82 132 96 122" fill="${RED}" stroke="${INK}" stroke-width="2"/>
+<path d="M76 150 L74 206 M96 150 L98 206" ${st(10,S2)}/>
+<circle cx="64" cy="190" r="16" fill="#857f74" stroke="${INK}" stroke-width="3"/><path d="M52 184 Q64 196 76 184" ${st(1.5)}/>`)},
+
+bell:(o={})=>{const c=o.c||'#9a7a3a';return wrap(`${shadow(100,60)}
+<path d="M40 70 Q20 100 30 130 M24 60 Q0 100 14 140 M160 70 Q180 100 170 130" ${st(3,GOLD)} opacity=".7"/>
+<rect x="88" y="26" width="24" height="16" rx="4" fill="${c}" stroke="${INK}" stroke-width="3"/>
+<path d="M66 54 C66 40 134 40 134 54 L148 190 L52 190 Z" fill="${c}" stroke="${INK}" stroke-width="3.5"/>
+<rect x="44" y="186" width="112" height="14" rx="5" fill="#7d602a" stroke="${INK}" stroke-width="3"/>
+${[0,1,2].map(r=>[0,1,2].map(i=>`<circle cx="${80+i*10}" cy="${66+r*14}" r="3" fill="#c8a85a" stroke="${INK}" stroke-width="1"/>`).join('')).join('')}
+<circle cx="88" cy="128" r="9" fill="${PAPER}" stroke="${INK}" stroke-width="2.5"/><circle cx="116" cy="128" r="8" fill="${PAPER}" stroke="${INK}" stroke-width="2.5"/>
+<circle cx="85" cy="130" r="3.5" fill="${INK}"/><circle cx="113" cy="130" r="3.2" fill="${INK}"/>
+<path d="M84 160 Q100 150 116 160" ${st(3)}/>
+<path d="M76 200 L72 226 M124 200 L128 226" ${st(5)}/>`)},
+
+soldier:(o={})=>wrap(`${shadow(100,60)}
+<line x1="170" y1="150" x2="12" y2="110" stroke="#6b4a2a" stroke-width="5" stroke-linecap="round"/>
+<polygon points="12,110 -4,104 10,120" fill="#cfd3d6" stroke="${INK}" stroke-width="2"/><path d="M26 112 L30 104 L34 114Z" fill="${RED}"/>
+<path d="M96 168 L88 222 L76 224 M108 168 L116 222 L128 224" ${st(7)}/>
+<path d="M78 96 L124 96 L130 170 L72 170 Z" fill="${GOLD}" stroke="${INK}" stroke-width="3"/>
+<path d="M80 116 L122 116 M78 136 L124 136 M100 96 L100 170" ${st(2,'#7a4a07')}/>
+<circle cx="100" cy="80" r="14" fill="${INK}"/>
+<path d="M82 76 Q100 50 118 76 Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><path d="M100 54 Q110 30 128 32" ${st(5,RED)}/>
+<path d="M80 104 L64 124" ${st(7)}/>
+<circle cx="140" cy="132" r="22" fill="${RED}" stroke="${INK}" stroke-width="3"/><circle cx="140" cy="132" r="9" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>`),
+
+meteor:(o={})=>wrap(`<ellipse cx="100" cy="230" rx="40" ry="5" fill="${INK}" opacity=".14"/>
+<path d="M120 90 C160 70 190 60 204 40 C196 80 180 100 150 120 C180 112 200 116 210 106 C196 140 160 150 130 150Z" fill="#e0552a" opacity=".85"/>
+<path d="M124 100 C156 88 176 82 188 70 C180 96 160 110 136 126Z" fill="${GOLD}"/>
+<polygon points="${spikes(96,124,38,48,9)}" fill="#5e5348" stroke="${INK}" stroke-width="3"/>
+<circle cx="110" cy="108" r="7" fill="#4a4038"/><circle cx="76" cy="146" r="5" fill="#4a4038"/>
+<path d="M70 112 L86 118 M110 118 L94 120" ${st(3.5)}/>
+<circle cx="80" cy="124" r="5" fill="${GOLD}"/><circle cx="102" cy="126" r="4.5" fill="${GOLD}"/>
+<path d="M80 144 Q92 136 104 144" ${st(3)}/>`),
+
+tiangou:()=>wrap(`${shadow(110,80)}
+<polygon points="${spikes(124,110,50,70,14)}" fill="${RED}" opacity=".35" filter="url(#flame)"/>
+<path d="M170 126 C196 112 204 84 192 64 C186 92 176 106 160 112Z" fill="${INK}"/>
+<path d="M62 140 C86 112 150 108 172 128 C186 140 188 162 178 172 L170 172 L172 224 L156 224 L152 180 L104 182 L100 224 L84 224 L84 176 C72 168 62 158 62 140Z" fill="${INK}"/>
+<path d="M76 152 L70 224 L56 224" ${st(11)}/>
+${[[84,118],[104,108],[124,108],[144,112]].map(([x,y])=>`<path d="M${x} ${y} L${x+6} ${y-20} L${x+12} ${y}" fill="${RED}" stroke="${INK}" stroke-width="2"/>`).join('')}
+<path d="M76 130 L34 132 L14 148 L44 160 L70 158 L90 136 Z" fill="${INK}"/>
+<path d="M64 122 L68 94 L82 128Z M78 120 L88 96 L94 126Z" fill="${INK}"/>
+<path d="M46 136 L60 134 L55 142Z" fill="${RED}"/>
+<path d="M30 140 C18 120 26 100 46 96 C34 108 34 126 44 138Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/>
+<path d="M18 150 L22 156 L26 150 L30 156 L34 150" ${st(2,PAPER)}/>`),
+
 golem:()=>wrap(`${shadow(100,76)}
 <rect x="66" y="168" width="28" height="54" rx="6" fill="#8b8478" stroke="${INK}" stroke-width="3.5"/>
 <rect x="108" y="168" width="28" height="54" rx="6" fill="#8b8478" stroke="${INK}" stroke-width="3.5"/>
@@ -675,6 +865,7 @@ const BGV='0 0 1200 400';
 const bgWrap=inner=>`<svg class="bgscene" viewBox="${BGV}" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${inner}</svg>`;
 function waves(y,amp,len,col,op=1){let d=`M0 ${y}`;for(let x=0;x<1200;x+=len)d+=` q${len/4} ${-amp} ${len/2} 0 t${len/2} 0`;return `<path d="${d} L1200 400 L0 400Z" fill="${col}" opacity="${op}"/>`}
 function pagoda(x,b,s,col='#2e2924'){let g='',y=b;const w=[62,50,38];for(let i=0;i<3;i++){const ww=w[i]*s,h=24*s;g+=`<rect x="${x-ww*.32}" y="${y-h}" width="${ww*.64}" height="${h}" fill="${col}" opacity=".85"/>`;y-=h;g+=`<path d="M${x-ww*.78} ${y-2*s} Q${x-ww*.35} ${y+2*s} ${x} ${y-14*s} Q${x+ww*.35} ${y+2*s} ${x+ww*.78} ${y-2*s} L${x+ww*.6} ${y+5*s} L${x-ww*.6} ${y+5*s}Z" fill="${col}"/>`;y-=10*s}return g+`<line x1="${x}" y1="${y}" x2="${x}" y2="${y-24*s}" stroke="${col}" stroke-width="${3*s}"/>`}
+function tower(x,b,n,s,col){let g='',y=b;for(let i=0;i<n;i++){const ww=(74-i*7)*s,h=26*s;g+=`<rect x="${x-ww*.32}" y="${y-h}" width="${ww*.64}" height="${h}" fill="${col}" opacity=".85"/>`;y-=h;g+=`<path d="M${x-ww*.78} ${y-2*s} Q${x-ww*.35} ${y+2*s} ${x} ${y-12*s} Q${x+ww*.35} ${y+2*s} ${x+ww*.78} ${y-2*s} L${x+ww*.6} ${y+5*s} L${x-ww*.6} ${y+5*s}Z" fill="${col}"/>`;y-=8*s}return g+`<line x1="${x}" y1="${y}" x2="${x}" y2="${y-30*s}" stroke="${col}" stroke-width="${3*s}"/>`}
 function pine(x,y,s,col=INK){return `<path d="M${x} ${y-60*s} L${x-14*s} ${y-30*s} L${x-6*s} ${y-30*s} L${x-20*s} ${y-6*s} L${x+20*s} ${y-6*s} L${x+6*s} ${y-30*s} L${x+14*s} ${y-30*s}Z M${x-2*s} ${y-6*s} L${x+2*s} ${y-6*s} L${x+2*s} ${y} L${x-2*s} ${y}Z" fill="${col}"/>`}
 const inkCloud=(x,y,s,c=INK,o=.35)=>`<path d="M${x} ${y} q${10*s} ${-16*s} ${26*s} ${-8*s} q${12*s} ${-16*s} ${30*s} ${-4*s} q${16*s} ${-6*s} ${22*s} ${8*s} q${-30*s} ${6*s} ${-78*s} ${4*s}Z" fill="none" stroke="${c}" stroke-width="${2*s}" opacity="${o}"/>`;
 const BG={
@@ -721,6 +912,38 @@ sea:()=>{const curls=[...Array(12)].map((_,i)=>{const x=(i*103)%1200+20,y=286+(i
  ${waves(258,5,80,'#a9c0c4')}${waves(282,9,120,'#7a9aa3')}${curls}${waves(316,12,160,'#4f7684')}
  <path d="M0 340 Q200 326 420 340 L520 346 Q800 330 1200 342 L1200 400 L0 400Z" fill="#c2b597"/>
  <path d="M60 346 Q90 322 130 344Z M980 344 Q1020 316 1070 342Z M520 350 Q540 336 566 350Z" fill="#5e574b"/>`)},
+clouds:()=>{const puff=(x,y,s,c,o)=>`<g opacity="${o}">${[[0,0,30],[34,-12,36],[70,0,28],[34,10,30]].map(([dx,dy,r])=>`<circle cx="${x+dx*s}" cy="${y+dy*s}" r="${r*s}" fill="${c}"/>`).join('')}</g>`;
+ const isle=(x,y,s)=>`<path d="M${x-60*s} ${y} Q${x} ${y-20*s} ${x+60*s} ${y} Q${x+20*s} ${y+50*s} ${x} ${y+70*s} Q${x-20*s} ${y+40*s} ${x-60*s} ${y}Z" fill="#8a7f6c" stroke="${INK}" stroke-width="${2*s}"/>${pine(x-20*s,y-4*s,.7*s)}${pine(x+24*s,y-2*s,.55*s)}`;
+ let row1='',row2='';for(let i=0;i<11;i++){row1+=puff(i*120-30,292+(i%2)*8,1.1,'#ffffff',.85);row2+=puff(i*130-60,326+(i%2)*6,1.25,'#f4f7fb',1)}
+ return bgWrap(`<rect width="1200" height="400" fill="url(#g-clouds)"/>
+ <circle cx="180" cy="80" r="46" fill="#fff2c8" opacity=".9"/>
+ ${tower(640,300,7,1.1,'#9eabbd')}
+ ${isle(260,170,1)}${isle(1010,130,.75)}
+ <path d="M420 90 q10 -10 22 -2 q10 -10 22 0 M480 66 q8 -8 16 -2 q8 -8 16 0 M820 110 q8 -8 18 -2 q8 -8 18 0" fill="none" stroke="${INK}" stroke-width="2.5"/>
+ ${row1}${row2}
+ <path d="M0 344 Q150 324 300 344 T600 344 T900 344 T1200 344 L1200 400 L0 400Z" fill="#fbfcfd" stroke="#c9d3dc" stroke-width="3"/>`)},
+ice:()=>{let st2='';for(let i=0;i<22;i++){const x=i*56+((i*37)%30),len=40+((i*53)%80);st2+=`<polygon points="${x},0 ${x+26},0 ${x+13},${len}" fill="#b9e2f1" stroke="#5a8aa6" stroke-width="2" opacity=".9"/>`}
+ const crystal=(x,y,s)=>[[0,0,1],[-18,6,.7],[20,8,.8]].map(([dx,dy,k])=>`<polygon points="${x+dx*s},${y+dy*s} ${x+dx*s-10*k*s},${y+dy*s-40*k*s} ${x+dx*s},${y+dy*s-80*k*s} ${x+dx*s+10*k*s},${y+dy*s-40*k*s}" fill="#cdeef8" stroke="#4b8fb0" stroke-width="2"/>`).join('');
+ let snow='';for(let i=0;i<45;i++)snow+=`<circle cx="${(i*131)%1200}" cy="${30+(i*71)%300}" r="${1.5+(i%3)}" fill="#ffffff" opacity=".8"/>`;
+ return bgWrap(`<rect width="1200" height="400" fill="url(#g-ice)"/>
+ <ellipse cx="600" cy="240" rx="420" ry="150" fill="#ffffff" opacity=".18"/>
+ <path d="M0 400 L0 120 Q200 60 360 140 Q520 40 700 120 Q900 50 1200 130 L1200 400Z" fill="#3d6f8a" opacity=".45"/>
+ ${st2}${crystal(80,334,1.2)}${crystal(1110,334,1.3)}${crystal(420,334,.7)}${crystal(820,334,.8)}${snow}
+ <rect x="0" y="334" width="1200" height="66" fill="#dbeff6"/>
+ <path d="M60 350 L140 362 L200 352 M520 356 L600 370 L660 360 M900 352 L980 364" stroke="#8fb8cc" stroke-width="2.5" fill="none"/>`)},
+sky:()=>{let stars='';for(let i=0;i<90;i++)stars+=`<circle cx="${(i*149)%1200}" cy="${(i*67)%260}" r="${.8+(i%3)*.7}" fill="#ffffff" opacity="${.4+(i%5)/10}"/>`;
+ let rail='';for(let x=0;x<=1200;x+=60)rail+=`<rect x="${x-4}" y="292" width="8" height="42" fill="${RED}" stroke="${INK}" stroke-width="1.5"/>`;
+ let bal='';for(let x=10;x<1200;x+=20)bal+=`<line x1="${x}" y1="304" x2="${x}" y2="330" stroke="#7a2a22" stroke-width="3"/>`;
+ return bgWrap(`<rect width="1200" height="400" fill="url(#g-sky)"/>${stars}
+ <ellipse cx="600" cy="120" rx="700" ry="40" fill="#ffffff" opacity=".07" transform="rotate(-8 600 120)"/>
+ <circle cx="1000" cy="90" r="46" fill="#f6e9b8"/><circle cx="1020" cy="80" r="42" fill="#18244a"/>
+ <line x1="400" y1="0" x2="400" y2="70" stroke="${INK}" stroke-width="2"/><ellipse cx="400" cy="90" rx="18" ry="24" fill="${RED}" stroke="${INK}" stroke-width="2"/>
+ <line x1="800" y1="0" x2="800" y2="56" stroke="${INK}" stroke-width="2"/><ellipse cx="800" cy="76" rx="18" ry="24" fill="${RED}" stroke="${INK}" stroke-width="2"/>
+ <rect x="60" y="180" width="10" height="150" fill="#5a3a1a"/><rect x="190" y="180" width="10" height="150" fill="#5a3a1a"/><rect x="50" y="172" width="160" height="12" fill="#5a3a1a"/>
+ <circle cx="130" cy="250" r="50" fill="${GOLD}" stroke="${INK}" stroke-width="3"/><circle cx="130" cy="250" r="16" fill="#b98a1a"/>
+ ${bal}<rect x="0" y="290" width="1200" height="10" fill="${RED}" stroke="${INK}" stroke-width="1.5"/>${rail}
+ <rect x="0" y="334" width="1200" height="66" fill="#a89a84"/>
+ <path d="M0 356 H1200 M0 380 H1200" stroke="#857862" stroke-width="2"/>`)},
 demon:()=>{let fl='';for(let x=0;x<1200;x+=30){const h=18+((x*7)%23);fl+=`<path d="M${x} 336 Q${x+8} ${336-h} ${x+15} ${336-h-8} Q${x+20} ${336-h+6} ${x+30} 336Z" fill="${RED}" opacity=".75"/><path d="M${x+8} 336 Q${x+13} ${336-h/2} ${x+16} ${336-h/2-6} Q${x+19} ${336-h/2} ${x+22} 336Z" fill="${GOLD}" opacity=".8"/>`}
  const emb=[...Array(26)].map((_,i)=>`<circle cx="${(i*137)%1200}" cy="${60+(i*53)%240}" r="${1.5+(i%3)}" fill="${GOLD}" opacity=".7"/>`).join('');
  return bgWrap(`<rect width="1200" height="400" fill="url(#g-demon)"/>
@@ -740,7 +963,10 @@ const BEHAV={
  treant:{blk:.3,ctr:.1,verb:'用树皮硬挡'},crow:{blk:.2,ctr:.2,verb:'飞起来躲开'},mushroom:{blk:.15,ctr:.2,verb:'缩进菌盖'},
  ghost:{blk:.3,ctr:.1,verb:'飘走闪避'},scorpion:{blk:.25,ctr:.25,verb:'用硬壳格挡'},crab:{blk:.35,ctr:.15,verb:'用大钳子格挡'},
  snake:{blk:.15,ctr:.3,verb:'盘起身子格挡'},golem:{blk:.3,ctr:.1,verb:'用石臂格挡'},fox:{blk:.25,ctr:.2,verb:'化作幻影闪避'},
- drum:{blk:.2,ctr:.25,verb:'用战鼓格挡'},dragon:{blk:.25,ctr:.2,verb:'用龙鳞格挡'},demon:{blk:.25,ctr:.25,verb:'用魔气格挡'}};
+ drum:{blk:.2,ctr:.25,verb:'用战鼓格挡'},dragon:{blk:.25,ctr:.2,verb:'用龙鳞格挡'},demon:{blk:.25,ctr:.25,verb:'用魔气格挡'},
+ cloud:{blk:.25,ctr:.15,verb:'散成雾气躲开'},kite:{blk:.2,ctr:.2,verb:'随风飘开'},gourd:{blk:.3,ctr:.1,verb:'缩进葫芦里'},crane:{blk:.2,ctr:.25,verb:'展翅躲开'},roc:{blk:.25,ctr:.25,verb:'用金翅格挡'},
+ snowman:{blk:.2,ctr:.15,verb:'用雪球挡住'},spider:{blk:.15,ctr:.3,verb:'织冰网挡住'},turtle:{blk:.4,ctr:.1,verb:'缩进冰壳'},yeti:{blk:.15,ctr:.3,verb:'用厚毛皮硬挡'},icegiant:{blk:.3,ctr:.2,verb:'用冰臂格挡'},
+ lion:{blk:.35,ctr:.15,verb:'用石爪格挡'},bell:{blk:.35,ctr:.1,verb:'当的一声挡住'},soldier:{blk:.3,ctr:.2,verb:'举盾格挡'},meteor:{blk:.1,ctr:.3,verb:'加速闪开'},tiangou:{blk:.25,ctr:.25,verb:'躲进乌云'}};
 
 /* ============ DATA ============ */
 const CHARS={
@@ -756,7 +982,7 @@ const SKILLS={
  reaper:[{name:'暗影收割',cost:3,unlock:0,desc:'造成敌人最大生命30%的伤害，无视护盾'},{name:'灵魂汲取',cost:4,unlock:1,desc:'造成2倍伤害，并把伤害变成自己的生命'},{name:'死神降临',cost:5,unlock:3,desc:'造成敌人最大生命45%的伤害，无视护盾'}]
 };
 const GAUGE_MAX=5;
-function worldLv(){return [1,2,3,4,5].filter(c=>S.prog[c]>=5).length}
+function worldLv(){return [1,2,3,4,5,6,7,8].filter(c=>S.prog[c]>=5).length}
 const CHAR_ORDER=['brush','monk','hand','reaper'];
 const RAR=[{n:'普通',c:'#6d6a63'},{n:'稀有',c:'#2f6fb0'},{n:'史诗',c:'#7a3fa6'},{n:'传说',c:'#c98f17'}];
 const CHESTS=[{name:'木宝箱',price:30,w:[70,25,5,0]},{name:'银宝箱',price:80,w:[30,45,20,5]},{name:'金宝箱',price:180,w:[0,30,45,25]}];
@@ -776,7 +1002,13 @@ const CHAPTERS=[
  {id:4,name:'运算墨海',bg:'sea',unit:'第四单元 · 运算律',topics:['u4'],enemies:[['大钳墨蟹','crab',{}],['竹叶青蛇','snake',{}],['海雾幽灵','ghost',{c:'#d9e8ec'}],['海草树妖','treant',{c:'#3f7a6a'}]],
   boss:{name:'墨龙王',art:'dragon',powers:['shield','timer'],desc:'带着护盾，而且每道题只有60秒。'}},
  {id:5,name:'墨魔王宫',bg:'demon',unit:'综合复习 · 第一至四单元',topics:['u1','u2','u3','u4'],enemies:[['魔宫骷髅','skeleton',{c:'#4a1d1a',eye:'#b5352b'}],['血翼魔蝠','bat',{c:'#4a1d1a'}],['赤眼魔狼','wolf',{c:'#3a1512'}],['魔宫刺客','assassin',{c:'#4a1d1a'}]],
-  boss:{name:'墨魔王',art:'demon',powers:['shield','heal','timer'],desc:'护盾、答错回血、每题限时60秒，三种能力都有！'}}
+  boss:{name:'墨魔王',art:'demon',powers:['shield','heal','timer'],desc:'护盾、答错回血、每题限时60秒，三种能力都有！'}},
+ {id:6,tower:2,name:'云海仙山',bg:'clouds',unit:'第二塔 · 一层 · 大数与角',topics:['u1','u2'],enemies:[['雷云怪','cloud',{}],['风筝妖','kite',{}],['葫芦精','gourd',{}],['仙鹤妖','crane',{}]],
+  boss:{name:'金翅大鹏',art:'roc',powers:['shield','timer'],desc:'带着护盾，每题限时60秒。'}},
+ {id:7,tower:2,name:'冰晶洞窟',bg:'ice',unit:'第二塔 · 二层 · 乘法与运算律',topics:['u3','u4'],enemies:[['雪人怪','snowman',{}],['冰晶蜘蛛','spider',{}],['冰甲龟','turtle',{}],['大雪怪','yeti',{}]],
+  boss:{name:'冰晶巨人',art:'icegiant',powers:['heal','timer'],desc:'答错它就回血，每题限时60秒。'}},
+ {id:8,tower:2,name:'星空塔顶',bg:'sky',unit:'第二塔 · 塔顶 · 综合挑战',topics:['u1','u2','u3','u4'],enemies:[['守塔石狮','lion',{}],['铜钟怪','bell',{}],['天兵','soldier',{}],['流星怪','meteor',{}]],
+  boss:{name:'天狗',art:'tiangou',powers:['shield','heal','timer'],desc:'天狗食月！护盾、答错回血、每题限时60秒。'}}
 ];
 const TOPIC_NAME={u1:'认识更大的数',u2:'线与角',u3:'乘法',u4:'运算律'};
 
@@ -899,7 +1131,7 @@ function genQ(topic,d){const list=BANK[topic].filter(g=>g.min<=d);let q;for(let 
 
 /* ============ UI HELPERS ============ */
 let screen='home';
-function show(name){screen=name;document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!=='scr-'+name);const el=$('#scr-'+name);el.scrollTop=0;keyHandler=null}
+function show(name){if(name!=='battle')musicStop();screen=name;document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!=='scr-'+name);const el=$('#scr-'+name);el.scrollTop=0;keyHandler=null}
 function updateCoins(bump){$('#coinNum').textContent=S.coins;if(bump){const c=$('#coinIco');c.classList.remove('bump');void c.offsetWidth;c.classList.add('bump')}}
 let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,1700)}
 function heroStats(){const c=CHARS[S.cur];const w=S.inv.find(i=>i.id===S.eq.w),a=S.inv.find(i=>i.id===S.eq.a);return{atk:c.atk+(w?w.val:0),hp:c.hp+(a?a.val:0),w,a}}
@@ -907,6 +1139,7 @@ function enemyArt(e){return ART[e.art](e.opt||{})}
 let keyHandler=null;
 document.addEventListener('keydown',ev=>{if(!keyHandler)return;if(ev.ctrlKey||ev.metaKey||ev.altKey)return;if(keyHandler(ev.key))ev.preventDefault()});
 $('#brandBtn').onclick=()=>{if(B){stopTimer();B.over=true}closeModal();renderHome()};
+$('#musicBtn').onclick=()=>{S.music=!S.music;save();$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');if(S.music){if(screen==='battle'&&B)musicStart(B.isBoss?'boss':(B.C.tower===2?'tower':'battle'))}else musicStop()};
 $('#soundBtn').onclick=()=>{S.sound=!S.sound;save();$('#soundBtn').textContent='音效：'+(S.sound?'开':'关');if(S.sound)SFX.coin()};
 
 function makePad(host,onSubmit){
@@ -940,16 +1173,21 @@ function renderHome(){
  show('home')}
 
 /* ============ MAP ============ */
+let mapTab=1;
+function tower2Open(){return S.prog[5]>=5}
+function chLocked(C){if(C.id===5)return !ch5Open();if(C.id>=6)return S.prog[C.id-1]<5;return false}
 function ch5Open(){return [1,2,3,4].filter(c=>S.prog[c]>=5).length>=3}
 function renderMap(){
  const el=$('#scr-map');const hs=heroStats();
  el.innerHTML=`<div class="map-head"><div class="row"><h2>选择关卡</h2>${worldLv()?`<span class="wl">怪物强化 Lv.${worldLv()}</span>`:''}</div>
  <div class="curhero">${ART[S.cur]()}<div><b>${CHARS[S.cur].name}</b><div class="muted" style="font-size:.85rem">攻击 ${hs.atk} · 生命 ${hs.hp}</div></div><button class="chipbtn" id="mGear" type="button">换角色/装备</button></div></div>
- <div class="chapters">${CHAPTERS.map(C=>{const locked=C.id===5&&!ch5Open();const p=S.prog[C.id];
+ <div class="tabs"><button type="button" class="tab ${mapTab===1?'on':''}" data-tab="1">第一塔 · 墨之塔</button><button type="button" class="tab ${mapTab===2?'on':''}" data-tab="2">第二塔 · 云霄塔${tower2Open()?'':'（打败墨魔王后开启）'}</button></div>
+ <div class="chapters">${CHAPTERS.filter(C=>(C.tower||1)===mapTab).map(C=>{const locked=chLocked(C);const p=S.prog[C.id];
   return `<div class="chapter ${locked?'locked':''}"><div class="scene">${BG[C.bg]()}</div><div><h3>${C.name}</h3><div class="unit">${C.unit}</div></div>
   <div class="nodes">${[1,2,3,4,5].map(l=>{const done=p>=l,open=!locked&&l<=p+1;return `${l>1?'<span class="link"></span>':''}<button type="button" class="node ${l===5?'boss':''} ${done?'done':''} ${open&&!done?'next':''}" data-ch="${C.id}" data-lv="${l}" ${open?'':'disabled'} title="${l===5?C.boss.name:C.enemies[l-1][0]}">${l===5?'首领':l}</button>`}).join('')}</div>
   <div class="bossline"><b>首领：${C.boss.name}</b> <span class="muted">— ${C.boss.desc}</span></div>
-  ${locked?'<div class="lockmsg">打败前四个单元中任意三个首领后开启</div>':''}</div>`}).join('')}</div>`;
+  ${locked?`<div class="lockmsg">${C.id===5?'打败前四个单元中任意三个首领后开启':C.id===6?'打败第一塔的墨魔王后开启':'打败上一层的首领后开启'}</div>`:''}</div>`}).join('')}</div>`;
+ el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{mapTab=+b.dataset.tab;renderMap()});
  el.querySelectorAll('.node').forEach(b=>b.onclick=()=>startBattle(+b.dataset.ch,+b.dataset.lv));
  $('#mGear').onclick=renderGear;
  show('map')}
@@ -957,7 +1195,7 @@ function renderMap(){
 /* ============ BATTLE ============ */
 let B=null,pad=null,timerId=null;
 const HERO_ATK={brush:{name:'墨痕斩',fx:'ink'},monk:{name:'火焰拳',fx:'fire'},hand:{name:'金掌击',fx:'gold'},reaper:{name:'镰影斩',fx:'shadow'}};
-const FX_COL={ink:INK,fire:'#e0552a',gold:'#f2b62e',shadow:'#2c4a3c',poison:'#7a3fa6',blood:'#9a1c1c',stone:'#7d756a',thunder:'#e8c23a',ice:'#5fb0d8',wood:'#5f7d3a'};
+const FX_COL={ink:INK,fire:'#e0552a',gold:'#f2b62e',shadow:'#2c4a3c',poison:'#7a3fa6',blood:'#9a1c1c',stone:'#7d756a',thunder:'#e8c23a',ice:'#5fb0d8',wood:'#5f7d3a',wind:'#6f9c94',snow:'#f4f8fb',star:'#e8c23a'};
 const MSKILL={
  blob:{name:'墨汁喷射',type:'big',mult:1.6,fx:'ink',desc:'喷出一大团墨汁，伤害×1.6'},
  lantern:{name:'鬼火连发',type:'double',mult:.8,fx:'fire',desc:'连放两团鬼火'},
@@ -976,7 +1214,22 @@ const MSKILL={
  fox:{name:'九尾幻术',type:'charm',mult:1.2,fx:'fire',desc:'狐火幻术，偷走你的技能能量'},
  drum:{name:'雷鼓震天',type:'weaken',mult:1.6,fx:'thunder',desc:'雷声震耳，伤害×1.6并让你攻击力下降'},
  dragon:{name:'墨龙吐息',type:'poison',mult:1.5,fx:'ink',desc:'吐出墨色龙息，伤害×1.5并让你中毒'},
- demon:{name:'墨魔吞噬',type:'drain',mult:1.8,fx:'blood',desc:'重重一击，并吸走你的生命'}
+ demon:{name:'墨魔吞噬',type:'drain',mult:1.8,fx:'blood',desc:'重重一击，并吸走你的生命'},
+ cloud:{name:'雷云劈击',type:'big',mult:1.7,fx:'thunder',desc:'乌云放出闪电，伤害×1.7'},
+ kite:{name:'风筝缠线',type:'weaken',mult:1,fx:'wind',desc:'用风筝线缠住你，攻击力下降2回合'},
+ gourd:{name:'葫芦吸魂',type:'drain',mult:1.2,fx:'shadow',desc:'把你的生命吸进葫芦里'},
+ crane:{name:'鹤嘴连啄',type:'double',mult:.9,fx:'ice',desc:'长嘴连啄两下'},
+ roc:{name:'金翅风暴',type:'double',mult:1.2,fx:'wind',desc:'扇动金翅，连刮两阵狂风'},
+ snowman:{name:'雪球连发',type:'double',mult:.8,fx:'snow',desc:'连扔两个大雪球'},
+ spider:{name:'冰丝缠绕',type:'weaken',mult:1,fx:'ice',desc:'冰丝缠住你，攻击力下降2回合'},
+ turtle:{name:'冰壳护体',type:'shield',fx:'ice',desc:'冰壳变厚，给自己加护盾'},
+ yeti:{name:'雪崩重击',type:'big',mult:1.8,fx:'snow',desc:'举起雪块砸下，伤害×1.8'},
+ icegiant:{name:'极寒冰封',type:'weaken',mult:1.6,fx:'ice',desc:'寒冰冻住你，伤害×1.6并让你攻击力下降'},
+ lion:{name:'狮子吼',type:'big',mult:1.6,fx:'wind',desc:'一声大吼，伤害×1.6'},
+ bell:{name:'洪钟震魂',type:'weaken',mult:1.2,fx:'wind',desc:'钟声震耳，让你攻击力下降2回合'},
+ soldier:{name:'天兵长枪',type:'double',mult:1,fx:'wood',desc:'长枪连刺两下'},
+ meteor:{name:'流星火雨',type:'poison',mult:1,fx:'fire',desc:'火雨落下，让你持续掉血3回合'},
+ tiangou:{name:'天狗食月',type:'drain',mult:2,fx:'shadow',desc:'吞下月光，重击并吸走你的生命'}
 };
 const MSKILL2={
  blob:{name:'墨团分身',type:'heal',fx:'ink',desc:'分出小墨团，恢复20%生命'},
@@ -996,19 +1249,28 @@ const MSKILL2={
  fox:{name:'九尾狐火',type:'double',mult:1.1,fx:'fire',desc:'九条尾巴甩出狐火，连打两下'},
  drum:{name:'雷电护体',type:'shield',fx:'thunder',desc:'雷电环绕，给自己加护盾'},
  dragon:{name:'龙鳞再生',type:'heal',fx:'ink',desc:'龙鳞再生，恢复20%生命'},
- demon:{name:'魔王之怒',type:'buff',fx:'blood',desc:'魔气暴涨，攻击力提高25%'}};
+ demon:{name:'魔王之怒',type:'buff',fx:'blood',desc:'魔气暴涨，攻击力提高25%'},
+ cloud:{name:'乌云护身',type:'shield',fx:'wind',desc:'乌云裹住全身，给自己加护盾'},kite:{name:'断线俯冲',type:'big',mult:1.6,fx:'wind',desc:'从高空俯冲下来，伤害×1.6'},
+ gourd:{name:'葫芦宝气',type:'heal',fx:'gold',desc:'葫芦冒出宝气，恢复20%生命'},crane:{name:'仙鹤回春',type:'heal',fx:'ice',desc:'仙气环绕，恢复20%生命'},
+ roc:{name:'大鹏展翅',type:'buff',fx:'wind',desc:'展开巨翅，攻击力提高25%'},snowman:{name:'再堆一个',type:'heal',fx:'snow',desc:'补上新雪，恢复20%生命'},
+ spider:{name:'冰毒獠牙',type:'poison',mult:1,fx:'ice',desc:'毒牙咬你，让你中毒3回合'},turtle:{name:'龟壳撞击',type:'big',mult:1.6,fx:'stone',desc:'缩成一团撞过来，伤害×1.6'},
+ yeti:{name:'雪怪怒吼',type:'buff',fx:'snow',desc:'捶胸怒吼，攻击力提高25%'},icegiant:{name:'冰晶护甲',type:'shield',fx:'ice',desc:'长出冰晶护甲，给自己加护盾'},
+ lion:{name:'石化之身',type:'shield',fx:'stone',desc:'全身变成石头，给自己加护盾'},bell:{name:'钟声连响',type:'double',mult:.9,fx:'wind',desc:'当当两声，连打两下'},
+ soldier:{name:'天兵布阵',type:'shield',fx:'gold',desc:'摆出阵法，给自己加护盾'},meteor:{name:'陨石砸落',type:'big',mult:1.8,fx:'stone',desc:'从天而降，伤害×1.8'},
+ tiangou:{name:'月蚀之怒',type:'weaken',mult:1.5,fx:'shadow',desc:'天地变暗，伤害×1.5并让你攻击力下降'}};
 function startBattle(ch,lv){
- const C=CHAPTERS[ch-1],isBoss=lv===5,m=1+.25*(ch-1);let e;
+ mapTab=CHAPTERS[ch-1].tower||1;
+ const C=CHAPTERS[ch-1],isBoss=lv===5,m=ch>=6?2+.2*(ch-6):1+.25*(ch-1);let e;
  if(isBoss)e={name:C.boss.name,art:C.boss.art,opt:{},max:Math.round(100*m),atk:12+2*ch,powers:C.boss.powers.slice()};
  else{const[n,a,o]=C.enemies[lv-1];e={name:n,art:a,opt:o,max:Math.round((36+lv*6)*m),atk:6+ch+lv,powers:[]}}
  const bh=BEHAV[e.art]||{blk:.2,ctr:.15,verb:'格挡'};e.blk=bh.blk;e.ctr=bh.ctr;e.verb=bh.verb;
  e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
- const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.2*wl));e.atk=Math.round(e.atk*(1+.12*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;e.burn=0;
+ const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.15*wl));e.atk=Math.round(e.atk*(1+.08*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;e.burn=0;
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
- let d;if(ch===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
+ let d;if(ch>=6)d=isBoss?3:(lv<=2?2:3);else if(ch===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
  B={skills:SKILLS[S.cur].filter(x=>x.unlock<=wl),ch,lv,isBoss,C,e,d,hero:{hp:hs.hp,max:hs.hp,atk:hs.atk},combo:0,gauge:0,blocks:0,poison:0,weak:0,rights:0,wrongs:0,regenUsed:false,busy:true,over:false};
- renderBattle();show('battle');keyHandler=battleKey;setTimeout(nextQ,300)}
+ renderBattle();show('battle');musicStart(isBoss?'boss':(C.tower===2?'tower':'battle'));keyHandler=battleKey;setTimeout(nextQ,300)}
 
 function renderBattle(){
  const el=$('#scr-battle'),C=B.C,e=B.e,ch=CHARS[S.cur];
@@ -1057,6 +1319,8 @@ function projSVG(kind){const c=FX_COL[kind]||INK;let g;
  else if(kind==='stone')g=`<polygon points="40,20 70,24 82,48 66,70 36,68 24,44" fill="${c}" stroke="${INK}" stroke-width="3"/><path d="M8 40 L22 40 M12 54 L24 52" stroke="${INK}" stroke-width="3" stroke-linecap="round" opacity=".5"/>`;
  else if(kind==='thunder')g=`<polyline points="10,30 40,44 30,50 64,62 54,68 86,80" fill="none" stroke="${c}" stroke-width="7" stroke-linejoin="round"/><polyline points="10,30 40,44 30,50 64,62 54,68 86,80" fill="none" stroke="${INK}" stroke-width="2"/>`;
  else if(kind==='ice'||kind==='wood')g=`<polygon points="86,45 50,32 14,40 50,58" fill="${c}" stroke="${INK}" stroke-width="2.5"/><path d="M50 32 L50 58" stroke="${PAPER}" stroke-width="2" opacity=".7"/>`;
+ else if(kind==='wind')g=`<path d="M10 46 C30 20 70 20 76 44 C80 62 56 66 50 52 C46 42 58 38 62 46" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round"/><path d="M6 60 L40 60 M14 30 L36 34" stroke="${c}" stroke-width="4" stroke-linecap="round" opacity=".6"/>`;
+ else if(kind==='snow')g=`<circle cx="56" cy="45" r="24" fill="${c}" stroke="${INK}" stroke-width="3"/><path d="M8 38 L26 40 M12 54 L28 52" stroke="#9fd3ea" stroke-width="4" stroke-linecap="round"/>`;
  else g=`<path d="M8 45 C30 28 52 26 70 34 C86 42 86 54 70 60 C50 66 30 62 8 45Z" fill="${c}"/><circle cx="24" cy="28" r="5" fill="${c}"/><circle cx="18" cy="62" r="4" fill="${c}"/>${kind==='poison'?`<circle cx="62" cy="44" r="6" fill="${PAPER}" opacity=".5"/><circle cx="48" cy="52" r="3" fill="${PAPER}" opacity=".5"/>`:''}`;
  return `<svg viewBox="0 0 90 90" aria-hidden="true"><g filter="url(#rough)">${g}</g></svg>`}
 function shoot(from,to,kind,cb){const ar=$('.arena'),a=$(from+' .art-wrap'),b=$(to+' .art-wrap');if(!ar||!a||!b){cb&&cb();return}
@@ -1305,7 +1569,7 @@ function renderGear(){
 
 /* ============ BOOT ============ */
 window.__moxia={genQ,toCN,BANK,ART,BG,updateHud,get B(){return B}};
-$('#soundBtn').textContent='音效：'+(S.sound?'开':'关');
+$('#soundBtn').textContent='音效：'+(S.sound?'开':'关');$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');
 updateCoins();renderHome();
 })();
 </script>
