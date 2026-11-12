@@ -232,6 +232,8 @@ svg.art{display:block;overflow:visible}
 .rage .skname{color:var(--ink-soft)}
 .fighter.enraged .art-wrap svg.art{filter:drop-shadow(0 0 10px rgba(200,40,30,.95))}
 .proj{position:absolute;left:0;top:0;width:clamp(60px,9vw,110px);height:clamp(60px,9vw,110px);pointer-events:none;z-index:6}
+.ammo{transition:opacity .35s ease}
+.ammo.gone{opacity:0;transition:opacity .05s}
 .proj.pitem{width:clamp(56px,8vw,96px);height:clamp(56px,8vw,96px)}
 .proj svg{width:100%;height:100%;display:block;overflow:visible}
 .burst{position:absolute;left:50%;top:35%;width:60%;max-width:170px;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;z-index:5;animation:burst .5s ease-out forwards}
@@ -489,8 +491,8 @@ ${beads}
 <rect x="57" y="146" width="18" height="18" rx="5" fill="${RED}" stroke="${INK}" stroke-width="2.5"/>`)},
 
 hand:()=>{const G='#f2b62e',GD='#c4660a';
-const open=(x,y,r,s)=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><path d="M-13 -2 Q-14 18 0 20 Q14 18 13 -2 Z" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-13,-6.5,0,6.5].map((fx,i)=>`<rect x="${fx}" y="${-26+(i===0||i===3?5:0)}" width="6.2" height="${i===0||i===3?22:26}" rx="3.1" fill="${G}" stroke="${INK}" stroke-width="1.8"/>`).join('')}<rect x="9" y="2" width="16" height="7" rx="3.5" fill="${G}" stroke="${INK}" stroke-width="1.8" transform="rotate(-40 9 2)"/><path d="M-8 6 Q0 12 8 6" ${st(1.5,GD)}/></g>`;
-const fist=(x,y,r,s)=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><rect x="-6" y="12" width="12" height="12" fill="${G}" stroke="${INK}" stroke-width="1.8"/><rect x="-14" y="-12" width="28" height="26" rx="9" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-9,-3,3,9].map(fx=>`<circle cx="${fx}" cy="-12" r="3.6" fill="${G}" stroke="${INK}" stroke-width="1.6"/>`).join('')}<path d="M-12 0 Q-2 6 8 2" ${st(2,GD)}/></g>`;
+const open=(x,y,r,s)=>`<g class="ammo" transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><path d="M-13 -2 Q-14 18 0 20 Q14 18 13 -2 Z" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-13,-6.5,0,6.5].map((fx,i)=>`<rect x="${fx}" y="${-26+(i===0||i===3?5:0)}" width="6.2" height="${i===0||i===3?22:26}" rx="3.1" fill="${G}" stroke="${INK}" stroke-width="1.8"/>`).join('')}<rect x="9" y="2" width="16" height="7" rx="3.5" fill="${G}" stroke="${INK}" stroke-width="1.8" transform="rotate(-40 9 2)"/><path d="M-8 6 Q0 12 8 6" ${st(1.5,GD)}/></g>`;
+const fist=(x,y,r,s)=>`<g class="ammo" transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><rect x="-6" y="12" width="12" height="12" fill="${G}" stroke="${INK}" stroke-width="1.8"/><rect x="-14" y="-12" width="28" height="26" rx="9" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-9,-3,3,9].map(fx=>`<circle cx="${fx}" cy="-12" r="3.6" fill="${G}" stroke="${INK}" stroke-width="1.6"/>`).join('')}<path d="M-12 0 Q-2 6 8 2" ${st(2,GD)}/></g>`;
 const spark=(x,y,s)=>`<path d="M${x-s} ${y} L${x+s} ${y} M${x} ${y-s} L${x} ${y+s}" ${st(2.5,G)}/>`;
 return wrap(`<ellipse cx="100" cy="230" rx="52" ry="6" fill="${INK}" opacity=".2"/>
 ${spark(18,40,10)}${spark(184,96,9)}${spark(12,170,8)}${spark(188,210,10)}${spark(100,16,8)}${spark(64,108,6)}${spark(140,104,6)}${spark(36,96,5)}
@@ -518,7 +520,7 @@ panda:()=>wrap(`${shadow(102,64)}
 <path d="M74 78 Q102 68 130 78" ${st(5,RED)}/><path d="M74 78 L56 72 M74 80 L58 88" ${st(4,RED)}/>`),
 
 sword:()=>wrap(`<ellipse cx="104" cy="232" rx="50" ry="5" fill="${INK}" opacity=".15"/>
-${[[34,58,-30],[22,110,-8],[40,160,12]].map(([x,y,r])=>`<g transform="translate(${x} ${y}) rotate(${r})"><path d="M0 0 L46 -3 L54 0 L46 3Z" fill="#cfe6f0" stroke="${INK}" stroke-width="1.8"/><rect x="-9" y="-2" width="9" height="4" fill="${GOLD}" stroke="${INK}" stroke-width="1"/><path d="M1 -6 L1 6" ${st(2.5,GOLD)}/></g>`).join('')}
+${[[34,58,-30],[22,110,-8],[40,160,12]].map(([x,y,r])=>`<g class="ammo" transform="translate(${x} ${y}) rotate(${r})"><path d="M0 0 L46 -3 L54 0 L46 3Z" fill="#cfe6f0" stroke="${INK}" stroke-width="1.8"/><rect x="-9" y="-2" width="9" height="4" fill="${GOLD}" stroke="${INK}" stroke-width="1"/><path d="M1 -6 L1 6" ${st(2.5,GOLD)}/></g>`).join('')}
 <path d="M10 222 Q40 216 70 224 M0 202 Q20 198 40 202" ${st(2,'#6f9c94')} opacity=".6"/>
 <path d="M44 208 L176 204 L192 208 L176 212 Z" fill="#dfeef4" stroke="${INK}" stroke-width="2.5"/><rect x="24" y="205" width="20" height="6" fill="${GOLD}" stroke="${INK}" stroke-width="1.5"/><path d="M44 198 L44 218" ${st(4,GOLD)}/>
 <path d="M98 168 L92 204 M108 168 L118 204" ${st(4)}/>
@@ -530,7 +532,7 @@ ${[[34,58,-30],[22,110,-8],[40,160,12]].map(([x,y,r])=>`<g transform="translate(
 <path d="M92 92 Q78 110 70 124" ${st(3)}/>
 <circle cx="102" cy="90" r="12" fill="${INK}"/><circle cx="98" cy="74" r="6" fill="${INK}"/><path d="M96 70 L112 64" ${st(2.5,GOLD)}/>`),
 
-qin:()=>{const note=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="6" ry="4.5" fill="${INK}" transform="rotate(-20 ${x} ${y})"/><path d="M${x+5} ${y-1} L${x+5} ${y-24} L${x+15} ${y-19}" ${st(2.5)}/>`;
+qin:()=>{const note=(x,y)=>`<g class="ammo"><ellipse cx="${x}" cy="${y}" rx="6" ry="4.5" fill="${INK}" transform="rotate(-20 ${x} ${y})"/><path d="M${x+5} ${y-1} L${x+5} ${y-24} L${x+15} ${y-19}" ${st(2.5)}/></g>`;
 return wrap(`${shadow(104,72)}
 ${note(150,48)}${note(176,80)}${note(30,60)}
 <path d="M160 104 Q178 116 160 128 M172 96 Q198 116 172 136 M184 88 Q216 116 184 144" ${st(3,'#6f9c94')} opacity=".8"/>
@@ -543,7 +545,7 @@ ${[0,1,2,3,4].map(i=>`<line x1="50" y1="${187+i*2}" x2="174" y2="${169+i*2}" str
 <path d="M94 120 L80 152 L96 180" ${st(4)}/><path d="M112 120 L132 150 L138 172" ${st(4)}/>
 <circle cx="102" cy="96" r="12" fill="${INK}"/><path d="M96 86 L110 80" ${st(3,RED)}/>`)},
 
-taoist:()=>{const talis=(x,y,r)=>`<g transform="translate(${x} ${y}) rotate(${r})"><rect x="-8" y="-16" width="16" height="32" fill="#f2d24a" stroke="${INK}" stroke-width="1.8"/><path d="M-3 -10 Q4 -6 -2 -2 Q5 2 -2 6 Q4 9 0 12" ${st(1.6,RED)}/></g>`;
+taoist:()=>{const talis=(x,y,r)=>`<g class="ammo" transform="translate(${x} ${y}) rotate(${r})"><rect x="-8" y="-16" width="16" height="32" fill="#f2d24a" stroke="${INK}" stroke-width="1.8"/><path d="M-3 -10 Q4 -6 -2 -2 Q5 2 -2 6 Q4 9 0 12" ${st(1.6,RED)}/></g>`;
 return wrap(`${shadow(100,58)}
 ${talis(30,60,-20)}${talis(174,74,18)}${talis(22,140,-10)}${talis(180,150,12)}
 <path d="M96 168 L90 222 L80 224 M108 168 L114 222 L124 224" ${st(5)}/>
@@ -1489,9 +1491,9 @@ function itemSVG(it){let g;
  else if(it==='flysword')g=`<path d="M0 45 L16 45 M4 38 L14 39 M4 52 L14 51" stroke="#9fd3ea" stroke-width="3" stroke-linecap="round" opacity=".7"/><rect x="12" y="41" width="15" height="8" fill="${GOLD}" stroke="${INK}" stroke-width="1.8"/><path d="M28 33 L28 57" stroke="${GOLD}" stroke-width="4.5" stroke-linecap="round"/><path d="M30 41 L80 42 L92 45 L80 48 L30 49Z" fill="#e6f3f8" stroke="${INK}" stroke-width="2.2"/><path d="M32 45 L82 45" stroke="#8aa" stroke-width="1"/>`;
  else g=`<path d="M8 18 Q30 45 8 72 M20 12 Q46 45 20 78" fill="none" stroke="#6f9c94" stroke-width="4" stroke-linecap="round" opacity=".75"/><ellipse cx="54" cy="60" rx="9" ry="7" fill="${INK}" transform="rotate(-20 54 60)"/><path d="M62 58 L62 22 L80 28 L80 52" fill="none" stroke="${INK}" stroke-width="3.5"/><ellipse cx="72" cy="54" rx="8.5" ry="6.5" fill="${INK}" transform="rotate(-20 72 54)"/>`;
  return `<svg viewBox="0 0 90 90" aria-hidden="true"><g filter="url(#rough)">${g}</g></svg>`}
-function shootItem(item,fx,dy,cb){const ar=$('.arena'),a=heroWrap(),b=$('#fEnemy .art-wrap');if(!ar||!a||!b||!ar.animate){cb&&cb();return}
- const R=ar.getBoundingClientRect(),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
- const x1=ra.left+ra.width*.75-R.left,y1=ra.top+ra.height*.35-R.top+dy,x2=rb.left+rb.width*.45-R.left,y2=rb.top+rb.height*.5-R.top+dy*.4;
+function shootItem(item,fx,dy,cb,from){const ar=$('.arena'),a=heroWrap(),b=$('#fEnemy .art-wrap');if(!ar||!a||!b||!ar.animate){cb&&cb();return}
+ const R=ar.getBoundingClientRect(),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect(),rf=from?from.getBoundingClientRect():null;
+ const x1=rf?rf.left+rf.width/2-R.left:ra.left+ra.width*.75-R.left,y1=rf?rf.top+rf.height/2-R.top:ra.top+ra.height*.35-R.top+dy,x2=rb.left+rb.width*.45-R.left,y2=rb.top+rb.height*.5-R.top+dy*.4;
  const el=document.createElement('div');el.className='proj pitem';el.innerHTML=itemSVG(item);ar.appendChild(el);
  const spin=item==='talisman'?540:item==='note'?0:0,arc=item==='flysword'?-10:-30;
  const an=el.animate([{transform:`translate(${x1}px,${y1}px) translate(-50%,-50%) scale(.5) rotate(0deg)`},{transform:`translate(${(x1+x2)/2}px,${(y1+y2)/2+arc}px) translate(-50%,-50%) scale(.95) rotate(${spin/2}deg)`},{transform:`translate(${x2}px,${y2}px) translate(-50%,-50%) scale(1.15) rotate(${spin}deg)`}],{duration:440,easing:'ease-in',fill:'both'});
@@ -1505,9 +1507,11 @@ function swing(kind){const f=$('#fEnemy');if(!f)return;const s=document.createEl
  s.innerHTML=g;f.appendChild(s);setTimeout(()=>s.remove(),600)}
 function meleeHit(dmg,kind,ign,cb){heroStrike();setTimeout(()=>{if(!B)return;SFX.hit();HERO_SWING[S.cur]?swing(HERO_SWING[S.cur]):slash('#fEnemy',FX_COL[kind]||INK);burst('#fEnemy',kind);anim('#fEnemy','hurt');dealDamage(dmg,ign);updateHud();cb&&cb()},110)}
 function heroAttackSeq(hits,dmg,kind,ign,each,done){const item=HERO_RANGED[S.cur];
- if(item){heroCast();let landed=0;
+ if(item){heroCast();let landed=0;const ammo=[...document.querySelectorAll('#fHero .ammo')];const start=hits===1&&ammo.length?ri(0,ammo.length-1):0;
   for(let i=0;i<hits;i++)setTimeout(()=>{if(!B)return;if(i%2===0)heroCast();const dy=hits>1?[0,-34,30,-18,18,-44][i%6]:0;
-   shootItem(item,kind,dy,()=>{if(!B)return;SFX.hit();anim('#fEnemy','hurt');if(B.e.hp>0){dealDamage(dmg,ign);updateHud();each&&each()}landed++;if(landed===hits)setTimeout(done,260)})},180+i*150);
+   const el=ammo.length?ammo[(start+i)%ammo.length]:null;if(el)el.classList.add('gone');
+   shootItem(item,kind,dy,()=>{if(!B)return;SFX.hit();anim('#fEnemy','hurt');if(B.e.hp>0){dealDamage(dmg,ign);updateHud();each&&each()}landed++;
+    if(landed===hits)setTimeout(()=>{ammo.forEach(a=>a.classList.remove('gone'));done()},300)},el)},180+i*150);
   return}
  heroDash(()=>{if(!B)return;let c=0;
  const go=()=>meleeHit(dmg,kind,ign,()=>{each&&each();c++;if(c<hits&&B.e.hp>0)setTimeout(go,hits>3?130:200);else setTimeout(()=>heroBack(done),180)});go()})}
