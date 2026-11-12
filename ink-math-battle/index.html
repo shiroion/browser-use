@@ -2004,7 +2004,7 @@ function makePad(host,onSubmit){
  return api}
 
 /* ============ HOME ============ */
-const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，你的生命攻击减半，奖励×2',ehp:2,eatk:2,php:.5,patk:.5,coin:2}};
+const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，一半机会闪避或格挡；你的生命攻击减半，奖励×2',ehp:2,eatk:2,php:.5,patk:.5,coin:2}};
 function monsterList(){const L=[];CHAPTERS.forEach(C=>{C.enemies.forEach(([n,a,o])=>L.push({key:n,name:n,art:a,opt:o,C,boss:false}));L.push({key:C.boss.name,name:C.boss.name,art:C.boss.art,opt:{},C,boss:true})});return L}
 function renderHome(){
  const el=$('#scr-home');const hs=heroStats(),parts=worldLv(),total=CHAPTERS.length,mons=monsterList();S.seen=S.seen||{};const seen=mons.filter(m=>S.seen[m.key]).length;
@@ -2171,7 +2171,7 @@ function startBattle(ch,lv){
  S.seen=S.seen||{};if(!S.seen[e.name]){S.seen[e.name]=true;save()}
  e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
  const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.1*wl));e.atk=Math.round(e.atk*(1+.05*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;e.burn=0;
- const MD=MODES[S.mode||'normal'];e.max=Math.max(1,Math.round(e.max*MD.ehp));e.atk=Math.max(1,Math.round(e.atk*MD.eatk));
+ const MD=MODES[S.mode||'normal'];e.max=Math.max(1,Math.round(e.max*MD.ehp));e.atk=Math.max(1,Math.round(e.atk*MD.eatk));if(S.mode==='hard'){e.blk=.5;e.ctr=Math.min(e.ctr,.3)}
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
  let d;if(ch>=6)d=isBoss?3:(lv<=2?2:3);else if(ch===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
@@ -2404,13 +2404,13 @@ function showFb(cls,big,html){const fb=$('#fb');fb.className='feedback '+cls;fb.
 
 function onRight(){SFX.right();B.rights++;S.stats.right++;B.combo++;B.gauge=Math.min(GAUGE_MAX,B.gauge+1);
  const e=B.e,ha=HERO_ATK[S.cur];const bonus=1+.1*Math.min(B.combo-1,5);let dmg=Math.round(B.hero.atk*bonus*(B.weak>0?.7:1));if(B.weak>0)B.weak--;
- const rageFull=e.rage>=e.rageMax;const act=enemyAct();if(act==='block')dmg=Math.ceil(dmg/2);const crit=act!=='block'&&Math.random()<.15;if(crit)dmg=Math.round(dmg*1.8);
+ const rageFull=e.rage>=e.rageMax;const act=enemyAct();let dodge=false;if(act==='block'&&S.mode==='hard'&&Math.random()<.5){dodge=true;dmg=0}else if(act==='block')dmg=Math.ceil(dmg/2);const crit=act!=='block'&&Math.random()<.15;if(crit)dmg=Math.round(dmg*1.8);
  let note=(crit?'暴击！':'')+(B.combo>1?`${ha.name}！连击 ×${B.combo}，伤害 +${Math.round((bonus-1)*100)}%`:`${ha.name}！`);
- if(act==='block')note=`${ha.name}！可是 ${e.name} ${e.verb}，伤害减半！`;
+ if(act==='block')note=dodge?`${ha.name}！可是 ${e.name} 闪开了，没打中！`:`${ha.name}！可是 ${e.name} ${e.verb}，伤害减半！`;
  if(rageFull)note+=`　${e.name} 怒气满了，要放大招！`;else if(act==='counter')note+=`　小心，${e.name} 要反击！`;
  showFb('right','答对了！',note);
  const cb=$('#combo');cb.textContent=B.combo>1?`连击 ×${B.combo}`:'';cb.classList.remove('pop');void cb.offsetWidth;cb.classList.add('pop');
- if(act==='block')setTimeout(()=>{guardFx('#fEnemy');floatText('#fEnemy','格挡！','blue','6%')},360);
+ if(act==='block')setTimeout(()=>{if(dodge){floatText('#fEnemy','闪避！','blue','6%');const w=$('#fEnemy .art-wrap');if(w&&w.animate)w.animate([{transform:'translate(0,0)',opacity:1},{transform:'translate(50px,-30px)',opacity:.4,offset:.4},{transform:'translate(0,0)',opacity:1}],{duration:650,easing:'ease-out'})}else{guardFx('#fEnemy');floatText('#fEnemy','格挡！','blue','6%')}},360);
  heroHit(dmg,ha.fx,false,()=>{if(!B||B.over)return;if(crit){floatText('#fEnemy','暴击！','crit','2%');shake(10);burst('#fEnemy','gold')}
   if(B.e.hp<=0){enemyDown();return}
   if(rageFull)setTimeout(monsterSpecial,600);
