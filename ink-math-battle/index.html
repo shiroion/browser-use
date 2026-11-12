@@ -232,6 +232,7 @@ svg.art{display:block;overflow:visible}
 .rage .skname{color:var(--ink-soft)}
 .fighter.enraged .art-wrap svg.art{filter:drop-shadow(0 0 10px rgba(200,40,30,.95))}
 .proj{position:absolute;left:0;top:0;width:clamp(60px,9vw,110px);height:clamp(60px,9vw,110px);pointer-events:none;z-index:6}
+.proj.pitem{width:clamp(56px,8vw,96px);height:clamp(56px,8vw,96px)}
 .proj svg{width:100%;height:100%;display:block;overflow:visible}
 .burst{position:absolute;left:50%;top:35%;width:60%;max-width:170px;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;z-index:5;animation:burst .5s ease-out forwards}
 .burst svg{width:100%;height:100%;display:block}
@@ -1480,8 +1481,35 @@ function heroStrike(){const h=heroWrap();if(!h||!h.animate)return;const dx=B.dx|
 function heroBack(cb){const h=heroWrap();if(!h||!h.animate){cb&&cb();return}const dx=B.dx||0;
  const a=h.animate([{transform:`translate(${dx}px,0) rotate(4deg)`},{transform:`translate(${dx*.5}px,-26px) rotate(-8deg)`},{transform:'translate(0,0) rotate(0)'}],{duration:Math.min(380,200+dx*.3),easing:'ease-out',fill:'forwards'});
  a.onfinish=()=>{clearHeroAnims();const f=$('#fHero');if(f)f.classList.remove('dashing');cb&&cb()}}
-function meleeHit(dmg,kind,ign,cb){heroStrike();setTimeout(()=>{if(!B)return;SFX.hit();slash('#fEnemy',FX_COL[kind]||INK);burst('#fEnemy',kind);anim('#fEnemy','hurt');dealDamage(dmg,ign);updateHud();cb&&cb()},110)}
-function heroAttackSeq(hits,dmg,kind,ign,each,done){heroDash(()=>{if(!B)return;let c=0;
+const HERO_RANGED={taoist:'talisman',hand:'palm',sword:'flysword',qin:'note'};
+const HERO_SWING={brush:'brush',monk:'fist',panda:'staff',reaper:'scythe'};
+function itemSVG(it){let g;
+ if(it==='talisman')g=`<path d="M2 38 L24 41 M6 54 L26 51" stroke="#f2d24a" stroke-width="3" stroke-linecap="round" opacity=".7"/><g transform="rotate(-12 45 45)"><rect x="30" y="20" width="30" height="50" fill="#f2d24a" stroke="${INK}" stroke-width="2.5"/><path d="M38 28 Q52 32 40 39 Q54 45 40 52 Q52 57 44 63" fill="none" stroke="${RED}" stroke-width="2.6"/></g>`;
+ else if(it==='palm')g=`<path d="M4 36 L28 38 M2 54 L26 52" stroke="#f2b62e" stroke-width="4" stroke-linecap="round" opacity=".6"/><rect x="28" y="28" width="28" height="34" rx="9" fill="#f2b62e" stroke="${INK}" stroke-width="2.5"/>${[0,1,2,3].map(i=>`<rect x="52" y="${28+i*8.5}" width="${i===0||i===3?20:27}" height="7.5" rx="3.7" fill="#f2b62e" stroke="${INK}" stroke-width="2"/>`).join('')}<rect x="34" y="12" width="9" height="20" rx="4.5" fill="#f2b62e" stroke="${INK}" stroke-width="2" transform="rotate(30 38 22)"/>`;
+ else if(it==='flysword')g=`<path d="M0 45 L16 45 M4 38 L14 39 M4 52 L14 51" stroke="#9fd3ea" stroke-width="3" stroke-linecap="round" opacity=".7"/><rect x="12" y="41" width="15" height="8" fill="${GOLD}" stroke="${INK}" stroke-width="1.8"/><path d="M28 33 L28 57" stroke="${GOLD}" stroke-width="4.5" stroke-linecap="round"/><path d="M30 41 L80 42 L92 45 L80 48 L30 49Z" fill="#e6f3f8" stroke="${INK}" stroke-width="2.2"/><path d="M32 45 L82 45" stroke="#8aa" stroke-width="1"/>`;
+ else g=`<path d="M8 18 Q30 45 8 72 M20 12 Q46 45 20 78" fill="none" stroke="#6f9c94" stroke-width="4" stroke-linecap="round" opacity=".75"/><ellipse cx="54" cy="60" rx="9" ry="7" fill="${INK}" transform="rotate(-20 54 60)"/><path d="M62 58 L62 22 L80 28 L80 52" fill="none" stroke="${INK}" stroke-width="3.5"/><ellipse cx="72" cy="54" rx="8.5" ry="6.5" fill="${INK}" transform="rotate(-20 72 54)"/>`;
+ return `<svg viewBox="0 0 90 90" aria-hidden="true"><g filter="url(#rough)">${g}</g></svg>`}
+function shootItem(item,fx,dy,cb){const ar=$('.arena'),a=heroWrap(),b=$('#fEnemy .art-wrap');if(!ar||!a||!b||!ar.animate){cb&&cb();return}
+ const R=ar.getBoundingClientRect(),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
+ const x1=ra.left+ra.width*.75-R.left,y1=ra.top+ra.height*.35-R.top+dy,x2=rb.left+rb.width*.45-R.left,y2=rb.top+rb.height*.5-R.top+dy*.4;
+ const el=document.createElement('div');el.className='proj pitem';el.innerHTML=itemSVG(item);ar.appendChild(el);
+ const spin=item==='talisman'?540:item==='note'?0:0,arc=item==='flysword'?-10:-30;
+ const an=el.animate([{transform:`translate(${x1}px,${y1}px) translate(-50%,-50%) scale(.5) rotate(0deg)`},{transform:`translate(${(x1+x2)/2}px,${(y1+y2)/2+arc}px) translate(-50%,-50%) scale(.95) rotate(${spin/2}deg)`},{transform:`translate(${x2}px,${y2}px) translate(-50%,-50%) scale(1.15) rotate(${spin}deg)`}],{duration:440,easing:'ease-in',fill:'both'});
+ an.onfinish=()=>{el.remove();burst('#fEnemy',fx);cb&&cb()}}
+function heroCast(){const h=heroWrap();if(!h||!h.animate)return;h.animate([{transform:'translate(0,0) rotate(0)'},{transform:'translate(-12px,-6px) rotate(-6deg)',offset:.35},{transform:'translate(34px,-10px) rotate(6deg)',offset:.7},{transform:'translate(0,0) rotate(0)'}],{duration:520,easing:'ease-out'})}
+function swing(kind){const f=$('#fEnemy');if(!f)return;const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 200 200');s.setAttribute('class','slash');s.setAttribute('preserveAspectRatio','none');let g;
+ if(kind==='brush')g=`<path d="M24 36 Q122 58 172 172" fill="none" stroke="${INK}" stroke-width="24" stroke-linecap="round" filter="url(#rough)"/><path d="M40 62 Q116 84 158 170" fill="none" stroke="${INK}" stroke-width="7" opacity=".6" filter="url(#rough)"/><circle cx="180" cy="150" r="7" fill="${INK}"/><circle cx="160" cy="186" r="5" fill="${INK}"/>`;
+ else if(kind==='scythe')g=`<path d="M16 28 C112 6 194 80 160 184" fill="none" stroke="${INK}" stroke-width="20" stroke-linecap="round"/><path d="M16 28 C112 6 194 80 160 184" fill="none" stroke="#e2ddd1" stroke-width="12" stroke-linecap="round"/><path d="M30 50 C110 34 170 96 146 176" fill="none" stroke="#2c4a3c" stroke-width="4" opacity=".6"/>`;
+ else if(kind==='staff')g=`<path d="M8 156 Q100 16 192 62" fill="none" stroke="${INK}" stroke-width="15" stroke-linecap="round"/><path d="M8 156 Q100 16 192 62" fill="none" stroke="#6f9a3e" stroke-width="9" stroke-linecap="round"/><path d="M28 176 Q102 58 184 94" fill="none" stroke="#6f9a3e" stroke-width="3" opacity=".5"/>`;
+ else g=`<path d="M10 100 L176 100" fill="none" stroke="#e0552a" stroke-width="34" stroke-linecap="round" opacity=".8"/><path d="M30 100 L182 100" fill="none" stroke="#f2b62e" stroke-width="13" stroke-linecap="round"/><path d="M40 72 L150 82 M40 128 L150 118" fill="none" stroke="#e0552a" stroke-width="5" stroke-linecap="round"/>`;
+ s.innerHTML=g;f.appendChild(s);setTimeout(()=>s.remove(),600)}
+function meleeHit(dmg,kind,ign,cb){heroStrike();setTimeout(()=>{if(!B)return;SFX.hit();HERO_SWING[S.cur]?swing(HERO_SWING[S.cur]):slash('#fEnemy',FX_COL[kind]||INK);burst('#fEnemy',kind);anim('#fEnemy','hurt');dealDamage(dmg,ign);updateHud();cb&&cb()},110)}
+function heroAttackSeq(hits,dmg,kind,ign,each,done){const item=HERO_RANGED[S.cur];
+ if(item){heroCast();let landed=0;
+  for(let i=0;i<hits;i++)setTimeout(()=>{if(!B)return;if(i%2===0)heroCast();const dy=hits>1?[0,-34,30,-18,18,-44][i%6]:0;
+   shootItem(item,kind,dy,()=>{if(!B)return;SFX.hit();anim('#fEnemy','hurt');if(B.e.hp>0){dealDamage(dmg,ign);updateHud();each&&each()}landed++;if(landed===hits)setTimeout(done,260)})},180+i*150);
+  return}
+ heroDash(()=>{if(!B)return;let c=0;
  const go=()=>meleeHit(dmg,kind,ign,()=>{each&&each();c++;if(c<hits&&B.e.hp>0)setTimeout(go,hits>3?130:200);else setTimeout(()=>heroBack(done),180)});go()})}
 function powerUp(kind){const h=heroWrap();burst('#fHero',kind||'gold');if(h&&h.animate)h.animate([{transform:'translateY(0) scale(1)'},{transform:'translateY(-36px) scale(1.12)',offset:.45},{transform:'translateY(0) scale(1)'}],{duration:520,easing:'ease-out'})}
 function heroHit(dmg,kind,ignoreShield,cb){heroAttackSeq(1,dmg,kind,ignoreShield,null,cb)}
