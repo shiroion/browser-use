@@ -2770,6 +2770,7 @@ function renderGear(){
 /* ============ BOOT ============ */
 window.__moxia={genQ,toCN,BANK,ART,BG,updateHud,itemIcon,NAMES,get B(){return B},get CC(){return chestCtx}};
 $('#soundBtn').textContent='音效：'+(S.sound?'开':'关');$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');
+if(!S.gift2000){S.gift2000=true;S.coins+=2000;save();setTimeout(()=>{toast('礼物：获得 2000 金币！');SFX.coin()},400)}
 updateCoins();renderHome();
 })();
 </script>
