@@ -233,6 +233,9 @@ svg.art{display:block;overflow:visible}
 .fighter.enraged .art-wrap svg.art{filter:drop-shadow(0 0 10px rgba(200,40,30,.95))}
 .proj{position:absolute;left:0;top:0;width:clamp(60px,9vw,110px);height:clamp(60px,9vw,110px);pointer-events:none;z-index:6}
 .ammo{transition:opacity .35s ease}
+.weapon{transform-box:view-box}
+.ammofly{position:absolute;pointer-events:none;z-index:6}
+.ammofly svg{width:100%;height:100%;display:block;overflow:visible}
 .ammo.gone{opacity:0;transition:opacity .05s}
 .proj.pitem{width:clamp(56px,8vw,96px);height:clamp(56px,8vw,96px)}
 .proj svg{width:100%;height:100%;display:block;overflow:visible}
@@ -447,13 +450,13 @@ return wrap(`<ellipse cx="96" cy="226" rx="78" ry="7" fill="${INK}" opacity=".22
 <polygon points="${spikes(186,60,12,30,9)}" fill="${INK}"/>
 <path d="M170 34 Q178 18 192 14 M196 92 Q206 104 200 118 M150 30 Q156 22 166 22" ${st(4)}/>
 <circle cx="200" cy="40" r="5" fill="${INK}"/><circle cx="160" cy="90" r="4" fill="${INK}"/><circle cx="172" cy="100" r="2.5" fill="${INK}"/><circle cx="140" cy="38" r="3" fill="${INK}"/><circle cx="206" cy="78" r="3" fill="${INK}"/><circle cx="128" cy="96" r="2" fill="${INK}"/>
-<line x1="12" y1="96" x2="160" y2="64" stroke="${INK}" stroke-width="11" stroke-linecap="round"/>
+<g class="weapon" style="transform-origin:101px 78px"><line x1="12" y1="96" x2="160" y2="64" stroke="${INK}" stroke-width="11" stroke-linecap="round"/>
 <line x1="14" y1="95.5" x2="158" y2="64.5" stroke="#9a5a26" stroke-width="6" stroke-linecap="round"/>
 <line x1="34" y1="90" x2="150" y2="65" stroke="#d08f4f" stroke-width="1.6" opacity=".8"/>
 <polygon points="12,96 0,101 14,101" fill="${INK}"/>
 <path d="M155 57 L171 54 L174 71 L158 74 Z" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>
 <path d="M171 53 C186 49 199 53 204 63 C199 71 186 75 173 72 Z" fill="#f8f4ea" stroke="${INK}" stroke-width="2.5"/>
-<path d="M178 58 L198 61 M178 67 L197 66" ${st(1.2)} opacity=".5"/>
+<path d="M178 58 L198 61 M178 67 L197 66" ${st(1.2)} opacity=".5"/></g>
 <path d="M101 76 Q99 92 100 103" ${st(1.5)}/>
 ${limb('M100 170 L72 196 L40 218')}
 ${limb('M104 170 L136 180 L132 218')}
@@ -485,8 +488,8 @@ ${beads}
 <path d="M132 100 L124 84 L106 92 L112 106 L136 112 Z" fill="${RED}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
 <path d="M70 92 L64 84 L76 88 M134 92 L140 84 L128 88" ${st(2)}/>
 <circle cx="102" cy="74" r="15" fill="${INK}"/>
-<path d="M126 104 L140 90 L146 70" ${st(11)}/><path d="M126 104 L140 90 L146 70" ${st(5,RED)}/>
-<rect x="136" y="50" width="22" height="22" rx="6" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M141 56 L153 56 M141 62 L153 62" ${st(1.5)}/>
+<g class="weapon" style="transform-origin:126px 104px"><path d="M126 104 L140 90 L146 70" ${st(11)}/><path d="M126 104 L140 90 L146 70" ${st(5,RED)}/>
+<rect x="136" y="50" width="22" height="22" rx="6" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M141 56 L153 56 M141 62 L153 62" ${st(1.5)}/></g>
 <path d="M78 108 L68 132 L66 148" ${st(11)}/><path d="M78 108 L68 132 L66 148" ${st(5,RED)}/>
 <rect x="57" y="146" width="18" height="18" rx="5" fill="${RED}" stroke="${INK}" stroke-width="2.5"/>`)},
 
@@ -505,8 +508,8 @@ ${open(46,56,-30,1.35)}${open(156,54,32,1.35)}${fist(24,132,-80,1.15)}${open(178
 <path d="M93 80 L89 66 L98 78 Z M108 78 L114 66 L111 81 Z" fill="${INK}"/>`)},
 
 panda:()=>wrap(`${shadow(102,64)}
-<line x1="26" y1="194" x2="188" y2="90" stroke="${INK}" stroke-width="10" stroke-linecap="round"/><line x1="27" y1="193.5" x2="187" y2="90.5" stroke="#6f9a3e" stroke-width="6" stroke-linecap="round"/>
-<path d="M54 170 L62 178 M106 137 L114 145 M156 104 L164 112" ${st(3)}/>
+<g class="weapon" style="transform-origin:130px 128px"><line x1="26" y1="194" x2="188" y2="90" stroke="${INK}" stroke-width="10" stroke-linecap="round"/><line x1="27" y1="193.5" x2="187" y2="90.5" stroke="#6f9a3e" stroke-width="6" stroke-linecap="round"/>
+<path d="M54 170 L62 178 M106 137 L114 145 M156 104 L164 112" ${st(3)}/></g>
 <ellipse cx="80" cy="214" rx="16" ry="11" fill="${INK}"/><ellipse cx="126" cy="214" rx="16" ry="11" fill="${INK}"/>
 <ellipse cx="102" cy="160" rx="44" ry="48" fill="${PAPER}" stroke="${INK}" stroke-width="3"/>
 <path d="M64 132 Q102 116 140 132 L136 150 Q102 138 68 150Z" fill="${INK}"/>
@@ -558,10 +561,10 @@ ${talis(30,60,-20)}${talis(174,74,18)}${talis(22,140,-10)}${talis(180,150,12)}
 <path d="M86 78 L118 78 L114 62 L90 62Z" fill="${INK}"/><rect x="84" y="76" width="36" height="4" fill="${INK}"/>`)},
 
 reaper:()=>wrap(`<ellipse cx="100" cy="232" rx="54" ry="6" fill="${INK}" opacity=".18"/>
-<line x1="150" y1="230" x2="68" y2="16" stroke="#3a2d20" stroke-width="6" stroke-linecap="round"/>
+<g class="weapon" style="transform-origin:108px 122px"><line x1="150" y1="230" x2="68" y2="16" stroke="#3a2d20" stroke-width="6" stroke-linecap="round"/>
 <path d="M68 18 C110 -4 172 4 200 46 C172 24 116 22 72 32 Z" fill="#e2ddd1" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
 <path d="M80 22 C120 10 168 18 190 38" ${st(1.4)} opacity=".45"/>
-<path d="M64 14 L58 8 M66 22 L58 26" ${st(3)}/>
+<path d="M64 14 L58 8 M66 22 L58 26" ${st(3)}/></g>
 <path d="M100 60 C78 60 70 84 74 106 C64 148 56 184 40 222 L52 214 L58 228 L70 212 L80 232 L92 214 L102 234 L112 214 L124 230 L130 210 L144 222 C134 180 128 140 124 106 C128 82 120 60 100 60 Z" fill="#1f2a24" stroke="${INK}" stroke-width="2"/>
 <path d="M86 110 C80 150 74 180 64 214 M100 112 C98 150 96 190 92 214 M114 110 C116 150 120 180 124 214" ${st(2,'#3b5145')}/>
 <ellipse cx="101" cy="86" rx="12" ry="15" fill="#070807"/>
@@ -1498,6 +1501,18 @@ function shootItem(item,fx,dy,cb,from){const ar=$('.arena'),a=heroWrap(),b=$('#f
  const spin=item==='talisman'?540:item==='note'?0:0,arc=item==='flysword'?-10:-30;
  const an=el.animate([{transform:`translate(${x1}px,${y1}px) translate(-50%,-50%) scale(.5) rotate(0deg)`},{transform:`translate(${(x1+x2)/2}px,${(y1+y2)/2+arc}px) translate(-50%,-50%) scale(.95) rotate(${spin/2}deg)`},{transform:`translate(${x2}px,${y2}px) translate(-50%,-50%) scale(1.15) rotate(${spin}deg)`}],{duration:440,easing:'ease-in',fill:'both'});
  an.onfinish=()=>{el.remove();burst('#fEnemy',fx);cb&&cb()}}
+function flyAmmo(el,fx,dyEnd,cb){const ar=$('.arena'),hs=$('#fHero svg.art'),b=$('#fEnemy .art-wrap');if(!ar||!hs||!b||!ar.animate){cb&&cb();return}
+ const R=ar.getBoundingClientRect(),rs=hs.getBoundingClientRect(),re=el.getBoundingClientRect(),rb=b.getBoundingClientRect();
+ const ov=document.createElement('div');ov.className='ammofly';ov.style.cssText=`left:${rs.left-R.left}px;top:${rs.top-R.top}px;width:${rs.width}px;height:${rs.height}px`;
+ ov.innerHTML=`<svg class="art" viewBox="${hs.getAttribute('viewBox')}" aria-hidden="true"><g filter="url(#rough)">${el.outerHTML.replace(/class="ammo[^"]*"/,'')}</g></svg>`;
+ ar.appendChild(ov);el.classList.add('gone');
+ const tx=rb.left+rb.width*.42-(re.left+re.width/2),ty=rb.top+rb.height*.5+dyEnd-(re.top+re.height/2);
+ const go=ov.animate([{transform:'translate(0,0) scale(1)'},{transform:`translate(${tx*.5}px,${ty*.5-36}px) scale(1.25)`},{transform:`translate(${tx}px,${ty}px) scale(1.35)`}],{duration:400,easing:'ease-in',fill:'forwards'});
+ go.onfinish=()=>{burst('#fEnemy',fx);cb&&cb();
+  const back=ov.animate([{transform:`translate(${tx}px,${ty}px) scale(1.35)`},{transform:`translate(${tx*.5}px,${ty*.5-46}px) scale(1.15)`},{transform:'translate(0,0) scale(1)'}],{duration:440,easing:'ease-out',fill:'forwards'});
+  back.onfinish=()=>{ov.remove();if(!document.querySelector('.ammofly'))document.querySelectorAll('#fHero .ammo.gone').forEach(a=>a.classList.remove('gone'))}}}
+function weaponSwing(){const w=document.querySelector('#fHero .weapon');if(!w||!w.animate)return;
+ w.animate([{transform:'rotate(0deg)'},{transform:'rotate(-38deg)',offset:.35},{transform:'rotate(62deg)',offset:.68},{transform:'rotate(0deg)'}],{duration:300,easing:'ease-out'})}
 function heroCast(){const h=heroWrap();if(!h||!h.animate)return;h.animate([{transform:'translate(0,0) rotate(0)'},{transform:'translate(-12px,-6px) rotate(-6deg)',offset:.35},{transform:'translate(34px,-10px) rotate(6deg)',offset:.7},{transform:'translate(0,0) rotate(0)'}],{duration:520,easing:'ease-out'})}
 function swing(kind){const f=$('#fEnemy');if(!f)return;const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 200 200');s.setAttribute('class','slash');s.setAttribute('preserveAspectRatio','none');let g;
  if(kind==='brush')g=`<path d="M24 36 Q122 58 172 172" fill="none" stroke="${INK}" stroke-width="24" stroke-linecap="round" filter="url(#rough)"/><path d="M40 62 Q116 84 158 170" fill="none" stroke="${INK}" stroke-width="7" opacity=".6" filter="url(#rough)"/><circle cx="180" cy="150" r="7" fill="${INK}"/><circle cx="160" cy="186" r="5" fill="${INK}"/>`;
@@ -1505,13 +1520,14 @@ function swing(kind){const f=$('#fEnemy');if(!f)return;const s=document.createEl
  else if(kind==='staff')g=`<path d="M8 156 Q100 16 192 62" fill="none" stroke="${INK}" stroke-width="15" stroke-linecap="round"/><path d="M8 156 Q100 16 192 62" fill="none" stroke="#6f9a3e" stroke-width="9" stroke-linecap="round"/><path d="M28 176 Q102 58 184 94" fill="none" stroke="#6f9a3e" stroke-width="3" opacity=".5"/>`;
  else g=`<path d="M10 100 L176 100" fill="none" stroke="#e0552a" stroke-width="34" stroke-linecap="round" opacity=".8"/><path d="M30 100 L182 100" fill="none" stroke="#f2b62e" stroke-width="13" stroke-linecap="round"/><path d="M40 72 L150 82 M40 128 L150 118" fill="none" stroke="#e0552a" stroke-width="5" stroke-linecap="round"/>`;
  s.innerHTML=g;f.appendChild(s);setTimeout(()=>s.remove(),600)}
-function meleeHit(dmg,kind,ign,cb){heroStrike();setTimeout(()=>{if(!B)return;SFX.hit();HERO_SWING[S.cur]?swing(HERO_SWING[S.cur]):slash('#fEnemy',FX_COL[kind]||INK);burst('#fEnemy',kind);anim('#fEnemy','hurt');dealDamage(dmg,ign);updateHud();cb&&cb()},110)}
+function meleeHit(dmg,kind,ign,cb){heroStrike();weaponSwing();setTimeout(()=>{if(!B)return;SFX.hit();HERO_SWING[S.cur]?swing(HERO_SWING[S.cur]):slash('#fEnemy',FX_COL[kind]||INK);burst('#fEnemy',kind);anim('#fEnemy','hurt');dealDamage(dmg,ign);updateHud();cb&&cb()},110)}
 function heroAttackSeq(hits,dmg,kind,ign,each,done){const item=HERO_RANGED[S.cur];
  if(item){heroCast();let landed=0;const ammo=[...document.querySelectorAll('#fHero .ammo')];const start=hits===1&&ammo.length?ri(0,ammo.length-1):0;
   for(let i=0;i<hits;i++)setTimeout(()=>{if(!B)return;if(i%2===0)heroCast();const dy=hits>1?[0,-34,30,-18,18,-44][i%6]:0;
-   const el=ammo.length?ammo[(start+i)%ammo.length]:null;if(el)el.classList.add('gone');
-   shootItem(item,kind,dy,()=>{if(!B)return;SFX.hit();anim('#fEnemy','hurt');if(B.e.hp>0){dealDamage(dmg,ign);updateHud();each&&each()}landed++;
-    if(landed===hits)setTimeout(()=>{ammo.forEach(a=>a.classList.remove('gone'));done()},300)},el)},180+i*150);
+   const el=ammo.length?ammo[(start+i)%ammo.length]:null;
+   const land=()=>{if(!B)return;SFX.hit();anim('#fEnemy','hurt');if(B.e.hp>0){dealDamage(dmg,ign);updateHud();each&&each()}landed++;
+    if(landed===hits)setTimeout(done,520)};
+   if(el)flyAmmo(el,kind,dy*.4,land);else shootItem(item,kind,dy,land)},180+i*170);
   return}
  heroDash(()=>{if(!B)return;let c=0;
  const go=()=>meleeHit(dmg,kind,ign,()=>{each&&each();c++;if(c<hits&&B.e.hp>0)setTimeout(go,hits>3?130:200);else setTimeout(()=>heroBack(done),180)});go()})}
