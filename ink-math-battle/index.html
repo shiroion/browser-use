@@ -2004,7 +2004,7 @@ function makePad(host,onSubmit){
  return api}
 
 /* ============ HOME ============ */
-const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，一半机会闪避或格挡；你的生命攻击减半，奖励×2',ehp:2,eatk:2,php:.5,patk:.5,coin:2}};
+const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，一半机会闪避或格挡；你的生命攻击减半，防御只挡一半；奖励×3，还有特别奖励',ehp:2,eatk:2,php:.5,patk:.5,coin:3}};
 function monsterList(){const L=[];CHAPTERS.forEach(C=>{C.enemies.forEach(([n,a,o])=>L.push({key:n,name:n,art:a,opt:o,C,boss:false}));L.push({key:C.boss.name,name:C.boss.name,art:C.boss.art,opt:{},C,boss:true})});return L}
 function renderHome(){
  const el=$('#scr-home');const hs=heroStats(),parts=worldLv(),total=CHAPTERS.length,mons=monsterList();S.seen=S.seen||{};const seen=mons.filter(m=>S.seen[m.key]).length;
@@ -2043,7 +2043,7 @@ function showHowTo(){const m=$('#modal');m.innerHTML=`<div class="modal-card" ro
 function renderBook(){const el=$('#scr-book');S.seen=S.seen||{};const mons=monsterList();
  el.innerHTML=`<div class="sec-head"><div><h2>怪物图鉴</h2><p class="muted" style="margin:4px 0 0">打过的怪物会出现在这里。已遇到 ${mons.filter(m=>S.seen[m.key]).length} / ${mons.length} 种。</p></div><button class="btn" type="button" id="bkBack">返回首页</button></div>
  ${TOWERS.map(t=>`<h3 class="shoph">${t.name}</h3><div class="bookgrid">${mons.filter(m=>(m.C.tower||1)===t.id).map(m=>{const sn=S.seen[m.key],s1=MSKILL[m.art],s2=MSKILL2[m.art],bh=BEHAV[m.art]||{};
-  return `<div class="bookcard ${sn?'':'unseen'} ${m.boss?'boss':''}">${ART[m.art](m.opt||{})}<b>${sn?m.name:'？？？'}</b><p class="muted">${m.C.name}${m.boss?' · 首领':''}</p>${sn&&m.boss&&S.trophies&&S.trophies[m.key]?`<p class="trophy">首领奖杯 ×${S.trophies[m.key]}</p>`:''}${sn?`<p>大招：${s1?s1.name:''}${s2?'、'+s2.name:''}</p><p class="muted">${bh.blk>=.3?'爱格挡 ':''}${bh.ctr>=.25?'爱反击':''}</p>`:'<p class="muted">还没遇到</p>'}</div>`}).join('')}</div>`).join('')}`;
+  return `<div class="bookcard ${sn?'':'unseen'} ${m.boss?'boss':''}">${ART[m.art](m.opt||{})}<b>${sn?m.name:'？？？'}</b><p class="muted">${m.C.name}${m.boss?' · 首领':''}</p>${sn&&m.boss&&S.trophies&&S.trophies[m.key]?`<p class="trophy">首领奖杯 ×${S.trophies[m.key]}</p>`:''}${sn&&m.boss&&S.hardTro&&S.hardTro[m.key]?`<p class="trophy" style="color:var(--cinnabar)">困难奖杯 ×${S.hardTro[m.key]}</p>`:''}${sn?`<p>大招：${s1?s1.name:''}${s2?'、'+s2.name:''}</p><p class="muted">${bh.blk>=.3?'爱格挡 ':''}${bh.ctr>=.25?'爱反击':''}</p>`:'<p class="muted">还没遇到</p>'}</div>`}).join('')}</div>`).join('')}`;
  $('#bkBack').onclick=renderHome;show('book')}
 
 /* ============ MAP ============ */
@@ -2473,8 +2473,9 @@ function defenseResolve(ok,timeout){stopTimer();const opt=B.def||{mult:1};const 
  const judge=opt.kind==='judge';
  if(ok){SFX.right();const mode=judge?(q.ans?'block':'dodge'):pick(['block','dodge']);
   const act=mode==='block'?`你用${item}挡住了${what}！`:`你闪身躲开了${what}！`;
-  showFb('right',mode==='block'?'挡住了！':'躲开了！',judge?`判断正确！这句话是「${q.ans?'对':'错'}」的。${act}`:`算对了！${act}`);
-  monsterShoot(opt,mode,()=>setTimeout(()=>{if(B&&!B.over)nextQ()},900))}
+  const hardNote=S.mode==='hard'?'<br><b style="color:var(--cinnabar)">困难模式：只挡住一半伤害！</b>':'';if(S.mode==='hard')opt.half=true;
+  showFb('right',mode==='block'?'挡住了！':'躲开了！',(judge?`判断正确！这句话是「${q.ans?'对':'错'}」的。${act}`:`算对了！${act}`)+hardNote);
+  monsterShoot(opt,mode,()=>{if(B.hero.hp<=0)setTimeout(heroDown,500);else setTimeout(()=>{if(B&&!B.over)nextQ()},900)})}
  else{showFb('wrong',timeout?'来不及了！':(judge?'判断错了！':'算错了！'),judge?`<b>这句话是「${q.ans?'对':'错'}」的。</b> ${q.explain}`:`<b>防御题答案：${N(q.ans)}${q.unit&&q.unit!=='个'?' '+q.unit:''}</b>`);
   monsterShoot(opt,false,()=>{if(B.hero.hp<=0)setTimeout(heroDown,500);else setTimeout(()=>{if(B&&!B.over)nextQ()},1500)})}}
 function heroDodge(){const h=heroWrap();if(!h||!h.animate)return;h.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:'translate(-70px,-50px) rotate(-18deg)',opacity:.35,offset:.4},{transform:'translate(-50px,0) rotate(-6deg)',opacity:.6,offset:.7},{transform:'translate(0,0) rotate(0)',opacity:1}],{duration:700,easing:'ease-out'})}
@@ -2484,6 +2485,7 @@ function monsterShoot(opt,blocked,cb){const e=B.e,sk=opt.special;const hits=sk&&
  const land=()=>{if(!B)return;SFX.hit();
   if(blocked==='dodge'){floatText('#fHero','躲开了！','blue')}
   else if(blocked){heroBlockPose();guardFx('#fHero');floatText('#fHero','用'+(BLOCK_ITEM[S.cur]||'武器')+'挡住了！','blue')}
+  if(blocked&&opt.half){const hd=Math.max(1,Math.round((e.atk+ri(-2,2))*(opt.mult||1)*.5));B.hero.hp=Math.max(0,B.hero.hp-hd);anim('#fHero','hurt');floatText('#fHero','−'+hd,'dmg','45%')}
   else{const dmg=Math.max(1,Math.round((e.atk+ri(-2,2))*(opt.mult||1)));B.hero.hp=Math.max(0,B.hero.hp-dmg);anim('#fHero','hurt');floatText('#fHero','−'+dmg,'dmg',n?'45%':undefined);
    if(sk){if(sk.type==='drain'){e.hp=Math.min(e.max,e.hp+dmg);setTimeout(()=>floatText('#fEnemy','+'+dmg,'heal'),200)}
     if(n===0){if(sk.type==='poison'){B.poison=3;floatText('#fHero','中毒！','poison','6%')}
@@ -2608,10 +2610,11 @@ function useSkill(i){if(!B||B.over||B.busy||B.review||B.def)return;const x=B.ski
 function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=null,bossR=null;
  if(win){coins=b.isBoss?80+30*b.ch+(b.wrongs===0?40:0):20+5*b.ch+(b.wrongs===0?10:0);if(S.prog[b.ch]<b.lv)S.prog[b.ch]=b.lv;S.stats.wins++;SFX.win();
   if(b.isBoss&&!S.partDone[b.ch]){S.partDone[b.ch]=true;S.chests.push(2);coins+=50;partWin=true}
-  if(b.isBoss){drop=b.ch>=11?8:b.ch>=6?3:1;
-   const tw=b.C.tower||1,rr=tw===1?pick([1,2]):tw===2?2:tw===3?pick([2,3]):tw===4?pick([3,4]):4;const ty=Math.random()<.5?'w':'a';const[lo,hi]=RANGE[ty][rr];
+  const HARD=S.mode==='hard';
+  if(b.isBoss){drop=HARD?(b.ch>=6?8:2):(b.ch>=11?8:b.ch>=6?3:1);
+   const tw=b.C.tower||1,rr=Math.min(4,(tw===1?pick([1,2]):tw===2?2:tw===3?pick([2,3]):tw===4?pick([3,4]):4)+(HARD?1:0));const ty=Math.random()<.5?'w':'a';const[lo,hi]=RANGE[ty][rr];
    const bi={id:S.nextId++,type:ty,rar:rr,val:ri(lo,hi),name:pick(NAMES[ty][rr])};S.inv.push(bi);S.potions=S.potions||{};const pots=[pick(Object.keys(POTIONS)),pick(Object.keys(POTIONS))];pots.forEach(k=>S.potions[k]=(S.potions[k]||0)+1);
-   S.trophies=S.trophies||{};S.trophies[b.e.name]=(S.trophies[b.e.name]||0)+1;bossR={item:bi,pots,tro:S.trophies[b.e.name]}}else if(b.wrongs===0&&Math.random()<.3){drop=b.ch>=6?7:0}
+   S.trophies=S.trophies||{};S.trophies[b.e.name]=(S.trophies[b.e.name]||0)+1;if(HARD){S.hardTro=S.hardTro||{};S.hardTro[b.e.name]=(S.hardTro[b.e.name]||0)+1}bossR={item:bi,pots,tro:S.trophies[b.e.name],hard:HARD}}else if(HARD&&Math.random()<.35){drop=7}else if(b.wrongs===0&&Math.random()<.3){drop=b.ch>=6?7:0}
   if(drop!==null)S.chests.push(drop)}
  else{coins=5;SFX.lose()}
  coins=Math.max(1,Math.round(coins*MODES[S.mode||'normal'].coin));S.coins+=coins;save();
@@ -2625,12 +2628,12 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=nu
    <div class="partrow">${chestSVG(2)}<div>完成奖励：<b>金宝箱 ×1</b> + <b>50 金币</b><br><span class="muted">金宝箱已放进商店，答对一道题就能打开。</span></div></div>
    <div class="warnline">所有怪物都变强了！（怪物强化 Lv.${wl}：生命和攻击提高，还学会了第二个大招）</div>
    ${ns.length?`<div>${CHARS[S.cur].name} 学会了新技能：<b>${ns.map(x=>x.name).join('、')}</b>（${ns[0].desc}）</div>`:''}</div>`})():''}
-  ${bossR?`<div class="bossbox"><h3>首领奖励</h3><div class="bossrow">
+  ${bossR?`<div class="bossbox"><h3>${bossR.hard?'困难模式 · 首领奖励（奖励×3，装备品质+1）':'首领奖励'}</h3><div class="bossrow">
     <div class="bri">${itemIcon(bossR.item)}<b style="color:${RAR[bossR.item.rar].c}">${bossR.item.name}</b><span>${RAR[bossR.item.rar].n}${bossR.item.type==='w'?'武器 · 攻击':'盔甲 · 生命'} +${bossR.item.val}</span><button class="chipbtn" type="button" id="rEquip">立即装备</button></div>
     <div class="bri">${bossR.pots.map(k=>potionIcon(k)).join('')}<b>药品 ×2</b><span>${bossR.pots.map(k=>POTIONS[k].name).join('、')}</span></div>
-    <div class="bri"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 6 L34 6 L34 18 Q34 30 24 32 Q14 30 14 18Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><path d="M14 10 Q4 10 6 18 Q8 24 14 22 M34 10 Q44 10 42 18 Q40 24 34 22" fill="none" stroke="${INK}" stroke-width="2.5"/><rect x="20" y="32" width="8" height="6" fill="${GOLD}" stroke="${INK}" stroke-width="2"/><rect x="14" y="38" width="20" height="6" rx="2" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/></svg><b>首领奖杯</b><span>击败 ${b.e.name} 第 ${bossR.tro} 次</span></div>
+    <div class="bri"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 6 L34 6 L34 18 Q34 30 24 32 Q14 30 14 18Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><path d="M14 10 Q4 10 6 18 Q8 24 14 22 M34 10 Q44 10 42 18 Q40 24 34 22" fill="none" stroke="${INK}" stroke-width="2.5"/><rect x="20" y="32" width="8" height="6" fill="${GOLD}" stroke="${INK}" stroke-width="2"/><rect x="14" y="38" width="20" height="6" rx="2" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/></svg><b>${bossR.hard?'困难奖杯':'首领奖杯'}</b><span>${bossR.hard?'困难模式 · ':''}击败 ${b.e.name} 第 ${bossR.tro} 次</span></div>
    </div></div>`:''}
-  ${drop!==null?`<div class="dropline">${chestSVG(drop)}<span>${b.isBoss?'首领掉落':'全对奖励'}：<b>${CHESTS[drop].name}</b> 已放进商店</span></div>`:''}
+  ${drop!==null?`<div class="dropline">${chestSVG(drop)}<span>${b.isBoss?'首领掉落':S.mode==='hard'?'困难奖励':'全对奖励'}：<b>${CHESTS[drop].name}</b> 已放进商店</span></div>`:''}
   <div class="earn">获得 <div class="seal"><span class="coin-ico"></span><b id="earnNum">+0</b><small>金币</small></div></div>
   <div class="row" style="justify-content:center">
    <button class="btn gold" type="button" id="rShop">${partWin?'去打开金宝箱':'去商店开宝箱'}</button>
