@@ -117,7 +117,21 @@ svg.art{display:block;overflow:visible}
 .bar span{position:absolute;inset:0;display:grid;place-items:center;font-size:.72rem;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
 .powers{display:flex;gap:6px;flex-wrap:wrap}
 .power{font-size:.8rem;background:var(--ink);color:var(--card);border-radius:999px;padding:2px 9px}
-.skillbtn{border:2.5px solid var(--ink);border-radius:10px;background:var(--card);padding:5px 10px;font-weight:700;font-size:.95rem;display:flex;gap:6px;align-items:center}
+.skillbtn{border:2px solid var(--ink);border-radius:9px;background:var(--card);padding:3px 8px;font-weight:700;font-size:.85rem;display:flex;gap:5px;align-items:center}
+.skillbtn small{font-size:.72rem;background:var(--ink);color:var(--card);border-radius:999px;padding:0 6px}
+.skills{display:flex;gap:4px;flex-wrap:wrap}
+.energy{display:flex;align-items:center;gap:6px;font-size:.8rem;flex-wrap:wrap}
+.energy .pips{display:flex;gap:3px}
+.energy .pips i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);background:var(--card)}
+.energy .pips i.on{background:var(--gold)}
+.wl{background:var(--cinnabar);color:var(--card);border-radius:999px;padding:2px 12px;font-weight:700;font-size:.9rem;white-space:nowrap}
+.partbox{border:3px solid var(--gold);background:var(--card);border-radius:14px;padding:12px 18px;display:flex;flex-direction:column;gap:6px;max-width:640px;text-align:left;font-size:1.05rem}
+.partbox h3{font-size:1.8rem;color:var(--cinnabar);text-align:center}
+.partrow{display:flex;align-items:center;gap:14px}
+.partrow svg.chest{height:70px;width:auto;flex:none}
+.warnline{color:var(--cinnabar);font-weight:700}
+.sklist p{margin:4px 0}
+.sklist p.locked{opacity:.55}
 .skillbtn .pips{display:flex;gap:3px}
 .skillbtn .pips i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink)}
 .skillbtn .pips i.on{background:var(--gold)}
@@ -209,7 +223,7 @@ svg.art{display:block;overflow:visible}
 .result-inner{display:flex;flex-direction:column;align-items:center;gap:14px}
 .result h2{font-size:clamp(3rem,8vw,5rem);letter-spacing:.2em}
 .result.win h2{color:var(--cinnabar)}
-.result svg.art{height:clamp(120px,25vh,220px);width:auto}
+.result svg.art{height:clamp(100px,20vh,200px);width:auto}
 .earn{display:flex;align-items:center;gap:10px;font-size:1.4rem}
 .earn .seal b{font-size:2rem}
 .stats{display:flex;gap:18px;font-size:1.1rem}
@@ -335,7 +349,7 @@ const INK='#1d1b18',RED='#b5352b',GOLD='#d89b1d',PAPER='#f8f1e2',JADE='#2e6a58';
 
 /* ============ SAVE ============ */
 const SAVE_KEY='moxia-math-save-v1';
-const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0},chests:[],sound:true,nextId:1,stats:{right:0,wrong:0,wins:0}});
+const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0},chests:[],sound:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{}});
 function load(){try{const r=localStorage.getItem(SAVE_KEY);if(r){const o=JSON.parse(r);const d=defaultSave();return Object.assign(d,o,{prog:Object.assign(d.prog,o.prog||{}),eq:Object.assign(d.eq,o.eq||{}),stats:Object.assign(d.stats,o.stats||{})})}}catch(e){}return defaultSave()}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
 let S=load();
@@ -735,6 +749,14 @@ const CHARS={
  hand:{name:'金掌师',hp:95,atk:11,price:300,skill:'千手连击',desc:'4只金手连打（共2.4倍伤害），并挡住下一次攻击'},
  reaper:{name:'影镰客',hp:80,atk:14,price:500,skill:'暗影收割',desc:'直接造成敌人最大生命30%的伤害，无视护盾'}
 };
+const SKILLS={
+ brush:[{name:'泼墨狂书',cost:3,unlock:0,desc:'甩出巨大墨浪，造成2.5倍伤害'},{name:'墨龙卷',cost:4,unlock:1,desc:'三道墨龙卷连打，并清空敌人的怒气'},{name:'一笔封印',cost:5,unlock:3,desc:'巨笔封印敌人，造成4倍伤害，无视护盾'}],
+ monk:[{name:'烈焰金身',cost:3,unlock:0,desc:'恢复40%生命，解除中毒和虚弱，再打一记火焰拳'},{name:'火轮护体',cost:4,unlock:1,desc:'挡住接下来2次攻击，并让敌人燃烧3回合'},{name:'焚天拳',cost:5,unlock:3,desc:'造成3.5倍火焰伤害，并恢复20%生命'}],
+ hand:[{name:'千手连击',cost:3,unlock:0,desc:'4只金手连打（共2.4倍伤害），并挡住下一次攻击'},{name:'金刚护盾',cost:4,unlock:1,desc:'挡住接下来3次攻击'},{name:'如来神掌',cost:5,unlock:3,desc:'从天而降的巨掌，造成4倍伤害，无视护盾'}],
+ reaper:[{name:'暗影收割',cost:3,unlock:0,desc:'造成敌人最大生命30%的伤害，无视护盾'},{name:'灵魂汲取',cost:4,unlock:1,desc:'造成2倍伤害，并把伤害变成自己的生命'},{name:'死神降临',cost:5,unlock:3,desc:'造成敌人最大生命45%的伤害，无视护盾'}]
+};
+const GAUGE_MAX=5;
+function worldLv(){return [1,2,3,4,5].filter(c=>S.prog[c]>=5).length}
 const CHAR_ORDER=['brush','monk','hand','reaper'];
 const RAR=[{n:'普通',c:'#6d6a63'},{n:'稀有',c:'#2f6fb0'},{n:'史诗',c:'#7a3fa6'},{n:'传说',c:'#c98f17'}];
 const CHESTS=[{name:'木宝箱',price:30,w:[70,25,5,0]},{name:'银宝箱',price:80,w:[30,45,20,5]},{name:'金宝箱',price:180,w:[0,30,45,25]}];
@@ -912,7 +934,7 @@ function renderHome(){
   <button class="btn gold" id="hShop" type="button">宝箱铺${S.chests.length?`（${S.chests.length}个待开）`:''}</button>
   <button class="btn" id="hGear" type="button">角色与装备</button>
  </div>
- <div class="howto"><span>① 选关卡，和敌人对战</span><span>② 答对 → 你出招；答对3题可放技能</span><span>③ 敌人攻击或放大招时，10秒内答对防御题就能挡住</span><span>④ 赢了得金币</span><span>⑤ 买宝箱，答对题开箱，抽武器和盔甲</span></div>
+ <div class="howto"><span>① 选关卡，和敌人对战</span><span>② 答对 → 你出招，攒能量放技能</span><span>③ 敌人攻击或放大招时，10秒内答对防御题就能挡住</span><span>④ 赢了得金币；完成一个部分奖励金宝箱和50金币</span><span>⑤ 买宝箱，答对题开箱，抽武器和盔甲</span></div>
  </div></div>`;
  $('#hStart').onclick=renderMap;$('#hShop').onclick=renderShop;$('#hGear').onclick=renderGear;
  show('home')}
@@ -921,7 +943,7 @@ function renderHome(){
 function ch5Open(){return [1,2,3,4].filter(c=>S.prog[c]>=5).length>=3}
 function renderMap(){
  const el=$('#scr-map');const hs=heroStats();
- el.innerHTML=`<div class="map-head"><h2>选择关卡</h2>
+ el.innerHTML=`<div class="map-head"><div class="row"><h2>选择关卡</h2>${worldLv()?`<span class="wl">怪物强化 Lv.${worldLv()}</span>`:''}</div>
  <div class="curhero">${ART[S.cur]()}<div><b>${CHARS[S.cur].name}</b><div class="muted" style="font-size:.85rem">攻击 ${hs.atk} · 生命 ${hs.hp}</div></div><button class="chipbtn" id="mGear" type="button">换角色/装备</button></div></div>
  <div class="chapters">${CHAPTERS.map(C=>{const locked=C.id===5&&!ch5Open();const p=S.prog[C.id];
   return `<div class="chapter ${locked?'locked':''}"><div class="scene">${BG[C.bg]()}</div><div><h3>${C.name}</h3><div class="unit">${C.unit}</div></div>
@@ -956,30 +978,51 @@ const MSKILL={
  dragon:{name:'墨龙吐息',type:'poison',mult:1.5,fx:'ink',desc:'吐出墨色龙息，伤害×1.5并让你中毒'},
  demon:{name:'墨魔吞噬',type:'drain',mult:1.8,fx:'blood',desc:'重重一击，并吸走你的生命'}
 };
+const MSKILL2={
+ blob:{name:'墨团分身',type:'heal',fx:'ink',desc:'分出小墨团，恢复20%生命'},
+ lantern:{name:'灯火护罩',type:'shield',fx:'fire',desc:'点亮护罩，给自己加护盾'},
+ assassin:{name:'影毒镖',type:'poison',mult:.9,fx:'poison',desc:'飞出毒镖，让你中毒3回合'},
+ skeleton:{name:'骨刃连斩',type:'double',mult:.9,fx:'stone',desc:'骨刀连砍两下'},
+ bat:{name:'超声尖叫',type:'weaken',mult:1,fx:'ice',desc:'刺耳尖叫，让你攻击力下降2回合'},
+ crow:{name:'黑羽风暴',type:'double',mult:.9,fx:'ink',desc:'黑羽毛连射两轮'},
+ wolf:{name:'狼王怒嚎',type:'buff',fx:'blood',desc:'仰天长嚎，攻击力提高25%'},
+ treant:{name:'荆棘缠绕',type:'poison',mult:.9,fx:'wood',desc:'荆棘扎你，让你中毒3回合'},
+ mushroom:{name:'菌伞重压',type:'big',mult:1.7,fx:'poison',desc:'跳起来压下，伤害×1.7'},
+ ghost:{name:'灵魂吸取',type:'drain',mult:1.2,fx:'ice',desc:'吸走你的生命'},
+ scorpion:{name:'铁甲硬壳',type:'shield',fx:'stone',desc:'缩进硬壳，给自己加护盾'},
+ crab:{name:'泡泡水枪',type:'weaken',mult:1.1,fx:'ice',desc:'喷出泡泡，让你攻击力下降2回合'},
+ snake:{name:'蛇身缠绕',type:'double',mult:.9,fx:'wood',desc:'缠住你连咬两口'},
+ golem:{name:'石化护甲',type:'shield',fx:'stone',desc:'全身石化，给自己加护盾'},
+ fox:{name:'九尾狐火',type:'double',mult:1.1,fx:'fire',desc:'九条尾巴甩出狐火，连打两下'},
+ drum:{name:'雷电护体',type:'shield',fx:'thunder',desc:'雷电环绕，给自己加护盾'},
+ dragon:{name:'龙鳞再生',type:'heal',fx:'ink',desc:'龙鳞再生，恢复20%生命'},
+ demon:{name:'魔王之怒',type:'buff',fx:'blood',desc:'魔气暴涨，攻击力提高25%'}};
 function startBattle(ch,lv){
  const C=CHAPTERS[ch-1],isBoss=lv===5,m=1+.25*(ch-1);let e;
  if(isBoss)e={name:C.boss.name,art:C.boss.art,opt:{},max:Math.round(100*m),atk:12+2*ch,powers:C.boss.powers.slice()};
  else{const[n,a,o]=C.enemies[lv-1];e={name:n,art:a,opt:o,max:Math.round((36+lv*6)*m),atk:6+ch+lv,powers:[]}}
  const bh=BEHAV[e.art]||{blk:.2,ctr:.15,verb:'格挡'};e.blk=bh.blk;e.ctr=bh.ctr;e.verb=bh.verb;
  e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
+ const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.2*wl));e.atk=Math.round(e.atk*(1+.12*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;e.burn=0;
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
  let d;if(ch===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
- B={ch,lv,isBoss,C,e,d,hero:{hp:hs.hp,max:hs.hp,atk:hs.atk},combo:0,gauge:0,blocks:0,poison:0,weak:0,rights:0,wrongs:0,regenUsed:false,busy:true,over:false};
+ B={skills:SKILLS[S.cur].filter(x=>x.unlock<=wl),ch,lv,isBoss,C,e,d,hero:{hp:hs.hp,max:hs.hp,atk:hs.atk},combo:0,gauge:0,blocks:0,poison:0,weak:0,rights:0,wrongs:0,regenUsed:false,busy:true,over:false};
  renderBattle();show('battle');keyHandler=battleKey;setTimeout(nextQ,300)}
 
 function renderBattle(){
  const el=$('#scr-battle'),C=B.C,e=B.e,ch=CHARS[S.cur];
- el.innerHTML=`<div class="banner"><span class="lvl">${C.name} · ${B.isBoss?'首领关':'第'+B.lv+'关'}</span><span class="mission">任务：答对题目，击败 ${e.name}！</span><button class="retreat" type="button" id="bRetreat">撤退</button></div>
+ el.innerHTML=`<div class="banner"><span class="lvl">${C.name} · ${B.isBoss?'首领关':'第'+B.lv+'关'}</span><span class="mission">任务：答对题目，击败 ${e.name}！</span>${e.lvl?`<span class="wl">怪物强化 Lv.${e.lvl}</span>`:''}<button class="retreat" type="button" id="bRetreat">撤退</button></div>
  <div class="arena">${BG[C.bg]()}
   <div class="fighter hero" id="fHero"><div class="art-wrap">${ART[S.cur]()}</div>
    <div class="hud"><div class="nm">${ch.name}<small>攻击 ${B.hero.atk} · ${HERO_ATK[S.cur].name}</small></div><div class="bar hero" id="hpHero"><i></i><span></span></div>
-   <div class="row" style="gap:8px"><button class="skillbtn" id="bSkill" type="button" title="${ch.desc}">技能 · ${ch.skill}<span class="pips"><i></i><i></i><i></i></span></button><span class="buffs" id="buffs"></span></div></div></div>
+   <div class="skills" id="skills">${B.skills.map((x,i)=>`<button class="skillbtn" type="button" data-sk="${i}" title="${x.desc}">${x.name}<small>${x.cost}</small></button>`).join('')}</div>
+   <div class="energy"><span>能量</span><span class="pips" id="gPips">${'<i></i>'.repeat(GAUGE_MAX)}</span><span class="buffs" id="buffs"></span></div></div></div>
   <div class="center"><div class="vs">战</div><div class="combo" id="combo"></div></div>
   <div class="fighter enemy" id="fEnemy"><div class="art-wrap">${enemyArt(e)}</div>
-   <div class="hud"><div class="nm">${e.name}<small>攻击 ${e.atk}</small></div><div class="bar" id="hpEnemy"><i></i><span></span></div>
+   <div class="hud"><div class="nm">${e.name}<small id="eAtk">攻击 ${e.atk}</small></div><div class="bar" id="hpEnemy"><i></i><span></span></div>
    <div class="bar shield" id="shEnemy" ${e.shieldMax?'':'hidden'}><i></i></div>
-   <div class="rage" title="${e.sk.desc}"><span>怒气</span><span class="pips" id="ragePips">${'<i></i>'.repeat(e.rageMax)}</span><span class="skname">大招「${e.sk.name}」</span></div>
+   <div class="rage" title="${e.sk.desc}"><span>怒气</span><span class="pips" id="ragePips">${'<i></i>'.repeat(e.rageMax)}</span><span class="skname">大招「${e.sk.name}」${e.sk2?'「'+e.sk2.name+'」':''}</span></div>
    <div class="powers">${e.powers.map(p=>`<span class="power">${POWER_TXT[p]}</span>`).join('')}${e.blk>=.3?'<span class="trait">爱格挡</span>':''}${e.ctr>=.25?'<span class="trait">爱反击</span>':''}</div></div></div>
  </div>
  <div class="desk" id="desk"><div class="timer" id="timer" ${e.powers.includes('timer')?'':'hidden'}><i></i></div>
@@ -987,7 +1030,7 @@ function renderBattle(){
   <div class="answer" id="padHost"></div>
   <div class="feedback" id="fb" hidden></div></div>`;
  pad=makePad($('#padHost'),submitAnswer);
- $('#bSkill').onclick=useSkill;
+ el.querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>useSkill(+b.dataset.sk));
  const r=$('#bRetreat');let armed=false,t;
  r.onclick=()=>{if(!armed){armed=true;r.textContent='再点一次确认撤退';r.classList.add('armed');t=setTimeout(()=>{armed=false;r.textContent='撤退';r.classList.remove('armed')},3000);return}clearTimeout(t);stopTimer();B.over=true;renderMap()};
  updateHud()}
@@ -998,7 +1041,8 @@ function updateHud(){if(!B)return;const e=B.e;
  const sh=$('#shEnemy');if(sh){sh.hidden=!e.shieldMax;if(e.shieldMax)setBar(sh,e.shield,e.shieldMax,false)}
  const rp=$('#ragePips');if(rp)rp.querySelectorAll('i').forEach((p,i)=>p.classList.toggle('on',i<e.rage));
  const fe=$('#fEnemy');if(fe)fe.classList.toggle('enraged',e.rage>=e.rageMax);
- const sk=$('#bSkill');sk.querySelectorAll('.pips i').forEach((p,i)=>p.classList.toggle('on',i<B.gauge));const ready=B.gauge>=3;sk.classList.toggle('ready',ready);sk.disabled=!ready;
+ const gp=$('#gPips');if(gp)gp.querySelectorAll('i').forEach((p,i)=>p.classList.toggle('on',i<B.gauge));
+ document.querySelectorAll('#skills [data-sk]').forEach(b=>{const x=B.skills[+b.dataset.sk];const r=B.gauge>=x.cost;b.classList.toggle('ready',r);b.disabled=!r});const ea=$('#eAtk');if(ea)ea.textContent='攻击 '+e.atk;
  const bf=[];if(B.blocks>0)bf.push('护体×'+B.blocks);if(B.poison>0)bf.push('中毒'+B.poison);if(B.weak>0)bf.push('虚弱'+B.weak);$('#buffs').textContent=bf.join(' ')}
 function floatText(fid,txt,cls,top){const f=$(fid);if(!f)return;const s=document.createElement('div');s.className='float '+cls;s.textContent=txt;if(top)s.style.top=top;f.appendChild(s);setTimeout(()=>s.remove(),1200)}
 function anim(fid,cls){const f=$(fid);if(!f)return;f.classList.remove(cls);void f.offsetWidth;f.classList.add(cls);setTimeout(()=>f.classList.remove(cls),500)}
@@ -1031,6 +1075,7 @@ function heroHit(dmg,kind,ignoreShield,cb){anim('#fHero','lunge-r');shoot('#fHer
 
 function nextQ(){if(!B||B.over)return;B.def=null;
  if(B.poison>0){B.poison--;const d=3+B.ch;B.hero.hp=Math.max(0,B.hero.hp-d);floatText('#fHero','中毒 −'+d,'poison');anim('#fHero','hurt');updateHud();if(B.hero.hp<=0){heroDown();return}}
+ if(B.e.burn>0){B.e.burn--;const d=4+B.ch;B.e.hp=Math.max(0,B.e.hp-d);floatText('#fEnemy','燃烧 −'+d,'dmg');anim('#fEnemy','hurt');updateHud();if(B.e.hp<=0){enemyDown();return}}
  const topic=pick(B.C.topics);B.q=genQ(topic,B.d);
  $('#desk').classList.remove('defend');$('#fEnemy').classList.remove('windup');
  $('#qText').innerHTML=`<span class="qtag">${TOPIC_NAME[topic]}</span><br>${B.q.text}`;
@@ -1064,7 +1109,7 @@ function heroDown(){if(!B||B.over&&$('#fHero').classList.contains('dead'))return
 function enemyDown(){B.over=true;stopTimer();keyHandler=null;setTimeout(()=>{$('#fEnemy').classList.add('dead')},300);setTimeout(()=>finishBattle(true),1400)}
 function showFb(cls,big,html){const fb=$('#fb');fb.className='feedback '+cls;fb.innerHTML=`<span class="big">${big}</span><span class="exp">${html}</span>`;fb.hidden=false}
 
-function onRight(){SFX.right();B.rights++;S.stats.right++;B.combo++;B.gauge=Math.min(3,B.gauge+1);
+function onRight(){SFX.right();B.rights++;S.stats.right++;B.combo++;B.gauge=Math.min(GAUGE_MAX,B.gauge+1);
  const e=B.e,ha=HERO_ATK[S.cur];const bonus=1+.1*Math.min(B.combo-1,5);let dmg=Math.round(B.hero.atk*bonus*(B.weak>0?.7:1));if(B.weak>0)B.weak--;
  const rageFull=e.rage>=e.rageMax;const act=enemyAct();if(act==='block')dmg=Math.ceil(dmg/2);
  let note=B.combo>1?`${ha.name}！连击 ×${B.combo}，伤害 +${Math.round((bonus-1)*100)}%`:`${ha.name}！`;
@@ -1082,7 +1127,7 @@ function onRight(){SFX.right();B.rights++;S.stats.right++;B.combo++;B.gauge=Math
 function onWrong(timeout){SFX.wrong();B.wrongs++;S.stats.wrong++;B.combo=0;$('#combo').textContent='';
  const e=B.e,q=B.q;const rageFull=e.rage>=e.rageMax;
  const fb=$('#fb');fb.className='feedback wrong';
- fb.innerHTML=`<span class="big">${timeout?'时间到！':'答错了'}</span><div class="exp"><b>正确答案：${N(q.ans)}${q.unit&&q.unit!=='位数'?' '+q.unit:''}</b><br>${q.explain}${rageFull?`<br><b style="color:var(--cinnabar)">${e.name} 怒气满了，要放大招「${e.sk.name}」！</b>`:''}</div><button class="btn primary" type="button" id="fbGo">准备防御 ▶</button>`;fb.hidden=false;
+ fb.innerHTML=`<span class="big">${timeout?'时间到！':'答错了'}</span><div class="exp"><b>正确答案：${N(q.ans)}${q.unit&&q.unit!=='位数'?' '+q.unit:''}</b><br>${q.explain}${rageFull?`<br><b style="color:var(--cinnabar)">${e.name} 怒气满了，要放大招了！</b>`:''}</div><button class="btn primary" type="button" id="fbGo">准备防御 ▶</button>`;fb.hidden=false;
  $('#fbGo').onclick=continueAfterReview;B.review=true;$('#fEnemy').classList.add('windup');
  if(e.powers.includes('heal')&&e.hp>0){const h=Math.round(e.max*.15);e.hp=Math.min(e.max,e.hp+h);setTimeout(()=>{floatText('#fEnemy','+'+h,'heal');updateHud()},300)}
  updateHud()}
@@ -1090,9 +1135,10 @@ function continueAfterReview(){if(!B||!B.review)return;B.review=false;$('#fb').h
  if(B.e.rage>=B.e.rageMax)monsterSpecial();else startDefense({mult:1})}
 
 /* monster special move */
-function monsterSpecial(){if(!B||B.over)return;const e=B.e,sk=e.sk;e.rage=0;updateHud();$('#fEnemy').classList.remove('windup');$('#fb').hidden=true;
+function monsterSpecial(){if(!B||B.over)return;const e=B.e,sk=e.sk2&&Math.random()<.5?e.sk2:e.sk;e.rage=0;updateHud();$('#fEnemy').classList.remove('windup');$('#fb').hidden=true;
  cutIn('enemy',enemyArt(e),sk.name,`${e.name}的大招：${sk.desc}`,()=>{if(!B||B.over)return;
   if(sk.type==='shield'){const v=Math.round(e.max*.25);e.shieldMax=Math.max(e.shieldMax,v);e.shield=Math.min(e.shieldMax,e.shield+v);guardFx('#fEnemy');floatText('#fEnemy','护盾 +'+v,'blue');updateHud();setTimeout(()=>{if(B&&!B.over)nextQ()},1000);return}
+  if(sk.type==='buff'){e.atk=Math.round(e.atk*1.25);anim('#fEnemy','hurt');floatText('#fEnemy','攻击力 ↑','dmg');updateHud();setTimeout(()=>{if(B&&!B.over)nextQ()},1000);return}
   if(sk.type==='heal'){const h=Math.round(e.max*.2);e.hp=Math.min(e.max,e.hp+h);floatText('#fEnemy','+'+h,'heal');updateHud();setTimeout(()=>{if(B&&!B.over)nextQ()},1000);return}
   startDefense({mult:sk.mult||1,special:sk})})}
 
@@ -1136,18 +1182,30 @@ function monsterShoot(opt,blocked,cb){const e=B.e,sk=opt.special;const hits=sk&&
  one()}
 
 /* player special skill */
-function useSkill(){if(!B||B.over||B.busy||B.gauge<3||B.review||B.def)return;
- B.gauge=0;B.busy=true;pad.lock(true);updateHud();const k=S.cur,c=CHARS[k],a=B.hero.atk;
- cutIn('hero',ART[k](),c.skill,c.desc,()=>{if(!B||B.over)return;
+function useSkill(i){if(!B||B.over||B.busy||B.review||B.def)return;const sk=B.skills[i];if(!sk||B.gauge<sk.cost)return;
+ B.gauge-=sk.cost;B.busy=true;pad.lock(true);updateHud();const k=S.cur,a=B.hero.atk,e=B.e;
+ cutIn('hero',ART[k](),sk.name,sk.desc,()=>{if(!B||B.over)return;
   const done=()=>{if(!B)return;updateHud();if(B.e.hp<=0){enemyDown();return}B.busy=false;pad.lock(false)};
-  if(k==='brush')heroHit(Math.round(a*2.5),'ink',false,done);
-  else if(k==='monk'){const h=Math.round(B.hero.max*.4);B.hero.hp=Math.min(B.hero.max,B.hero.hp+h);B.poison=0;B.weak=0;floatText('#fHero','+'+h,'heal');updateHud();heroHit(a,'fire',false,done)}
-  else if(k==='hand'){B.blocks+=1;let i=0;const hit=()=>heroHit(Math.round(a*.6),'gold',false,()=>{i++;if(i<4&&B.e.hp>0)setTimeout(hit,90);else done()});hit()}
-  else heroHit(Math.round(B.e.max*.3),'shadow',true,done)})}
+  const multi=(n,dmg,kind,ign,after)=>{let c=0;const hit=()=>heroHit(dmg,kind,ign,()=>{c++;if(c<n&&B.e.hp>0)setTimeout(hit,90);else{after&&after();done()}});hit()};
+  const heal=h=>{h=Math.round(h);B.hero.hp=Math.min(B.hero.max,B.hero.hp+h);floatText('#fHero','+'+h,'heal');updateHud()};
+  switch(k+i){
+   case 'brush0':heroHit(Math.round(a*2.5),'ink',false,done);break;
+   case 'brush1':multi(3,a,'ink',false,()=>{e.rage=0;floatText('#fEnemy','怒气清空','blue','6%')});break;
+   case 'brush2':heroHit(a*4,'ink',true,done);break;
+   case 'monk0':heal(B.hero.max*.4);B.poison=0;B.weak=0;heroHit(a,'fire',false,done);break;
+   case 'monk1':B.blocks+=2;e.burn=3;guardFx('#fHero');floatText('#fEnemy','燃烧！','dmg','6%');heroHit(Math.round(a*.5),'fire',false,done);break;
+   case 'monk2':heal(B.hero.max*.2);heroHit(Math.round(a*3.5),'fire',false,done);break;
+   case 'hand0':B.blocks+=1;multi(4,Math.round(a*.6),'gold',false);break;
+   case 'hand1':B.blocks+=3;guardFx('#fHero');floatText('#fHero','护体 ×3','blue');done();break;
+   case 'hand2':heroHit(a*4,'gold',true,done);break;
+   case 'reaper0':heroHit(Math.round(e.max*.3),'shadow',true,done);break;
+   case 'reaper1':heroHit(a*2,'shadow',false,()=>{heal(a*2);done()});break;
+   default:heroHit(Math.round(e.max*.45),'shadow',true,done)}})}
 
 /* ============ RESULT ============ */
-function finishBattle(win){stopTimer();const b=B;let coins;
- if(win){coins=b.isBoss?50+20*b.ch+(b.wrongs===0?30:0):20+5*b.ch+(b.wrongs===0?10:0);if(S.prog[b.ch]<b.lv)S.prog[b.ch]=b.lv;S.stats.wins++;SFX.win()}
+function finishBattle(win){stopTimer();const b=B;let coins,partWin=false;
+ if(win){coins=b.isBoss?50+20*b.ch+(b.wrongs===0?30:0):20+5*b.ch+(b.wrongs===0?10:0);if(S.prog[b.ch]<b.lv)S.prog[b.ch]=b.lv;S.stats.wins++;SFX.win();
+  if(b.isBoss&&!S.partDone[b.ch]){S.partDone[b.ch]=true;S.chests.push(2);coins+=50;partWin=true}}
  else{coins=5;SFX.lose()}
  S.coins+=coins;save();
  const el=$('#scr-result');const perfect=win&&b.wrongs===0;
@@ -1156,9 +1214,13 @@ function finishBattle(win){stopTimer();const b=B;let coins;
   <h2>${win?'胜利！':'战败'}</h2>
   <p class="muted" style="margin:0;font-size:1.1rem">${win?`打败了 ${b.e.name}${perfect?'，而且一题都没错，额外奖励！':''}`:`${b.e.name} 太强了，换个装备再来！`}</p>
   <div class="stats"><span>答对 <b>${b.rights}</b> 题</span><span>答错 <b>${b.wrongs}</b> 题</span></div>
+  ${partWin?(()=>{const wl=worldLv();const ns=SKILLS[S.cur].filter(x=>x.unlock===wl);return `<div class="partbox"><h3>完成「${b.C.name}」！</h3>
+   <div class="partrow">${chestSVG(2)}<div>完成奖励：<b>金宝箱 ×1</b> + <b>50 金币</b><br><span class="muted">金宝箱已放进宝箱铺，答对一道题就能打开。</span></div></div>
+   <div class="warnline">所有怪物都变强了！（怪物强化 Lv.${wl}：生命和攻击提高，还学会了第二个大招）</div>
+   ${ns.length?`<div>${CHARS[S.cur].name} 学会了新技能：<b>${ns.map(x=>x.name).join('、')}</b>（${ns[0].desc}）</div>`:''}</div>`})():''}
   <div class="earn">获得 <div class="seal"><span class="coin-ico"></span><b id="earnNum">+0</b><small>金币</small></div></div>
   <div class="row" style="justify-content:center">
-   <button class="btn gold" type="button" id="rShop">去宝箱铺开宝箱</button>
+   <button class="btn gold" type="button" id="rShop">${partWin?'去打开金宝箱':'去宝箱铺开宝箱'}</button>
    ${win&&b.lv<5?'<button class="btn primary" type="button" id="rNext">下一关</button>':''}
    ${!win?'<button class="btn primary" type="button" id="rAgain">再战一次</button>':''}
    <button class="btn" type="button" id="rMap">返回地图</button>
@@ -1224,10 +1286,10 @@ function renderGear(){
  el.innerHTML=`<div class="sec-head"><h2>角色与装备</h2><button class="btn" type="button" id="gBack">返回地图</button></div>
  <div class="gear-top">${ART[S.cur]()}<div><h3 style="font-size:2rem">${c.name}</h3>
   <div class="statline"><span>攻击 <b>${hs.atk}</b> <small class="muted">(${c.atk}${hs.w?' + '+hs.w.val:''})</small></span><span>生命 <b>${hs.hp}</b> <small class="muted">(${c.hp}${hs.a?' + '+hs.a.val:''})</small></span></div>
-  <p style="margin:6px 0 0">技能 <b>${c.skill}</b>：${c.desc}（答对3题充满）</p>
+  <div class="sklist">${SKILLS[S.cur].map(x=>{const lk=x.unlock>worldLv();return `<p class="${lk?'locked':''}"><b>${x.name}</b>（${x.cost}点能量）：${x.desc}${lk?`<span class="muted">（完成${x.unlock}个部分后解锁）</span>`:''}</p>`}).join('')}<p class="muted">每答对一题得1点能量，最多${GAUGE_MAX}点。</p></div>
   <div class="slots">${slot(hs.w,'武器')}${slot(hs.a,'盔甲')}</div></div></div>
  <h3 style="font-size:1.5rem;margin-bottom:8px">角色</h3>
- <div class="chars">${CHAR_ORDER.map(k=>{const C=CHARS[k],own=S.chars.includes(k),cur=S.cur===k;return `<div class="card charcard ${cur?'cur':''}">${ART[k]()}<h3>${C.name}</h3><p>生命 ${C.hp} · 攻击 ${C.atk} · 普攻「${HERO_ATK[k].name}」</p><p class="muted">${C.skill}：${C.desc}</p>
+ <div class="chars">${CHAR_ORDER.map(k=>{const C=CHARS[k],own=S.chars.includes(k),cur=S.cur===k;return `<div class="card charcard ${cur?'cur':''}">${ART[k]()}<h3>${C.name}</h3><p>生命 ${C.hp} · 攻击 ${C.atk} · 普攻「${HERO_ATK[k].name}」</p><p class="muted">技能：${SKILLS[k].map(x=>x.name).join('、')}</p>
   ${cur?'<button class="btn" type="button" disabled>使用中</button>':own?`<button class="btn primary" type="button" data-use="${k}">选择</button>`:`<button class="btn gold" type="button" data-hire="${k}" ${S.coins>=C.price?'':'disabled'}>招募 · ${C.price}金币</button>`}</div>`}).join('')}</div>
  <h3 style="font-size:1.5rem;margin-bottom:8px">背包（${S.inv.length}）</h3>
  ${inv.length?`<div class="inv">${inv.map(it=>{const eq=S.eq[it.type]===it.id;return `<div class="item ${eq?'eq':''}">${itemIcon(it)}<span class="tag" style="background:${RAR[it.rar].c}">${RAR[it.rar].n}${it.type==='w'?'武器':'盔甲'}</span><span class="nm">${it.name}</span><span>${it.type==='w'?'攻击':'生命'} +${it.val}</span>${eq?'<button type="button" disabled>已装备</button>':`<button type="button" data-eq="${it.id}">装备</button>`}</div>`}).join('')}</div>`:'<div class="empty">背包是空的。去宝箱铺开宝箱，就能得到武器和盔甲。</div>'}
@@ -1242,7 +1304,7 @@ function renderGear(){
  const sc=el.scrollTop;show('gear');el.scrollTop=sc}
 
 /* ============ BOOT ============ */
-window.__moxia={genQ,toCN,BANK,ART,BG,get B(){return B}};
+window.__moxia={genQ,toCN,BANK,ART,BG,updateHud,get B(){return B}};
 $('#soundBtn').textContent='音效：'+(S.sound?'开':'关');
 updateCoins();renderHome();
 })();
