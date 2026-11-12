@@ -66,6 +66,19 @@ svg.art{display:block;overflow:visible}
 .map-head h2{font-size:2rem}
 .curhero{display:flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:4px 12px 4px 4px}
 .curhero svg{height:54px;width:auto}
+.potbar{display:flex;gap:4px;flex-wrap:wrap}
+.potbtn{display:flex;align-items:center;gap:2px;border:1.5px solid var(--ink);border-radius:999px;background:var(--paper);padding:1px 8px 1px 2px;font-size:.78rem;font-weight:700}
+.potbtn svg{width:20px;height:20px}
+.potbtn:disabled{opacity:.45}
+.picon{width:72px;height:72px}
+.shoph{font-size:1.5rem;margin:14px 0 8px}
+.card.locked{opacity:.6}
+.codebox{background:var(--card);border:2.5px solid var(--ink);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;max-width:560px}
+.codebox h3{font-size:1.6rem}
+.codebox input{flex:1;min-width:0;font-size:1.4rem;padding:8px 12px;border:2.5px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink);text-transform:uppercase;letter-spacing:.08em}
+.codemsg{min-height:1.4em;font-size:1.15rem;font-weight:700}
+.codemsg .good{color:var(--jade)}
+.codemsg .bad{color:var(--cinnabar)}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .tab{border:2.5px solid var(--ink);border-radius:999px;background:var(--card);padding:6px 16px;font-family:var(--f-display);font-size:1.2rem;font-weight:700}
 .tab.on{background:var(--ink);color:var(--card)}
@@ -355,7 +368,7 @@ const INK='#1d1b18',RED='#b5352b',GOLD='#d89b1d',PAPER='#f8f1e2',JADE='#2e6a58';
 
 /* ============ SAVE ============ */
 const SAVE_KEY='moxia-math-save-v1';
-const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{}});
+const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{},potions:{},codes:{},t2open:false});
 function load(){try{const r=localStorage.getItem(SAVE_KEY);if(r){const o=JSON.parse(r);const d=defaultSave();return Object.assign(d,o,{prog:Object.assign(d.prog,o.prog||{}),eq:Object.assign(d.eq,o.eq||{}),stats:Object.assign(d.stats,o.stats||{})})}}catch(e){}return defaultSave()}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
 let S=load();
@@ -1164,18 +1177,18 @@ function renderHome(){
  <p class="sub">北师大版四年级上册 · 答对题目就能出招，打败敌人赢金币</p>
  <div class="row" style="justify-content:center">
   <button class="btn primary" id="hStart" type="button">开始冒险</button>
-  <button class="btn gold" id="hShop" type="button">宝箱铺${S.chests.length?`（${S.chests.length}个待开）`:''}</button>
+  <button class="btn gold" id="hShop" type="button">商店${S.chests.length?`（${S.chests.length}个宝箱待开）`:''}</button>
   <button class="btn" id="hGear" type="button">角色与装备</button>
  </div>
  <div class="howto"><span>① 选关卡，和敌人对战</span><span>② 答对 → 你出招，攒能量放技能</span><span>③ 敌人攻击或放大招时，10秒内答对防御题就能挡住</span><span>④ 赢了得金币；完成一个部分奖励金宝箱和50金币</span><span>⑤ 买宝箱，答对题开箱，抽武器和盔甲</span></div>
  </div></div>`;
- $('#hStart').onclick=renderMap;$('#hShop').onclick=renderShop;$('#hGear').onclick=renderGear;
+ $('#hStart').onclick=renderMap;$('#hShop').onclick=()=>{shopTab='chest';renderShop()};$('#hGear').onclick=renderGear;
  show('home')}
 
 /* ============ MAP ============ */
 let mapTab=1;
-function tower2Open(){return S.prog[5]>=5}
-function chLocked(C){if(C.id===5)return !ch5Open();if(C.id>=6)return S.prog[C.id-1]<5;return false}
+function tower2Open(){return S.prog[5]>=5||!!S.t2open}
+function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Open();if(C.id>=7)return S.prog[C.id-1]<5;return false}
 function ch5Open(){return [1,2,3,4].filter(c=>S.prog[c]>=5).length>=3}
 function renderMap(){
  const el=$('#scr-map');const hs=heroStats();
@@ -1279,6 +1292,7 @@ function renderBattle(){
   <div class="fighter hero" id="fHero"><div class="art-wrap">${ART[S.cur]()}</div>
    <div class="hud"><div class="nm">${ch.name}<small>攻击 ${B.hero.atk} · ${HERO_ATK[S.cur].name}</small></div><div class="bar hero" id="hpHero"><i></i><span></span></div>
    <div class="skills" id="skills">${B.skills.map((x,i)=>`<button class="skillbtn" type="button" data-sk="${i}" title="${x.desc}">${x.name}<small>${x.cost}</small></button>`).join('')}</div>
+   <div class="potbar" id="potbar"></div>
    <div class="energy"><span>能量</span><span class="pips" id="gPips">${'<i></i>'.repeat(GAUGE_MAX)}</span><span class="buffs" id="buffs"></span></div></div></div>
   <div class="center"><div class="vs">战</div><div class="combo" id="combo"></div></div>
   <div class="fighter enemy" id="fEnemy"><div class="art-wrap">${enemyArt(e)}</div>
@@ -1293,6 +1307,7 @@ function renderBattle(){
   <div class="feedback" id="fb" hidden></div></div>`;
  pad=makePad($('#padHost'),submitAnswer);
  el.querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>useSkill(+b.dataset.sk));
+ $('#potbar').onclick=ev=>{const b=ev.target.closest('[data-use-pot]');if(b)usePotion(b.dataset.usePot)};
  const r=$('#bRetreat');let armed=false,t;
  r.onclick=()=>{if(!armed){armed=true;r.textContent='再点一次确认撤退';r.classList.add('armed');t=setTimeout(()=>{armed=false;r.textContent='撤退';r.classList.remove('armed')},3000);return}clearTimeout(t);stopTimer();B.over=true;renderMap()};
  updateHud()}
@@ -1305,6 +1320,7 @@ function updateHud(){if(!B)return;const e=B.e;
  const fe=$('#fEnemy');if(fe)fe.classList.toggle('enraged',e.rage>=e.rageMax);
  const gp=$('#gPips');if(gp)gp.querySelectorAll('i').forEach((p,i)=>p.classList.toggle('on',i<B.gauge));
  document.querySelectorAll('#skills [data-sk]').forEach(b=>{const x=B.skills[+b.dataset.sk];const r=B.gauge>=x.cost;b.classList.toggle('ready',r);b.disabled=!r});const ea=$('#eAtk');if(ea)ea.textContent='攻击 '+e.atk;
+ const pb=$('#potbar');if(pb){S.potions=S.potions||{};const ks=Object.keys(POTIONS).filter(k=>S.potions[k]>0);pb.hidden=!ks.length;pb.innerHTML=ks.map(k=>`<button type="button" class="potbtn" data-use-pot="${k}" title="${POTIONS[k].desc}" ${B.busy||B.review||B.def?'disabled':''}>${potionIcon(k)}${POTIONS[k].name}×${S.potions[k]}</button>`).join('')}
  const bf=[];if(B.blocks>0)bf.push('护体×'+B.blocks);if(B.poison>0)bf.push('中毒'+B.poison);if(B.weak>0)bf.push('虚弱'+B.weak);$('#buffs').textContent=bf.join(' ')}
 function floatText(fid,txt,cls,top){const f=$(fid);if(!f)return;const s=document.createElement('div');s.className='float '+cls;s.textContent=txt;if(top)s.style.top=top;f.appendChild(s);setTimeout(()=>s.remove(),1200)}
 function anim(fid,cls){const f=$(fid);if(!f)return;f.classList.remove(cls);void f.offsetWidth;f.classList.add(cls);setTimeout(()=>f.classList.remove(cls),500)}
@@ -1425,7 +1441,7 @@ function startDefense(opt){if(!B||B.over)return;const e=B.e;
  $('#qText').innerHTML=`<span class="qtag danger-tag">防御题</span> <span class="tcount" id="tcount">10</span><br><b class="warn">${e.name} ${what}！10秒内答对就能挡住！</b><br>${B.q.text}`;
  const fig=$('#qFig');fig.innerHTML='';fig.hidden=true;
  $('#fb').hidden=true;pad.clear();pad.setUnit(B.q.unit);pad.lock(false);B.busy=false;keyHandler=battleKey;
- $('#timer').hidden=false;SFX.wrong();
+ $('#timer').hidden=false;SFX.wrong();updateHud();
  startTimer(10,()=>{B.busy=true;pad.lock(true);defenseResolve(false,true)})}
 function defenseResolve(ok,timeout){stopTimer();const opt=B.def||{mult:1};const q=B.q,e=B.e;B.def=null;B.busy=true;pad.lock(true);
  $('#fEnemy').classList.remove('windup');
@@ -1445,6 +1461,11 @@ function monsterShoot(opt,blocked,cb){const e=B.e,sk=opt.special;const hits=sk&&
  const one=()=>{anim('#fEnemy','lunge-l');if(sk)shoot('#fEnemy','#fHero',sk.fx,land);else setTimeout(()=>{if(!blocked)slash('#fHero',RED);land()},220)};
  one()}
 
+function usePotion(k){if(!B||B.over||B.busy||B.review||B.def||!(S.potions[k]>0))return;S.potions[k]--;save();SFX.skill();
+ if(k==='heal'){const h=Math.round(B.hero.max*.5);B.hero.hp=Math.min(B.hero.max,B.hero.hp+h);floatText('#fHero','+'+h,'heal')}
+ else if(k==='energy'){B.gauge=Math.min(GAUGE_MAX,B.gauge+3);floatText('#fHero','能量 +3','blue')}
+ else{B.blocks++;guardFx('#fHero');floatText('#fHero','护身符','blue')}
+ updateHud()}
 /* player special skill */
 function useSkill(i){if(!B||B.over||B.busy||B.review||B.def)return;const sk=B.skills[i];if(!sk||B.gauge<sk.cost)return;
  B.gauge-=sk.cost;B.busy=true;pad.lock(true);updateHud();const k=S.cur,a=B.hero.atk,e=B.e;
@@ -1479,12 +1500,12 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false;
   <p class="muted" style="margin:0;font-size:1.1rem">${win?`打败了 ${b.e.name}${perfect?'，而且一题都没错，额外奖励！':''}`:`${b.e.name} 太强了，换个装备再来！`}</p>
   <div class="stats"><span>答对 <b>${b.rights}</b> 题</span><span>答错 <b>${b.wrongs}</b> 题</span></div>
   ${partWin?(()=>{const wl=worldLv();const ns=SKILLS[S.cur].filter(x=>x.unlock===wl);return `<div class="partbox"><h3>完成「${b.C.name}」！</h3>
-   <div class="partrow">${chestSVG(2)}<div>完成奖励：<b>金宝箱 ×1</b> + <b>50 金币</b><br><span class="muted">金宝箱已放进宝箱铺，答对一道题就能打开。</span></div></div>
+   <div class="partrow">${chestSVG(2)}<div>完成奖励：<b>金宝箱 ×1</b> + <b>50 金币</b><br><span class="muted">金宝箱已放进商店，答对一道题就能打开。</span></div></div>
    <div class="warnline">所有怪物都变强了！（怪物强化 Lv.${wl}：生命和攻击提高，还学会了第二个大招）</div>
    ${ns.length?`<div>${CHARS[S.cur].name} 学会了新技能：<b>${ns.map(x=>x.name).join('、')}</b>（${ns[0].desc}）</div>`:''}</div>`})():''}
   <div class="earn">获得 <div class="seal"><span class="coin-ico"></span><b id="earnNum">+0</b><small>金币</small></div></div>
   <div class="row" style="justify-content:center">
-   <button class="btn gold" type="button" id="rShop">${partWin?'去打开金宝箱':'去宝箱铺开宝箱'}</button>
+   <button class="btn gold" type="button" id="rShop">${partWin?'去打开金宝箱':'去商店开宝箱'}</button>
    ${win&&b.lv<5?'<button class="btn primary" type="button" id="rNext">下一关</button>':''}
    ${!win?'<button class="btn primary" type="button" id="rAgain">再战一次</button>':''}
    <button class="btn" type="button" id="rMap">返回地图</button>
@@ -1497,18 +1518,54 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false;
  B=null}
 
 /* ============ SHOP & CHESTS ============ */
+/* shop: chests / cloud shop / redeem codes */
+const POTIONS={
+ heal:{name:'回血丹',price:40,desc:'战斗中使用：立刻恢复50%生命',c:'#b5352b'},
+ energy:{name:'能量丹',price:50,desc:'战斗中使用：立刻获得3点技能能量',c:'#c98f17'},
+ guard:{name:'护身符',price:40,desc:'战斗中使用：挡住敌人的下一次攻击',c:'#2f6fb0'}};
+const CLOUD_GEAR=[
+ {key:'cg1',type:'w',rar:2,val:20,name:'云霄剑',price:300,t2:false},
+ {key:'cg2',type:'a',rar:2,val:70,name:'云霄甲',price:300,t2:false},
+ {key:'cg3',type:'w',rar:3,val:32,name:'星辰巨笔',price:650,t2:true},
+ {key:'cg4',type:'a',rar:3,val:110,name:'天罡战甲',price:650,t2:true}];
+const CODES={
+ 'MOXIA100':{txt:'获得 100 金币',f:()=>{S.coins+=100}},
+ 'JINBAOXIANG':{txt:'获得 1 个金宝箱',f:()=>{S.chests.push(2)}},
+ 'YUNXIAO':{txt:'第二塔 · 云霄塔 已开启',f:()=>{S.t2open=true}},
+ 'TEACHER500':{txt:'获得 500 金币',f:()=>{S.coins+=500}},
+ 'YAOPIN':{txt:'回血丹、能量丹、护身符 各 2 个',f:()=>{['heal','energy','guard'].forEach(k=>S.potions[k]=(S.potions[k]||0)+2)}}};
+function potionIcon(k){const c=POTIONS[k].c;return `<svg viewBox="0 0 48 48" aria-hidden="true"><g filter="url(#rough)"><rect x="18" y="4" width="12" height="8" rx="2" fill="#6b4a2a" stroke="${INK}" stroke-width="2"/><circle cx="24" cy="18" r="7" fill="${c}" stroke="${INK}" stroke-width="2.5"/><circle cx="24" cy="33" r="12" fill="${c}" stroke="${INK}" stroke-width="2.5"/><path d="M17 30 Q20 24 26 25" fill="none" stroke="${PAPER}" stroke-width="2" opacity=".7"/></g></svg>`}
+let shopTab='chest',codeMsg='';
 function renderShop(){
- const el=$('#scr-shop');
- el.innerHTML=`<div class="sec-head"><div><h2>宝箱铺</h2><p class="muted" style="margin:4px 0 0">用金币买宝箱，答对一道题就能打开，里面随机是武器或盔甲。</p></div><button class="btn" type="button" id="sBack">返回地图</button></div>
+ const el=$('#scr-shop');const t2=tower2Open();S.potions=S.potions||{};
+ const tabs=`<div class="tabs"><button type="button" class="tab ${shopTab==='chest'?'on':''}" data-st="chest">宝箱${S.chests.length?`（${S.chests.length}个待开）`:''}</button><button type="button" class="tab ${shopTab==='cloud'?'on':''}" data-st="cloud">云霄商店</button><button type="button" class="tab ${shopTab==='code'?'on':''}" data-st="code">兑换码</button></div>`;
+ let body='';
+ if(shopTab==='chest')body=`<p class="muted" style="margin:0 0 10px">用金币买宝箱，答对一道题就能打开，里面随机是武器或盔甲。</p>
  <div class="grid3">${CHESTS.map((c,i)=>`<div class="card">${chestSVG(i)}<h3>${c.name}</h3>
   <div class="odds">${c.w.map((w,r)=>w?`<span style="background:${RAR[r].c}">${RAR[r].n} ${w}%</span>`:'').join('')}</div>
   <div class="price"><span class="coin-ico"></span>${c.price}</div>
   <button class="btn ${S.coins>=c.price?'primary':''}" type="button" data-buy="${i}" ${S.coins>=c.price?'':'disabled'}>${S.coins>=c.price?'购买并开启':'金币不够'}</button></div>`).join('')}</div>
  <div class="pending"><h3>还没打开的宝箱</h3>${S.chests.length?`<div class="pending-list">${S.chests.map((t,i)=>`<div class="pchest">${chestSVG(t)}<b>${CHESTS[t].name}</b><button class="chipbtn" type="button" data-open="${i}">开启</button></div>`).join('')}</div>`:'<div class="empty">没有待开启的宝箱。打赢战斗赚金币，再来买吧！</div>'}</div>`;
+ else if(shopTab==='cloud')body=`<p class="muted" style="margin:0 0 10px">云霄商店的东西不用开箱，买了就是你的。药品带进战斗里，在答题时点一下就能用。</p>
+ <h3 class="shoph">药品</h3><div class="grid3">${Object.keys(POTIONS).map(k=>{const P=POTIONS[k],ok=S.coins>=P.price;return `<div class="card">${potionIcon(k).replace('<svg','<svg class="picon"')}<h3>${P.name}</h3><p style="margin:0">${P.desc}</p><p class="muted" style="margin:0">已有 ${S.potions[k]||0} 个</p>
+  <div class="price"><span class="coin-ico"></span>${P.price}</div><button class="btn ${ok?'primary':''}" type="button" data-pot="${k}" ${ok?'':'disabled'}>${ok?'购买':'金币不够'}</button></div>`}).join('')}</div>
+ <h3 class="shoph">云霄神兵</h3><div class="grid3">${CLOUD_GEAR.map(g=>{const lock=g.t2&&!t2,owned=S.inv.some(i=>i.ck===g.key),ok=S.coins>=g.price;return `<div class="card ${lock?'locked':''}">${itemIcon(g).replace('<svg','<svg class="picon"')}<span class="tag" style="background:${RAR[g.rar].c};color:${PAPER};border-radius:999px;padding:1px 10px;font-size:.85rem">${RAR[g.rar].n}${g.type==='w'?'武器':'盔甲'}</span><h3>${g.name}</h3><p style="margin:0">${g.type==='w'?'攻击':'生命'} +${g.val}</p>
+  <div class="price"><span class="coin-ico"></span>${g.price}</div>${lock?'<button class="btn" type="button" disabled>打败墨魔王后上架</button>':owned?'<button class="btn" type="button" disabled>已拥有</button>':`<button class="btn ${ok?'primary':''}" type="button" data-gear="${g.key}" ${ok?'':'disabled'}>${ok?'购买':'金币不够'}</button>`}</div>`}).join('')}</div>`;
+ else body=`<div class="codebox"><h3>输入兑换码</h3><p class="muted" style="margin:0">老师会在课堂上给你兑换码。每个兑换码只能用一次。</p>
+  <form id="codeForm" class="row"><input id="codeIn" type="text" autocomplete="off" maxlength="20" placeholder="例如：MOXIA100" aria-label="兑换码"><button class="btn primary" type="submit">兑换</button></form>
+  <div class="codemsg" id="codeMsg">${codeMsg}</div></div>`;
+ el.innerHTML=`<div class="sec-head"><h2>商店</h2><button class="btn" type="button" id="sBack">返回地图</button></div>${tabs}${body}`;
+ el.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{shopTab=b.dataset.st;codeMsg='';renderShop()});
  el.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const t=+b.dataset.buy;if(S.coins<CHESTS[t].price)return;S.coins-=CHESTS[t].price;S.chests.push(t);save();updateCoins(true);SFX.coin();openChest(S.chests.length-1)});
  el.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openChest(+b.dataset.open));
+ el.querySelectorAll('[data-pot]').forEach(b=>b.onclick=()=>{const k=b.dataset.pot,P=POTIONS[k];if(S.coins<P.price)return;S.coins-=P.price;S.potions[k]=(S.potions[k]||0)+1;save();updateCoins(true);SFX.coin();toast('买到了 '+P.name);renderShop()});
+ el.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>{const g=CLOUD_GEAR.find(x=>x.key===b.dataset.gear);if(!g||S.coins<g.price)return;S.coins-=g.price;const it={id:S.nextId++,type:g.type,rar:g.rar,val:g.val,name:g.name,ck:g.key};S.inv.push(it);S.eq[g.type]=it.id;save();updateCoins(true);SFX.chest();toast('已装备 '+g.name);renderShop()});
+ const f=$('#codeForm');if(f)f.onsubmit=ev=>{ev.preventDefault();const code=$('#codeIn').value.trim().toUpperCase().replace(/\s+/g,'');S.codes=S.codes||{};const C=CODES[code];
+  if(!code)codeMsg='请先输入兑换码。';else if(!C)codeMsg=`<span class="bad">兑换码“${code.replace(/[<>&"]/g,'')}”不对，请检查后再试。</span>`;else if(S.codes[code])codeMsg='<span class="bad">这个兑换码已经用过了。</span>';
+  else{C.f();S.codes[code]=true;save();updateCoins(true);SFX.chest();codeMsg=`<span class="good">兑换成功：${C.txt}！</span>`}
+  renderShop();const i=$('#codeIn');if(i)i.focus()};
  $('#sBack').onclick=renderMap;
- show('shop')}
+ const sc=el.scrollTop;show('shop');el.scrollTop=sc}
 
 function rollItem(tier){const w=CHESTS[tier].w;let r=Math.random()*100,rar=0;for(let i=0;i<4;i++){if(r<w[i]){rar=i;break}r-=w[i]}
  const type=Math.random()<.5?'w':'a';const[lo,hi]=RANGE[type][rar];return{id:S.nextId++,type,rar,val:ri(lo,hi),name:pick(NAMES[type][rar])}}
