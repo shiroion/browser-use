@@ -252,6 +252,13 @@ svg.art{display:block;overflow:visible}
 .cut-txt span{font-size:clamp(.9rem,1.6vw,1.2rem)}
 @keyframes cutL{0%{transform:translateX(-100%)}14%{transform:translateX(0)}86%{transform:translateX(0);opacity:1}100%{transform:translateX(30%);opacity:0}}
 @keyframes cutR{0%{transform:translateX(100%)}14%{transform:translateX(0)}86%{transform:translateX(0);opacity:1}100%{transform:translateX(-30%);opacity:0}}
+.judge{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:center}
+.jbtn{min-height:110px;border:3px solid var(--ink);border-radius:14px;font-family:var(--f-display);font-size:3rem;font-weight:700;color:var(--card);box-shadow:4px 4px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.jbtn small{font-family:var(--f-body);font-size:.8rem;font-weight:400;opacity:.85}
+.jbtn.yes{background:var(--jade)}
+.jbtn.no{background:var(--cinnabar)}
+.jbtn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.judgeq{display:inline-block;margin-top:6px;font-size:1.15em;font-weight:700;background:var(--paper);border:2px dashed var(--ink-soft);border-radius:10px;padding:4px 12px}
 .feedback{position:absolute;inset:0;background:var(--card);border-radius:12px;display:flex;align-items:center;justify-content:center;gap:16px;padding:12px 18px;flex-wrap:wrap;z-index:3}
 .feedback.right{background:var(--card)}
 .feedback .big{font-family:var(--f-display);font-size:2.2rem;font-weight:700}
@@ -1482,7 +1489,7 @@ function renderHome(){
   <button class="btn gold" id="hShop" type="button">商店${S.chests.length?`（${S.chests.length}个宝箱待开）`:''}</button>
   <button class="btn" id="hGear" type="button">角色与装备</button>
  </div>
- <div class="howto"><span>① 选关卡，和敌人对战</span><span>② 答对 → 你出招，攒能量放技能</span><span>③ 敌人攻击或放大招时，10秒内答对防御题就能挡住</span><span>④ 赢了得金币；完成一个部分奖励金宝箱和50金币</span><span>⑤ 买宝箱，答对题开箱，抽武器和盔甲</span></div>
+ <div class="howto"><span>① 选关卡，和敌人对战</span><span>② 答对 → 你出招，攒能量放技能</span><span>③ 敌人攻击时，10秒内判断对错：判断正确就能挡住或躲开</span><span>④ 赢了得金币；完成一个部分奖励金宝箱和50金币</span><span>⑤ 买宝箱，答对题开箱，抽武器和盔甲</span></div>
  </div></div>`;
  $('#hStart').onclick=renderMap;$('#hShop').onclick=()=>{shopTab='chest';renderShop()};$('#hGear').onclick=renderGear;
  show('home')}
@@ -1622,8 +1629,10 @@ function renderBattle(){
  <div class="desk" id="desk"><div class="timer" id="timer" ${e.powers.includes('timer')?'':'hidden'}><i></i></div>
   <div class="qbox"><div class="qtext" id="qText"></div><div class="qfig" id="qFig"></div></div>
   <div class="answer" id="padHost"></div>
+  <div class="judge" id="judge" hidden><button type="button" class="jbtn yes" data-j="1">对<small>按 Y</small></button><button type="button" class="jbtn no" data-j="0">错<small>按 N</small></button></div>
   <div class="feedback" id="fb" hidden></div></div>`;
  pad=makePad($('#padHost'),submitAnswer);
+ $('#judge').onclick=ev=>{const b=ev.target.closest('[data-j]');if(b)submitJudge(b.dataset.j==='1')};
  el.querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>useSkill(+b.dataset.sk));
  $('#potbar').onclick=ev=>{const b=ev.target.closest('[data-use-pot]');if(b)usePotion(b.dataset.usePot)};
  const r=$('#bRetreat');let armed=false,t;
@@ -1699,7 +1708,8 @@ function heroDash(cb){const h=heroWrap(),en=$('#fEnemy .art-wrap');if(!h||!en||!
  clearHeroAnims();const rh=h.getBoundingClientRect(),re=en.getBoundingClientRect();
  const dx=Math.max(0,(re.left+re.width*.2)-(rh.left+rh.width*.7));B.dx=dx;
  $('#fHero').classList.add('dashing');
- const a=h.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${dx*.5}px,-34px) rotate(8deg)`},{transform:`translate(${dx}px,0) rotate(4deg)`}],{duration:Math.min(420,220+dx*.35),easing:'ease-in',fill:'forwards'});
+ const mv=pick([{n:'跳劈',arc:-90,r:-14,end:4},{n:'旋风斩',arc:-30,r:180,end:364},{n:'突刺',arc:-6,r:2,end:4}]);floatText('#fHero',mv.n+'！','blue','0%');
+ const a=h.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${dx*.5}px,${mv.arc}px) rotate(${mv.r}deg)`},{transform:`translate(${dx}px,0) rotate(${mv.end}deg)`}],{duration:Math.min(mv.n==='突刺'?320:460,200+dx*.35),easing:'ease-in',fill:'forwards'});
  a.onfinish=cb}
 function heroStrike(){const h=heroWrap();if(!h||!h.animate)return;const dx=B.dx||0;
  h.animate([{transform:`translate(${dx}px,0) rotate(4deg)`},{transform:`translate(${dx-18}px,-4px) rotate(-10deg)`,offset:.35},{transform:`translate(${dx+26}px,-8px) rotate(14deg)`,offset:.7},{transform:`translate(${dx}px,0) rotate(4deg)`}],{duration:200,easing:'ease-out'})}
@@ -1733,7 +1743,11 @@ function flyAmmo(el,fx,dyEnd,cb){const ar=$('.arena'),hs=$('#fHero svg.art'),b=$
   back.onfinish=()=>{ov.remove();if(!document.querySelector('.ammofly'))document.querySelectorAll('#fHero .ammo.gone').forEach(a=>a.classList.remove('gone'))}}}
 function weaponSwing(){const w=document.querySelector('#fHero .weapon');if(!w||!w.animate)return;
  w.animate([{transform:'rotate(0deg)'},{transform:'rotate(-38deg)',offset:.35},{transform:'rotate(62deg)',offset:.68},{transform:'rotate(0deg)'}],{duration:300,easing:'ease-out'})}
-function heroCast(){const h=heroWrap();if(!h||!h.animate)return;h.animate([{transform:'translate(0,0) rotate(0)'},{transform:'translate(-12px,-6px) rotate(-6deg)',offset:.35},{transform:'translate(34px,-10px) rotate(6deg)',offset:.7},{transform:'translate(0,0) rotate(0)'}],{duration:520,easing:'ease-out'})}
+function heroCast(){const h=heroWrap();if(!h||!h.animate)return;const v=ri(0,2);
+ const K=v===0?[{transform:'translate(0,0) rotate(0)'},{transform:'translate(-12px,-6px) rotate(-6deg)',offset:.35},{transform:'translate(34px,-10px) rotate(6deg)',offset:.7},{transform:'translate(0,0) rotate(0)'}]
+  :v===1?[{transform:'translate(0,0) rotate(0)'},{transform:'translate(10px,-20px) rotate(180deg)',offset:.5},{transform:'translate(0,0) rotate(360deg)'}]
+  :[{transform:'translate(0,0) scale(1)'},{transform:'translate(0,-50px) scale(1.08)',offset:.45},{transform:'translate(16px,0) scale(1)',offset:.8},{transform:'translate(0,0) scale(1)'}];
+ h.animate(K,{duration:540,easing:'ease-out'})}
 function swing(kind){const f=$('#fEnemy');if(!f)return;const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 200 200');s.setAttribute('class','slash');s.setAttribute('preserveAspectRatio','none');let g;
  if(kind==='brush')g=`<path d="M24 36 Q122 58 172 172" fill="none" stroke="${INK}" stroke-width="24" stroke-linecap="round" filter="url(#rough)"/><path d="M40 62 Q116 84 158 170" fill="none" stroke="${INK}" stroke-width="7" opacity=".6" filter="url(#rough)"/><circle cx="180" cy="150" r="7" fill="${INK}"/><circle cx="160" cy="186" r="5" fill="${INK}"/>`;
  else if(kind==='scythe')g=`<path d="M16 28 C112 6 194 80 160 184" fill="none" stroke="${INK}" stroke-width="20" stroke-linecap="round"/><path d="M16 28 C112 6 194 80 160 184" fill="none" stroke="#e2ddd1" stroke-width="12" stroke-linecap="round"/><path d="M30 50 C110 34 170 96 146 176" fill="none" stroke="#2c4a3c" stroke-width="4" opacity=".6"/>`;
@@ -1761,10 +1775,10 @@ function nextQ(){if(!B||B.over)return;B.def=null;
  $('#desk').classList.remove('defend');$('#fEnemy').classList.remove('windup');
  $('#qText').innerHTML=`<span class="qtag">${TOPIC_NAME[topic]}</span><br>${B.q.text}`;
  const fig=$('#qFig');fig.innerHTML=B.q.fig||'';fig.hidden=!B.q.fig;
- $('#fb').hidden=true;pad.clear();pad.setUnit(B.q.unit);pad.lock(false);B.busy=false;keyHandler=battleKey;updateHud();
+ $('#fb').hidden=true;$('#judge').hidden=true;$('#padHost').hidden=false;pad.clear();pad.setUnit(B.q.unit);pad.lock(false);B.busy=false;keyHandler=battleKey;updateHud();
  const timed=B.e.powers.includes('timer');$('#timer').hidden=!timed;
  if(timed)startTimer(60,()=>{B.busy=true;pad.lock(true);onWrong(true)})}
-function battleKey(k){if(!B||screen!=='battle')return false;if(B.walk){if(['ArrowRight','d','D','Enter',' '].includes(k)){walkStep(.05);return true}return false}if(B.review){if(k==='Enter'||k===' '){continueAfterReview();return true}return false}if(B.busy)return false;return pad.press(k)}
+function battleKey(k){if(!B||screen!=='battle')return false;if(B.def&&!B.busy){if(['y','Y','1','ArrowLeft'].includes(k)){submitJudge(true);return true}if(['n','N','2','0','ArrowRight'].includes(k)){submitJudge(false);return true}return false}if(B.walk){if(['ArrowRight','d','D','Enter',' '].includes(k)){walkStep(.05);return true}return false}if(B.review){if(k==='Enter'||k===' '){continueAfterReview();return true}return false}if(B.busy)return false;return pad.press(k)}
 function startTimer(sec,onTimeout){stopTimer();B.tLeft=sec*10;B.tTotal=sec*10;const bar=$('#timer i');bar.style.width='100%';
  timerId=setInterval(()=>{if(!B||B.busy||B.over){return}B.tLeft--;bar.style.width=(B.tLeft/B.tTotal*100)+'%';
   const tc=$('#tcount');if(tc)tc.textContent=Math.ceil(B.tLeft/10);
@@ -1834,32 +1848,48 @@ function quickQ(){const T=[
  ()=>{const x=ri(1,17)*10;return[`180° − ${x}° = ？`,180-x,'°']},
  ()=>pick([['1个周角 = 几个直角？',4,'个'],['1个平角是多少度？',180,'°'],['1个直角是多少度？',90,'°'],['1亿里面有几个一千万？',10,'个'],['10个十万是多少万？',100,'万'],['1万里面有几个一千？',10,'个']])];
  const[t,a,u]=pick(T)();return{text:`<span class="num">${t}</span>`,ans:a,unit:u}}
+const BLOCK_ITEM={brush:'巨笔',monk:'金刚拳',panda:'竹棒',liondance:'狮头',hand:'金手',taoist:'符咒',archer:'长弓',qin:'古琴',mech:'机关木鸟',reaper:'镰刀',sword:'飞剑',taiji:'太极球'};
+function judgeQ(){const T=[
+ ()=>{const a=ri(3,9),b=ri(3,9),ok=Math.random()<.5,v=ok?a*b:a*b+pick([-2,-1,1,2,a,-a]);return[`${a} × ${b} = ${v}`,ok,`${a} × ${b} = ${a*b}`]},
+ ()=>{const a=ri(12,99),k=pick([10,100]),ok=Math.random()<.5,v=ok?a*k:a*k*(k===10?10:.1);return[`${a} × ${k} = ${v}`,ok,`${a} × ${k} = ${a*k}`]},
+ ()=>{const a=ri(10,50),b=ri(2,9),c=ri(2,9),ok=Math.random()<.5,v=ok?a+b*c:(a+b)*c;return[`${a} + ${b} × ${c} = ${v}`,ok,`先乘后加：${a} + ${b*c} = ${a+b*c}`]},
+ ()=>{const n=ri(1,9)*100000+ri(0,9)*10000+ri(0,9)*1000+ri(0,999);const r=Math.round(n/1e4),ok=Math.random()<.5,v=ok?r:r+pick([-1,1]);return[`${n} 四舍五入到万位约是 ${v}万`,ok,`看千位，${n} ≈ ${r}万`]},
+ ()=>{const x=ri(2,16)*10,ok=Math.random()<.5,v=ok?180-x:90-x>0?Math.abs(90-x):180-x+10;return[`平角被分成两个角，一个是 ${x}°，另一个是 ${v}°`,ok,`平角是180°：180° − ${x}° = ${180-x}°`]},
+ ()=>pick([['射线只有一个端点',true,'射线有一个端点，可以向一端无限延长'],['线段可以无限延长',false,'线段有两个端点，不能延长'],['直线没有端点',true,'直线向两端无限延长，没有端点'],['1个周角等于4个直角',true,'360° = 4 × 90°'],['钝角比直角小',false,'钝角大于90°，比直角大'],['1个平角等于2个直角',true,'180° = 2 × 90°'],['在同一平面内，两条平行线永远不相交',true,'这就是平行线'],['10个一万是十万',true,'10个一万 = 100000'],['1亿里面有100个一千万',false,'1亿 = 10个一千万'],['最小的六位数是100000',true,'100000 是最小的六位数'],['最大的五位数是99999',true,'五个9'],['25 × 4 = 100',true,'25 × 4 = 100'],['125 × 8 = 100',false,'125 × 8 = 1000'],['a × b = b × a 是乘法交换律',true,'交换两个因数的位置，积不变'],['(a + b) + c = a + (b + c) 是加法交换律',false,'这是加法结合律'],['锐角一定小于90°',true,'锐角小于90°'],['两点之间线段最短',true,'两点之间，线段最短']])];
+ const[t,ans,ex]=pick(T)();return{text:`<span class="judgeq">${t}</span>`,ans,explain:ex,unit:''}}
 function startDefense(opt){if(!B||B.over)return;const e=B.e;
  if(B.blocks>0){$('#fEnemy').classList.remove('windup');B.blocks--;anim('#fEnemy','lunge-l');setTimeout(()=>{guardFx('#fHero');floatText('#fHero','护体挡住了！','blue');updateHud()},220);setTimeout(()=>{if(B&&!B.over)nextQ()},1100);return}
- B.def=opt;B.q=quickQ();
+ B.def=opt;B.q=judgeQ();
  $('#desk').classList.add('defend');$('#fEnemy').classList.add('windup');
  const what=opt.special?`要放大招「${opt.special.name}」了`:'要攻击你了';
- $('#qText').innerHTML=`<span class="qtag danger-tag">防御题</span> <span class="tcount" id="tcount">10</span><br><b class="warn">${e.name} ${what}！10秒内答对就能挡住！</b><br>${B.q.text}`;
+ $('#qText').innerHTML=`<span class="qtag danger-tag">防御判断题</span> <span class="tcount" id="tcount">10</span><br><b class="warn">${e.name} ${what}！10秒内判断对错：判断正确就能挡住或躲开！</b><br>${B.q.text}`;
  const fig=$('#qFig');fig.innerHTML='';fig.hidden=true;
- $('#fb').hidden=true;pad.clear();pad.setUnit(B.q.unit);pad.lock(false);B.busy=false;keyHandler=battleKey;
+ $('#fb').hidden=true;$('#padHost').hidden=true;$('#judge').hidden=false;pad.lock(true);B.busy=false;keyHandler=battleKey;
  $('#timer').hidden=false;SFX.wrong();updateHud();
- startTimer(10,()=>{B.busy=true;pad.lock(true);defenseResolve(false,true)})}
+ startTimer(10,()=>{B.busy=true;defenseResolve(false,true)})}
+function submitJudge(v){if(!B||!B.def||B.busy||B.over)return;B.busy=true;stopTimer();defenseResolve(v===B.q.ans,false)}
 function defenseResolve(ok,timeout){stopTimer();const opt=B.def||{mult:1};const q=B.q,e=B.e;B.def=null;B.busy=true;pad.lock(true);
- $('#fEnemy').classList.remove('windup');
- const what=opt.special?`大招「${opt.special.name}」`:`${e.name} 的攻击`;
- if(ok){SFX.right();showFb('right','挡住了！',`防御成功，${what}被你挡下了！`);monsterShoot(opt,true,()=>setTimeout(()=>{if(B&&!B.over)nextQ()},900))}
- else{showFb('wrong',timeout?'来不及了！':'没挡住！',`<b>防御题答案：${N(q.ans)}${q.unit&&q.unit!=='个'?' '+q.unit:''}</b>`);
-  monsterShoot(opt,false,()=>{if(B.hero.hp<=0)setTimeout(heroDown,500);else setTimeout(()=>{if(B&&!B.over)nextQ()},1300)})}}
+ $('#fEnemy').classList.remove('windup');$('#judge').hidden=true;
+ const what=opt.special?`大招「${opt.special.name}」`:`${e.name} 的攻击`;const item=BLOCK_ITEM[S.cur]||'武器';
+ if(ok){SFX.right();const mode=q.ans?'block':'dodge';
+  showFb('right',mode==='block'?'挡住了！':'躲开了！',`判断正确！这句话是「${q.ans?'对':'错'}」的。${mode==='block'?`你用${item}挡住了${what}！`:`你闪身躲开了${what}！`}`);
+  monsterShoot(opt,mode,()=>setTimeout(()=>{if(B&&!B.over)nextQ()},900))}
+ else{showFb('wrong',timeout?'来不及了！':'判断错了！',`<b>这句话是「${q.ans?'对':'错'}」的。</b> ${q.explain}`);
+  monsterShoot(opt,false,()=>{if(B.hero.hp<=0)setTimeout(heroDown,500);else setTimeout(()=>{if(B&&!B.over)nextQ()},1500)})}}
+function heroDodge(){const h=heroWrap();if(!h||!h.animate)return;h.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:'translate(-70px,-50px) rotate(-18deg)',opacity:.35,offset:.4},{transform:'translate(-50px,0) rotate(-6deg)',opacity:.6,offset:.7},{transform:'translate(0,0) rotate(0)',opacity:1}],{duration:700,easing:'ease-out'})}
+function heroBlockPose(){const h=heroWrap();if(h&&h.animate)h.animate([{transform:'translate(0,0)'},{transform:'translate(-16px,0) rotate(-5deg)',offset:.3},{transform:'translate(0,0)'}],{duration:420});
+ const w=document.querySelector('#fHero .weapon');if(w&&w.animate)w.animate([{transform:'rotate(0)'},{transform:'rotate(-55deg)',offset:.3},{transform:'rotate(-55deg)',offset:.75},{transform:'rotate(0)'}],{duration:600})}
 function monsterShoot(opt,blocked,cb){const e=B.e,sk=opt.special;const hits=sk&&sk.type==='double'?2:1;let n=0;
  const land=()=>{if(!B)return;SFX.hit();
-  if(blocked){guardFx('#fHero');floatText('#fHero','挡住了！','blue')}
+  if(blocked==='dodge'){floatText('#fHero','躲开了！','blue')}
+  else if(blocked){heroBlockPose();guardFx('#fHero');floatText('#fHero','用'+(BLOCK_ITEM[S.cur]||'武器')+'挡住了！','blue')}
   else{const dmg=Math.max(1,Math.round((e.atk+ri(-2,2))*(opt.mult||1)));B.hero.hp=Math.max(0,B.hero.hp-dmg);anim('#fHero','hurt');floatText('#fHero','−'+dmg,'dmg',n?'45%':undefined);
    if(sk){if(sk.type==='drain'){e.hp=Math.min(e.max,e.hp+dmg);setTimeout(()=>floatText('#fEnemy','+'+dmg,'heal'),200)}
     if(n===0){if(sk.type==='poison'){B.poison=3;floatText('#fHero','中毒！','poison','6%')}
      if(sk.type==='weaken'){B.weak=2;floatText('#fHero','虚弱！','poison','6%')}
      if(sk.type==='charm'&&B.gauge>0){B.gauge=0;floatText('#fHero','能量被偷走！','poison','6%')}}}}
   updateHud();n++;if(n<hits&&B.hero.hp>0)setTimeout(one,380);else cb&&cb()};
- const one=()=>{anim('#fEnemy','lunge-l');if(sk)shoot('#fEnemy','#fHero',sk.fx,land);else setTimeout(()=>{if(!blocked)slash('#fHero',RED);land()},220)};
+ const one=()=>{anim('#fEnemy','lunge-l');if(blocked==='dodge')setTimeout(heroDodge,sk?120:40);if(sk)shoot('#fEnemy','#fHero',sk.fx,land);else setTimeout(()=>{if(!blocked)slash('#fHero',RED);land()},220)};
  one()}
 
 function usePotion(k){if(!B||B.over||B.busy||B.review||B.def||!(S.potions[k]>0))return;S.potions[k]--;save();SFX.skill();
