@@ -310,6 +310,15 @@ svg.art{display:block;overflow:visible}
 .mote{animation:moteUp 3.6s linear infinite}
 @keyframes moteUp{0%{opacity:0;transform:translateY(0)}20%{opacity:1}100%{opacity:0;transform:translateY(-130px)}}
 .fighter.hero svg.art{filter:drop-shadow(0 0 7px var(--hc))}
+.modes{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+.modes>b{font-family:var(--f-display);font-size:1.4rem;align-self:center}
+.modebtn{flex:1 1 180px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:3px solid var(--ink);border-radius:12px;background:var(--card);padding:6px 14px;text-align:left;opacity:.75}
+.modebtn b{font-family:var(--f-display);font-size:1.4rem}
+.modebtn span{font-size:.82rem;color:var(--ink-soft)}
+.modebtn.on{opacity:1;box-shadow:4px 4px 0 var(--ink)}
+.modebtn.m-easy.on{background:#d8eedf}.modebtn.m-hard.on{background:#f4d0c8}.modebtn.m-normal.on{background:#f3e3b8}
+.modebadge{border-radius:999px;padding:2px 10px;font-weight:700;font-size:.9rem;background:var(--card);color:var(--ink)}
+.modebadge.m-easy{background:#5fae8a;color:#fff}.modebadge.m-hard{background:var(--cinnabar);color:#fff}
 .skfx{position:absolute;pointer-events:none;z-index:7}
 .skfx.full{inset:0}
 .skfx svg{width:100%;height:100%;display:block;overflow:visible}
@@ -1995,6 +2004,7 @@ function makePad(host,onSubmit){
  return api}
 
 /* ============ HOME ============ */
+const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，你的生命攻击减半，奖励×2',ehp:2,eatk:2,php:.5,patk:.5,coin:2}};
 function monsterList(){const L=[];CHAPTERS.forEach(C=>{C.enemies.forEach(([n,a,o])=>L.push({key:n,name:n,art:a,opt:o,C,boss:false}));L.push({key:C.boss.name,name:C.boss.name,art:C.boss.art,opt:{},C,boss:true})});return L}
 function renderHome(){
  const el=$('#scr-home');const hs=heroStats(),parts=worldLv(),total=CHAPTERS.length,mons=monsterList();S.seen=S.seen||{};const seen=mons.filter(m=>S.seen[m.key]).length;
@@ -2007,6 +2017,7 @@ function renderHome(){
     <div class="hb-hero"><b>${CHARS[S.cur].name}</b>　攻击 ${hs.atk} · 生命 ${hs.hp}${hs.w?' · '+hs.w.name:''}${hs.a?' · '+hs.a.name:''}</div>
     <div class="row"><button class="btn primary big" type="button" id="hGo">继续冒险：${next.name} ${nextLv===5?'首领关':'第'+nextLv+'关'}</button><button class="btn" type="button" id="hHow">玩法说明</button></div></div>
   </section>
+  <section class="modes"><b>难度</b>${['easy','normal','hard'].map(m=>`<button type="button" class="modebtn m-${m} ${(S.mode||'normal')===m?'on':''}" data-mode="${m}"><b>${MODES[m].name}</b><span>${MODES[m].desc}</span></button>`).join('')}</section>
   <section class="stats6">
    <div class="stat"><b>${S.coins}</b><span>金币</span></div>
    <div class="stat"><b>${parts}/${total}</b><span>完成的部分</span></div>
@@ -2023,6 +2034,7 @@ function renderHome(){
   </section>
   <section><h3 class="shoph">英雄</h3><div class="lineup">${CHAR_ORDER.map(k=>`<figure class="${S.chars.includes(k)?'':'locked'}">${ART[k]()}<figcaption>${CHARS[k].name}</figcaption></figure>`).join('')}</div></section>
  </div>`;
+ el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{S.mode=b.dataset.mode;save();SFX.coin();toast('难度：'+MODES[S.mode].name);renderHome()});
  $('#hGo').onclick=()=>startBattle(next.id,nextLv);$('#hStart').onclick=renderMap;$('#hShop').onclick=()=>{shopTab='chest';renderShop()};$('#hGear').onclick=renderGear;$('#hBook').onclick=renderBook;$('#hHow').onclick=showHowTo;
  show('home')}
 function showHowTo(){const m=$('#modal');m.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="玩法说明"><button class="closex" type="button" id="hwClose">关闭</button><h3>玩法说明</h3>
@@ -2159,15 +2171,16 @@ function startBattle(ch,lv){
  S.seen=S.seen||{};if(!S.seen[e.name]){S.seen[e.name]=true;save()}
  e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
  const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.1*wl));e.atk=Math.round(e.atk*(1+.05*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;e.burn=0;
+ const MD=MODES[S.mode||'normal'];e.max=Math.max(1,Math.round(e.max*MD.ehp));e.atk=Math.max(1,Math.round(e.atk*MD.eatk));
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
  let d;if(ch>=6)d=isBoss?3:(lv<=2?2:3);else if(ch===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
- B={skills:SKILLS[S.cur].filter(x=>x.unlock<=wl),ch,lv,isBoss,C,e,d,hero:{hp:hs.hp,max:hs.hp,atk:hs.atk},combo:0,gauge:0,blocks:0,poison:0,weak:0,rights:0,wrongs:0,regenUsed:false,busy:true,over:false};
+ B={skills:SKILLS[S.cur].filter(x=>x.unlock<=wl),ch,lv,isBoss,C,e,d,hero:{hp:Math.max(1,Math.round(hs.hp*MD.php)),max:Math.max(1,Math.round(hs.hp*MD.php)),atk:Math.max(1,Math.round(hs.atk*MD.patk))},combo:0,gauge:0,blocks:0,poison:0,weak:0,rights:0,wrongs:0,regenUsed:false,busy:true,over:false};
  renderBattle();show('battle');musicStart(isBoss?'boss':(C.tower===5?'horror':(C.tower||1)>=2?'tower':'battle'));keyHandler=battleKey;startWalk()}
 
 function renderBattle(){
  const el=$('#scr-battle'),C=B.C,e=B.e,ch=CHARS[S.cur];
- el.innerHTML=`<div class="banner"><span class="lvl">${C.name} · ${B.isBoss?'首领关':'第'+B.lv+'关'}</span><span class="mission">任务：答对题目，击败 ${e.name}！</span>${e.lvl?`<span class="wl">怪物强化 Lv.${e.lvl}</span>`:''}<button class="retreat" type="button" id="bRetreat">撤退</button></div>
+ el.innerHTML=`<div class="banner"><span class="lvl">${C.name} · ${B.isBoss?'首领关':'第'+B.lv+'关'}</span><span class="modebadge m-${S.mode||'normal'}">${MODES[S.mode||'normal'].name}</span><span class="mission">任务：答对题目，击败 ${e.name}！</span>${e.lvl?`<span class="wl">怪物强化 Lv.${e.lvl}</span>`:''}<button class="retreat" type="button" id="bRetreat">撤退</button></div>
  <div class="arena" id="arena">${ambientHTML(C.bg)}<div class="world" id="world">${BG[C.bg]()}${[.3,.55,.8].map((x,i)=>`<div class="pickup" data-at="${x}" style="left:${(25+x*60)/1.6}%"><span class="coin-ico"></span></div>`).join('')}</div>
   <div class="fighter hero ${S.cur==='giant'?'giant':''}" id="fHero" style="--hc:${HERO_COLOR[S.cur]||INK}"><div class="art-wrap">${groundInk(INK)}${ART[S.cur]()}</div>
    <div class="hud"><div class="nm">${ch.name}<small>攻击 ${B.hero.atk} · ${HERO_ATK[S.cur].name}</small></div><div class="bar hero" id="hpHero"><i></i><span></span></div>
@@ -2601,7 +2614,7 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=nu
    S.trophies=S.trophies||{};S.trophies[b.e.name]=(S.trophies[b.e.name]||0)+1;bossR={item:bi,pots,tro:S.trophies[b.e.name]}}else if(b.wrongs===0&&Math.random()<.3){drop=b.ch>=6?7:0}
   if(drop!==null)S.chests.push(drop)}
  else{coins=5;SFX.lose()}
- S.coins+=coins;save();
+ coins=Math.max(1,Math.round(coins*MODES[S.mode||'normal'].coin));S.coins+=coins;save();
  const el=$('#scr-result');const perfect=win&&b.wrongs===0;
  el.innerHTML=`<div class="result ${win?'win':''}"><div class="result-inner">
   ${win?ART[S.cur]():enemyArt(b.e)}
