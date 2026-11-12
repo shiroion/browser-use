@@ -272,6 +272,30 @@ svg.art{display:block;overflow:visible}
 .proj{position:absolute;left:0;top:0;width:clamp(60px,9vw,110px);height:clamp(60px,9vw,110px);pointer-events:none;z-index:6}
 .ammo{transition:opacity .35s ease}
 .weapon{transform-box:view-box}
+.ambient{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.amb{position:absolute;top:-6%;display:block;background:var(--c);opacity:.85}
+.amb.petal{border-radius:60% 0 60% 0}
+.amb.leaf{border-radius:0 70% 0 70%}
+.amb.snow,.amb.ember,.amb.star{border-radius:50%}
+.amb.ember{box-shadow:0 0 8px var(--c)}
+.amb.star{box-shadow:0 0 6px var(--c)}
+.amb.bubble{border-radius:50%;background:transparent;border:2px solid var(--c);opacity:.6}
+.amb.rain{background:var(--c);opacity:.35;transform:rotate(18deg)}
+.amb.puff{border-radius:50%;opacity:.35;filter:blur(6px)}
+.m-fall{animation:ambFall linear infinite}
+.m-rain{animation:ambRain linear infinite}
+.m-rise{top:auto;bottom:-6%;animation:ambRise linear infinite}
+.m-drift{animation:ambDrift linear infinite}
+.m-twinkle{top:auto;animation:ambTwinkle ease-in-out infinite}
+.m-twinkle:nth-child(odd){top:12%}.m-twinkle:nth-child(3n){top:30%}.m-twinkle:nth-child(4n){top:6%}
+@keyframes ambFall{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(18px,25vh) rotate(90deg)}50%{transform:translate(-10px,50vh) rotate(180deg)}75%{transform:translate(14px,75vh) rotate(270deg)}100%{transform:translate(0,105vh) rotate(360deg)}}
+@keyframes ambRain{from{transform:translate(0,0) rotate(18deg)}to{transform:translate(-90px,70vh) rotate(18deg)}}
+@keyframes ambRise{0%{transform:translate(0,0);opacity:0}10%{opacity:.8}50%{transform:translate(12px,-40vh)}100%{transform:translate(-8px,-80vh);opacity:0}}
+@keyframes ambDrift{from{transform:translateX(-30vw)}to{transform:translateX(110vw)}}
+@keyframes ambTwinkle{0%,100%{opacity:.15;transform:scale(.6)}50%{opacity:1;transform:scale(1.3)}}
+.art-wrap{position:relative}
+.groundink{position:absolute;left:18%;bottom:-3%;width:64%;height:auto;z-index:-1;pointer-events:none;opacity:.5}
+.float.crit{color:var(--gold);font-size:3.2rem;text-shadow:2px 2px 0 var(--ink),-2px -2px 0 var(--card)}
 .skfx{position:absolute;pointer-events:none;z-index:7}
 .skfx.full{inset:0}
 .skfx svg{width:100%;height:100%;display:block;overflow:visible}
@@ -403,6 +427,20 @@ svg.art{display:block;overflow:visible}
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
+    <filter id="inkart" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feMorphology in="d" operator="dilate" radius="0.9" result="fat"/>
+      <feFlood flood-color="#1d1b18" result="ink"/>
+      <feComposite in="ink" in2="fat" operator="in" result="outline"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="3" seed="11" result="g"/>
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0.11  0 0 0 0 0.1  0 0 0 0 0.09  1.8 0 0 0 -0.9" result="speck"/>
+      <feComposite in="speck" in2="d" operator="in" result="speckIn"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" seed="5" result="w"/>
+      <feColorMatrix in="w" type="matrix" values="0 0 0 0 0.11  0 0 0 0 0.1  0 0 0 0 0.09  0.9 0 0 0 -0.3" result="wash"/>
+      <feComposite in="wash" in2="d" operator="in" result="washIn"/>
+      <feMerge><feMergeNode in="outline"/><feMergeNode in="d"/><feMergeNode in="washIn"/><feMergeNode in="speckIn"/></feMerge>
+    </filter>
     <filter id="rough" x="-10%" y="-10%" width="120%" height="120%">
       <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="n"/>
       <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/>
@@ -504,7 +542,7 @@ const st=(w,c=INK)=>`fill="none" stroke="${c}" stroke-width="${w}" stroke-lineca
 const shadow=(cx=100,rx=62)=>`<ellipse cx="${cx}" cy="228" rx="${rx}" ry="6" fill="${INK}" opacity=".2"/>`;
 function spikes(cx,cy,r1,r2,n){const p=[];for(let i=0;i<n*2;i++){const a=Math.PI*i/n;const r=i%2?r2*(.85+((i*37)%10)/33):r1;p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1))}return p.join(' ')}
 function arcSpikes(cx,cy,r1,r2,a0,a1,n){const p=[];for(let i=0;i<=n;i++){const a=(a0+(a1-a0)*i/n)*Math.PI/180;const r=i%2?r2*(.85+((i*37)%10)/33):r1;p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1))}return p.join(' ')}
-const wrap=(inner,vb='0 0 200 240')=>`<svg class="art" viewBox="${vb}" aria-hidden="true"><g filter="url(#rough)">${inner}</g></svg>`;
+const wrap=(inner,vb='0 0 200 240')=>`<svg class="art" viewBox="${vb}" aria-hidden="true"><g filter="url(#inkart)">${inner}</g></svg>`;
 
 const ART={
 brush:()=>{const limb=d=>`<path d="${d}" ${st(11)}/><path d="${d}" ${st(6,PAPER)}/>`;
@@ -2060,14 +2098,14 @@ function startBattle(ch,lv){
 function renderBattle(){
  const el=$('#scr-battle'),C=B.C,e=B.e,ch=CHARS[S.cur];
  el.innerHTML=`<div class="banner"><span class="lvl">${C.name} · ${B.isBoss?'首领关':'第'+B.lv+'关'}</span><span class="mission">任务：答对题目，击败 ${e.name}！</span>${e.lvl?`<span class="wl">怪物强化 Lv.${e.lvl}</span>`:''}<button class="retreat" type="button" id="bRetreat">撤退</button></div>
- <div class="arena" id="arena"><div class="world" id="world">${BG[C.bg]()}${[.3,.55,.8].map((x,i)=>`<div class="pickup" data-at="${x}" style="left:${(25+x*60)/1.6}%"><span class="coin-ico"></span></div>`).join('')}</div>
-  <div class="fighter hero ${S.cur==='giant'?'giant':''}" id="fHero"><div class="art-wrap">${ART[S.cur]()}</div>
+ <div class="arena" id="arena">${ambientHTML(C.bg)}<div class="world" id="world">${BG[C.bg]()}${[.3,.55,.8].map((x,i)=>`<div class="pickup" data-at="${x}" style="left:${(25+x*60)/1.6}%"><span class="coin-ico"></span></div>`).join('')}</div>
+  <div class="fighter hero ${S.cur==='giant'?'giant':''}" id="fHero"><div class="art-wrap">${groundInk(INK)}${ART[S.cur]()}</div>
    <div class="hud"><div class="nm">${ch.name}<small>攻击 ${B.hero.atk} · ${HERO_ATK[S.cur].name}</small></div><div class="bar hero" id="hpHero"><i></i><span></span></div>
    <div class="skills" id="skills">${B.skills.map((x,i)=>`<button class="skillbtn" type="button" data-sk="${i}" title="${x.desc}">${x.name}<small>${x.cost}</small></button>`).join('')}</div>
    <div class="potbar" id="potbar"></div>
    <div class="energy"><span>能量</span><span class="pips" id="gPips">${'<i></i>'.repeat(GAUGE_MAX)}</span><span class="buffs" id="buffs"></span></div></div></div>
   <div class="center"><div class="vs">战</div><div class="combo" id="combo"></div></div>
-  <div class="fighter enemy" id="fEnemy"><div class="art-wrap">${enemyArt(e)}</div>
+  <div class="fighter enemy" id="fEnemy"><div class="art-wrap">${groundInk(B.isBoss?RED:INK)}${enemyArt(e)}</div>
    <div class="hud"><div class="nm">${e.name}<small id="eAtk">攻击 ${e.atk}</small></div><div class="bar" id="hpEnemy"><i></i><span></span></div>
    <div class="bar shield" id="shEnemy" ${e.shieldMax?'':'hidden'}><i></i></div>
    <div class="rage" title="${e.sk.desc}"><span>怒气</span><span class="pips" id="ragePips">${'<i></i>'.repeat(e.rageMax)}</span><span class="skname">大招「${e.sk.name}」${e.sk2?'「'+e.sk2.name+'」':''}</span></div>
@@ -2100,6 +2138,16 @@ function floatText(fid,txt,cls,top){const f=$(fid);if(!f)return;const s=document
 function anim(fid,cls){const f=$(fid);if(!f)return;f.classList.remove(cls);void f.offsetWidth;f.classList.add(cls);setTimeout(()=>f.classList.remove(cls),500)}
 function slash(fid,color){const f=$(fid);if(!f)return;const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 200 200');s.setAttribute('class','slash');s.setAttribute('preserveAspectRatio','none');
  s.innerHTML=`<path d="M20 30 Q100 90 180 170" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round" filter="url(#rough)"/><path d="M180 40 Q110 100 30 160" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" opacity=".7" filter="url(#rough)"/>`;f.appendChild(s);setTimeout(()=>s.remove(),600)}
+
+/* ambient weather per place */
+const AMB={palace:['fall','petal',['#d9487a','#f2b6c8']],valley:['fall','leaf',['#6f9a3e','#c9a23a']],thunder:['rain','rain',['#e6e0f0']],sea:['rise','bubble',['#ffffff']],
+ demon:['rise','ember',['#ff7a2a','#ffd23a']],clouds:['drift','puff',['#ffffff']],ice:['fall','snow',['#ffffff']],sky:['twinkle','star',['#fff6c8','#ffffff']],
+ reef:['rise','bubble',['#ffffff']],seapalace:['rise','bubble',['#cfeefa']],volcano:['rise','ember',['#ff7a2a','#ffd23a']],moon:['fall','petal',['#e8c23a','#f6e9b8']]};
+function ambientHTML(bg){const a=AMB[bg];if(!a)return'';const[mode,shape,cols]=a;const n=mode==='rain'?40:mode==='drift'?6:20;let h='';
+ for(let i=0;i<n;i++){const left=(i*53)%100,dur=mode==='rain'?.7+(i%5)*.12:mode==='drift'?18+(i%4)*6:5+(i%7)*1.3,delay=-((i*1.7)%dur),sz=shape==='puff'?60+(i%3)*30:shape==='rain'?2:4+(i%4)*2.5;
+  h+=`<span class="amb ${shape} m-${mode}" style="left:${left}%;width:${sz}px;height:${shape==='rain'?22:shape==='puff'?sz*.4:sz}px;animation-duration:${dur}s;animation-delay:${delay}s;--c:${cols[i%cols.length]};top:${mode==='drift'?(10+(i*17)%50)+'%':''}"></span>`}
+ return `<div class="ambient" aria-hidden="true">${h}</div>`}
+const groundInk=(c)=>`<svg class="groundink" viewBox="0 0 200 40" aria-hidden="true"><g filter="url(#rough)"><path d="M14 26 Q60 14 110 22 Q150 28 188 18" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round" opacity=".35"/><path d="M40 32 Q90 26 150 32" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" opacity=".3"/><circle cx="24" cy="14" r="3" fill="${c}" opacity=".4"/><circle cx="176" cy="30" r="2.5" fill="${c}" opacity=".4"/><circle cx="160" cy="10" r="2" fill="${c}" opacity=".35"/></g></svg>`;
 
 /* walking through the place before the fight */
 function startWalk(){B.walk={p:0,timer:null};B.busy=true;pad.lock(true);
@@ -2273,14 +2321,14 @@ function showFb(cls,big,html){const fb=$('#fb');fb.className='feedback '+cls;fb.
 
 function onRight(){SFX.right();B.rights++;S.stats.right++;B.combo++;B.gauge=Math.min(GAUGE_MAX,B.gauge+1);
  const e=B.e,ha=HERO_ATK[S.cur];const bonus=1+.1*Math.min(B.combo-1,5);let dmg=Math.round(B.hero.atk*bonus*(B.weak>0?.7:1));if(B.weak>0)B.weak--;
- const rageFull=e.rage>=e.rageMax;const act=enemyAct();if(act==='block')dmg=Math.ceil(dmg/2);
- let note=B.combo>1?`${ha.name}！连击 ×${B.combo}，伤害 +${Math.round((bonus-1)*100)}%`:`${ha.name}！`;
+ const rageFull=e.rage>=e.rageMax;const act=enemyAct();if(act==='block')dmg=Math.ceil(dmg/2);const crit=act!=='block'&&Math.random()<.15;if(crit)dmg=Math.round(dmg*1.8);
+ let note=(crit?'暴击！':'')+(B.combo>1?`${ha.name}！连击 ×${B.combo}，伤害 +${Math.round((bonus-1)*100)}%`:`${ha.name}！`);
  if(act==='block')note=`${ha.name}！可是 ${e.name} ${e.verb}，伤害减半！`;
  if(rageFull)note+=`　${e.name} 怒气满了，要放大招！`;else if(act==='counter')note+=`　小心，${e.name} 要反击！`;
  showFb('right','答对了！',note);
  const cb=$('#combo');cb.textContent=B.combo>1?`连击 ×${B.combo}`:'';cb.classList.remove('pop');void cb.offsetWidth;cb.classList.add('pop');
  if(act==='block')setTimeout(()=>{guardFx('#fEnemy');floatText('#fEnemy','格挡！','blue','6%')},360);
- heroHit(dmg,ha.fx,false,()=>{if(!B||B.over)return;
+ heroHit(dmg,ha.fx,false,()=>{if(!B||B.over)return;if(crit){floatText('#fEnemy','暴击！','crit','2%');shake(10);burst('#fEnemy','gold')}
   if(B.e.hp<=0){enemyDown();return}
   if(rageFull)setTimeout(monsterSpecial,600);
   else if(act==='counter')setTimeout(()=>{if(!B||B.over)return;floatText('#fEnemy','反击！','dmg','6%');startDefense({mult:.6})},650);
