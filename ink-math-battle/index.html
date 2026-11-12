@@ -26,8 +26,8 @@ button:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
 .brand{background:none;border:0;font-family:var(--f-display);font-size:1.7rem;font-weight:700;letter-spacing:.12em;padding:0;display:flex;align-items:center;gap:10px}
 .brand .stamp{display:inline-grid;place-items:center;width:34px;height:34px;background:var(--cinnabar);color:var(--card);font-size:1.1rem;border-radius:4px;transform:rotate(-6deg);letter-spacing:0}
 .topright{display:flex;align-items:center;gap:10px}
-.homebtn{font-weight:700;background:var(--ink);color:var(--card)}
-.homebtn.armed{background:var(--cinnabar)}
+.chipbtn.homebtn{font-weight:700;background:var(--ink);color:var(--card)}
+.chipbtn.homebtn.armed{background:var(--cinnabar)}
 .chipbtn{background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:4px 12px;font-size:.95rem}
 .seal{display:flex;align-items:baseline;gap:6px;background:var(--cinnabar);color:var(--card);padding:4px 14px;border-radius:6px;box-shadow:2px 2px 0 var(--ink)}
 .seal b{font-size:1.45rem;font-variant-numeric:tabular-nums;font-family:var(--f-display)}
@@ -296,6 +296,13 @@ svg.art{display:block;overflow:visible}
 .art-wrap{position:relative}
 .groundink{position:absolute;left:18%;bottom:-3%;width:64%;height:auto;z-index:-1;pointer-events:none;opacity:.5}
 .float.crit{color:var(--gold);font-size:3.2rem;text-shadow:2px 2px 0 var(--ink),-2px -2px 0 var(--card)}
+.bossbox{border:3px solid var(--cinnabar);background:var(--card);border-radius:14px;padding:10px 16px;max-width:760px;width:100%;box-sizing:border-box}
+.bossbox h3{font-size:1.6rem;color:var(--cinnabar);text-align:center;margin-bottom:6px}
+.bossrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.bri{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;font-size:.9rem}
+.bri svg{width:44px;height:44px}
+.bri b{font-family:var(--f-display);font-size:1.15rem}
+.trophy{color:var(--gold);font-weight:700}
 .skfx{position:absolute;pointer-events:none;z-index:7}
 .skfx.full{inset:0}
 .skfx svg{width:100%;height:100%;display:block;overflow:visible}
@@ -348,7 +355,7 @@ svg.art{display:block;overflow:visible}
 .result-inner{display:flex;flex-direction:column;align-items:center;gap:14px}
 .result h2{font-size:clamp(3rem,8vw,5rem);letter-spacing:.2em}
 .result.win h2{color:var(--cinnabar)}
-.result svg.art{height:clamp(100px,20vh,200px);width:auto}
+.result svg.art{height:clamp(80px,16vh,180px);width:auto}
 .earn{display:flex;align-items:center;gap:10px;font-size:1.4rem}
 .earn .seal b{font-size:2rem}
 .stats{display:flex;gap:18px;font-size:1.1rem}
@@ -461,6 +468,8 @@ svg.art{display:block;overflow:visible}
     <linearGradient id="g-sea2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f2f52"/><stop offset="1" stop-color="#3f86a8"/></linearGradient>
     <linearGradient id="g-volcano" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a1a14"/><stop offset="1" stop-color="#d9662f"/></linearGradient>
     <linearGradient id="g-moon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e1636"/><stop offset="1" stop-color="#4a5a92"/></linearGradient>
+    <linearGradient id="g-haunted" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1830"/><stop offset="1" stop-color="#5a5a6e"/></linearGradient>
+    <linearGradient id="g-under" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e1a16"/><stop offset="1" stop-color="#4a2228"/></linearGradient>
   </defs>
 </svg>
 
@@ -496,7 +505,7 @@ const INK='#1d1b18',RED='#b5352b',GOLD='#d89b1d',PAPER='#f8f1e2',JADE='#2e6a58';
 
 /* ============ SAVE ============ */
 const SAVE_KEY='moxia-math-save-v1';
-const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0},seen:{},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{},potions:{},codes:{},t2open:false});
+const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0},seen:{},trophies:{},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{},potions:{},codes:{},t2open:false});
 function load(){try{const r=localStorage.getItem(SAVE_KEY);if(r){const o=JSON.parse(r);const d=defaultSave();return Object.assign(d,o,{prog:Object.assign(d.prog,o.prog||{}),eq:Object.assign(d.eq,o.eq||{}),stats:Object.assign(d.stats,o.stats||{})})}}catch(e){}return defaultSave()}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
 let S=load();
@@ -520,6 +529,7 @@ const SFX={
 
 /* ============ MUSIC (generated, pentatonic) ============ */
 const TRACKS={
+ horror:{bpm:96,lead:'sine',mel:[69,0,72,0,68,0,0,0,69,0,75,0,74,0,0,0,62,0,65,0,68,0,71,0,70,0,69,0,0,0,0,0],bass:[45,0,0,0,0,0,44,0,45,0,0,0,0,0,51,0,38,0,0,0,0,0,44,0,45,0,0,0,44,0,0,0],drum:'k.......s.......k...k...s.......'},
  battle:{bpm:138,lead:'triangle',mel:[74,0,71,69,71,0,74,76,78,0,76,74,71,0,69,0,69,71,74,0,76,74,71,69,66,0,69,71,69,0,0,0],bass:[50,0,0,0,50,0,57,0,47,0,0,0,47,0,54,0,43,0,0,0,43,0,50,0,45,0,0,0,45,0,52,0],drum:'k.h.s.h.k.k.s.h.k.h.s.h.k.k.s.hs'},
  boss:{bpm:156,lead:'square',mel:[69,72,74,0,76,0,74,72,69,0,67,69,72,0,0,0,76,79,81,0,79,76,74,0,72,74,72,69,67,0,69,0],bass:[45,0,45,0,45,0,48,0,43,0,43,0,43,0,47,0,41,0,41,0,41,0,45,0,40,0,40,0,44,0,40,0],drum:'k.k.s.kkk.k.s.s.k.k.s.kkk.kss.ss'},
  tower:{bpm:128,lead:'triangle',mel:[76,0,79,0,83,0,81,79,76,0,74,0,71,0,0,0,74,76,79,0,81,0,79,76,74,0,71,74,76,0,0,0],bass:[52,0,0,0,59,0,0,0,50,0,0,0,57,0,0,0,48,0,0,0,55,0,0,0,47,0,0,0,54,0,59,0],drum:'k...h.s.k.k.h.s.k...h.s.k.k.h.s.'}
@@ -535,7 +545,7 @@ function musicStart(name){if(!S.music)return;const c=ac();if(!c)return;if(MUSIC.
  MUSIC.cur=name;MUSIC.step=0;MUSIC.next=c.currentTime+.1;MUSIC.gain=c.createGain();MUSIC.gain.gain.value=.32;MUSIC.gain.connect(c.destination);
  MUSIC.timer=setInterval(()=>{const T=TRACKS[MUSIC.cur];if(!T||!MUSIC.gain)return;const dt=60/T.bpm/2;while(MUSIC.next<AC.currentTime+.2){playStep(T,MUSIC.step%32,MUSIC.next,dt);MUSIC.step++;MUSIC.next+=dt}},50)}
 function musicStop(){if(MUSIC.timer){clearInterval(MUSIC.timer);MUSIC.timer=null}if(MUSIC.gain&&AC){const g=MUSIC.gain;try{g.gain.setTargetAtTime(0,AC.currentTime,.08)}catch(e){}setTimeout(()=>{try{g.disconnect()}catch(e){}},600)}MUSIC.gain=null;MUSIC.cur=null}
-document.addEventListener('visibilitychange',()=>{if(document.hidden)musicStop();else if(screen==='battle'&&B&&!B.over)musicStart(B.isBoss?'boss':((B.C.tower||1)>=2?'tower':'battle'))});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)musicStop();else if(screen==='battle'&&B&&!B.over)musicStart(B.isBoss?'boss':(B.C.tower===5?'horror':(B.C.tower||1)>=2?'tower':'battle'))});
 
 /* ============ ART ============ */
 const st=(w,c=INK)=>`fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
@@ -545,69 +555,76 @@ function arcSpikes(cx,cy,r1,r2,a0,a1,n){const p=[];for(let i=0;i<=n;i++){const a
 const wrap=(inner,vb='0 0 200 240')=>`<svg class="art" viewBox="${vb}" aria-hidden="true"><g filter="url(#inkart)">${inner}</g></svg>`;
 
 const ART={
-brush:()=>{const limb=d=>`<path d="${d}" ${st(11)}/><path d="${d}" ${st(6,PAPER)}/>`;
-return wrap(`<ellipse cx="96" cy="226" rx="78" ry="7" fill="${INK}" opacity=".22"/>
-<path d="M22 230 L70 228 M120 231 L178 229 M60 236 L140 235" ${st(3)} opacity=".45"/>
-<path d="M64 74 C96 60 128 54 156 52 C134 62 104 70 66 80 Z" fill="${INK}" opacity=".5"/>
-<polygon points="${spikes(186,60,12,30,9)}" fill="${INK}"/>
-<path d="M170 34 Q178 18 192 14 M196 92 Q206 104 200 118 M150 30 Q156 22 166 22" ${st(4)}/>
-<circle cx="200" cy="40" r="5" fill="${INK}"/><circle cx="160" cy="90" r="4" fill="${INK}"/><circle cx="172" cy="100" r="2.5" fill="${INK}"/><circle cx="140" cy="38" r="3" fill="${INK}"/><circle cx="206" cy="78" r="3" fill="${INK}"/><circle cx="128" cy="96" r="2" fill="${INK}"/>
-<g class="weapon" style="transform-origin:101px 78px"><line x1="12" y1="96" x2="160" y2="64" stroke="${INK}" stroke-width="11" stroke-linecap="round"/>
-<line x1="14" y1="95.5" x2="158" y2="64.5" stroke="#9a5a26" stroke-width="6" stroke-linecap="round"/>
-<line x1="34" y1="90" x2="150" y2="65" stroke="#d08f4f" stroke-width="1.6" opacity=".8"/>
-<polygon points="12,96 0,101 14,101" fill="${INK}"/>
-<path d="M155 57 L171 54 L174 71 L158 74 Z" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>
-<path d="M171 53 C186 49 199 53 204 63 C199 71 186 75 173 72 Z" fill="#f8f4ea" stroke="${INK}" stroke-width="2.5"/>
-<path d="M178 58 L198 61 M178 67 L197 66" ${st(1.2)} opacity=".5"/></g>
-<path d="M101 76 Q99 92 100 103" ${st(1.5)}/>
-${limb('M100 170 L72 196 L40 218')}
-${limb('M104 170 L136 180 L132 218')}
-<ellipse cx="38" cy="221" rx="9" ry="4" fill="${INK}"/><ellipse cx="136" cy="221" rx="9" ry="4" fill="${INK}"/>
-<path d="M98 126 L104 170" ${st(20)}/><path d="M98 126 L104 170" ${st(13,PAPER)}/>
-<path d="M95 152 L109 150" ${st(3)}/>
-${limb('M95 132 L82 108 L80 84')}
-${limb('M103 130 L118 104 L122 74')}
-<circle cx="80" cy="82" r="5" fill="${INK}"/><circle cx="122" cy="72" r="5" fill="${INK}"/>
-<circle cx="99" cy="114" r="12" fill="${INK}"/>`)},
+brush:()=>{const limb=d=>`<path d="${d}" ${st(12)}/><path d="${d}" ${st(6.5,PAPER)}/>`;
+return wrap(`<ellipse cx="94" cy="226" rx="88" ry="7" fill="${INK}" opacity=".24"/>
+<path d="M8 232 L74 229 M110 233 L192 230 M44 238 L150 236 M150 224 L198 223" ${st(3)} opacity=".45"/>
+<g class="weapon" style="transform-origin:100px 80px">
+<path d="M22 100 C60 70 110 52 150 46 C170 44 186 40 198 30 C188 48 168 58 150 62 C112 70 70 84 30 106Z" fill="${INK}" opacity=".5"/>
+<path d="M40 98 C36 110 38 120 32 132 M70 86 C68 98 72 106 68 118 M104 74 C102 84 106 92 102 102" ${st(3)} opacity=".55"/>
+<circle cx="32" cy="134" r="3" fill="${INK}" opacity=".55"/><circle cx="68" cy="120" r="2.5" fill="${INK}" opacity=".55"/>
+<polygon points="${spikes(190,56,14,36,11)}" fill="${INK}"/><polygon points="${spikes(190,56,8,22,8)}" fill="${INK}" transform="rotate(20 190 56)"/>
+${[[208,24,4.5],[216,64,5],[202,88,3.5],[172,24,3],[160,12,2.5],[222,42,2.5],[180,92,2.5],[150,30,2],[214,82,2]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${INK}"/>`).join('')}
+<path d="M176 22 Q186 4 204 0 M208 92 Q220 106 214 122 M156 20 Q160 10 172 8 M222 30 Q232 34 230 46" ${st(4)}/>
+<line x1="6" y1="104" x2="166" y2="60" stroke="${INK}" stroke-width="12" stroke-linecap="round"/>
+<line x1="8" y1="103.5" x2="164" y2="60.5" stroke="#8a4f22" stroke-width="7" stroke-linecap="round"/>
+<path d="M24 98 L60 88 M80 83 L120 72 M130 69 L150 64" stroke="#c98a4a" stroke-width="1.6" opacity=".8"/>
+<polygon points="6,104 -6,110 8,110" fill="${INK}"/>
+<path d="M158 54 L176 50 L180 70 L162 74Z" fill="${GOLD}" stroke="${INK}" stroke-width="2"/><path d="M164 52 L168 72 M170 51 L174 71" stroke="#8a5a0a" stroke-width="1.5"/>
+<path d="M176 48 C192 42 206 46 212 58 C206 68 192 74 178 70Z" fill="#f8f4ea" stroke="${INK}" stroke-width="2.5"/>
+<path d="M200 50 C208 52 212 56 212 58 C206 64 202 66 198 66Z" fill="${INK}" opacity=".7"/>
+<path d="M182 54 L204 56 M182 60 L206 60 M182 66 L200 65" ${st(1)} opacity=".45"/>
+</g>
+<path d="M100 72 Q97 90 100 106" ${st(1.5)}/>
+${limb('M98 168 L66 194 L24 214')}${limb('M104 168 L138 178 L134 216')}
+<path d="M70 196 L60 200 M40 208 L34 212" ${st(1.2)} opacity=".5"/>
+<path d="M12 210 L32 212 L30 220 L10 220Z" fill="${INK}"/><path d="M128 214 L146 214 L148 222 L126 222Z" fill="${INK}"/>
+<path d="M96 124 L104 168" ${st(22)}/><path d="M96 124 L104 168" ${st(14,PAPER)}/>
+<path d="M92 148 L112 146" ${st(3)}/><path d="M100 150 L94 162 M104 130 L100 140" ${st(1.2)} opacity=".5"/>
+${limb('M94 130 L80 106 L78 84')}${limb('M102 128 L118 102 L124 70')}
+<circle cx="78" cy="84" r="5.5" fill="${INK}"/><circle cx="124" cy="70" r="5.5" fill="${INK}"/>
+<circle cx="99" cy="112" r="12.5" fill="${INK}"/><circle cx="96" cy="98" r="4.5" fill="${INK}"/><path d="M92 96 L86 92" ${st(2)}/>`)},
 
-monk:()=>{const cloud=(x,y,s)=>`<path d="M${x} ${y} q${3*s} ${-7*s} ${9*s} ${-4*s} q${5*s} ${-7*s} ${11*s} ${-1*s} q${6*s} ${-4*s} ${9*s} ${3*s}" ${st(2,RED)}/>`;
-const beads=[...Array(9)].map((_,i)=>{const t=i/8;const x=(1-t)*(1-t)*86+2*(1-t)*t*104+t*t*120;const y=(1-t)*(1-t)*150+2*(1-t)*t*190+t*t*150;return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${RED}" stroke="${INK}" stroke-width="1.2"/>`}).join('');
-const chev=[];for(let y=114;y<=196;y+=12)for(const x of [84,94,112,122])chev.push(`<path d="M${x-4} ${y+3} L${x} ${y-3} L${x+4} ${y+3}" ${st(2.2,RED)}/>`);
-return wrap(`<ellipse cx="104" cy="230" rx="56" ry="6" fill="${INK}" opacity=".2"/>
-<polyline points="${arcSpikes(110,78,54,72,150,390,26)}" fill="none" stroke="${RED}" stroke-width="3" filter="url(#flame)"/>
-<polyline points="${arcSpikes(110,78,50,62,160,380,22)}" fill="none" stroke="${RED}" stroke-width="2" opacity=".7"/>
-${cloud(20,60,1.4)}${cloud(150,30,1.2)}${cloud(16,140,1.1)}${cloud(158,150,1.3)}${cloud(40,200,1)}${cloud(150,206,1)}${cloud(176,96,1)}
-<path d="M30 234 L80 232 M112 235 L180 232" ${st(3,RED)} opacity=".55"/>
+monk:()=>{const cloud=(x,y,s)=>`<path d="M${x} ${y} q${3*s} ${-7*s} ${9*s} ${-4*s} q${5*s} ${-7*s} ${11*s} ${-1*s} q${6*s} ${-4*s} ${9*s} ${3*s} q${2*s} ${4*s} ${-3*s} ${5*s}" ${st(1.8,RED)}/>`;
+const beads=[...Array(13)].map((_,i)=>{const t=i/12;const x=(1-t)*(1-t)*80+2*(1-t)*t*104+t*t*128;const y=(1-t)*(1-t)*140+2*(1-t)*t*196+t*t*140;return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2" fill="${RED}" stroke="${INK}" stroke-width="1.3"/><circle cx="${(x-1.3).toFixed(1)}" cy="${(y-1.3).toFixed(1)}" r="1.3" fill="#f2b6c8"/>`}).join('');
+const pat=[];for(let y=112;y<=196;y+=10)for(const x of [80,88,96,110,118,126]){pat.push(`<path d="M${x-3.5} ${y+3} L${x} ${y-3} L${x+3.5} ${y+3} M${x-2} ${y+6} L${x} ${y+2} L${x+2} ${y+6}" ${st(1.3,RED)}/>`)}
+const gaunt=(d)=>`<path d="${d}" ${st(13)}/><path d="${d}" ${st(7,RED)}/>`;
+return wrap(`<ellipse cx="106" cy="230" rx="64" ry="6" fill="${INK}" opacity=".2"/>
+<polyline points="${arcSpikes(112,72,60,86,150,400,36)}" fill="none" stroke="${RED}" stroke-width="3.5" filter="url(#flame)"/>
+<polyline points="${arcSpikes(112,72,52,72,156,394,30)}" fill="none" stroke="${RED}" stroke-width="2" opacity=".75"/>
+<polyline points="${arcSpikes(112,72,64,80,160,390,44)}" fill="none" stroke="#e0552a" stroke-width="1.5" opacity=".6" filter="url(#flame)"/>
+${cloud(8,56,1.5)}${cloud(150,20,1.3)}${cloud(4,138,1.2)}${cloud(162,150,1.4)}${cloud(28,196,1.1)}${cloud(152,206,1.1)}${cloud(180,92,1.1)}${cloud(40,18,1)}${cloud(60,226,.9)}
+<path d="M18 236 L80 233 M112 236 L188 232 M40 240 L120 238" ${st(3,RED)} opacity=".55"/>
 <path d="M94 196 L88 226 M110 196 L116 226" ${st(4)}/>
-<path d="M78 222 L92 222 L94 231 L72 231 Z" fill="${INK}"/><path d="M112 222 L126 222 L134 231 L112 231 Z" fill="${INK}"/>
-<path d="M80 96 L124 96 L130 150 L136 200 L178 192 L150 210 L118 208 L104 198 L88 208 L66 204 L74 150 Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
-${chev.join('')}
-<path d="M86 98 L78 204 M118 98 L126 204" ${st(3,RED)}/>
+<path d="M74 222 L92 222 L94 231 L68 231 Z" fill="${INK}"/><path d="M112 222 L128 222 L138 231 L112 231 Z" fill="${INK}"/>
+<path d="M78 96 L126 96 L132 150 L138 200 L184 190 L166 204 L192 206 L150 214 L118 210 L104 198 L88 210 L62 206 L72 150 Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+${pat.join('')}
+<path d="M84 98 L76 206 M120 98 L128 204" ${st(3.5,RED)}/><path d="M80 98 L72 204 M124 98 L132 202" ${st(1.2)}/>
+<path d="M138 200 L184 190 L166 204 M150 214 L192 206" ${st(2.5,RED)}/>
 <path d="M98 96 L106 96 L108 200 L100 200 Z" fill="${INK}"/>
 ${beads}
-<path d="M90 70 Q72 92 70 140 M94 76 Q80 104 80 150" ${st(2.5)}/>
-<path d="M72 100 L80 84 L98 92 L92 106 L68 112 Z" fill="${RED}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
-<path d="M132 100 L124 84 L106 92 L112 106 L136 112 Z" fill="${RED}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
-<path d="M70 92 L64 84 L76 88 M134 92 L140 84 L128 88" ${st(2)}/>
-<circle cx="102" cy="74" r="15" fill="${INK}"/>
-<g class="weapon" style="transform-origin:126px 104px"><path d="M126 104 L140 90 L146 70" ${st(11)}/><path d="M126 104 L140 90 L146 70" ${st(5,RED)}/>
-<rect x="136" y="50" width="22" height="22" rx="6" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M141 56 L153 56 M141 62 L153 62" ${st(1.5)}/></g>
-<path d="M78 108 L68 132 L66 148" ${st(11)}/><path d="M78 108 L68 132 L66 148" ${st(5,RED)}/>
-<rect x="57" y="146" width="18" height="18" rx="5" fill="${RED}" stroke="${INK}" stroke-width="2.5"/>`)},
+<path d="M92 66 Q64 92 64 152 Q72 132 78 122 Q74 152 84 170 Q88 122 96 96 Z" fill="${INK}"/><path d="M110 66 Q122 92 116 124 Q112 104 106 92Z" fill="${INK}"/>
+<path d="M64 104 L72 80 L80 90 L86 74 L98 92 L92 108 L62 118Z" fill="${RED}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M70 106 L80 92 M78 108 L88 92" ${st(1.3)}/>
+<path d="M140 104 L132 80 L124 90 L118 74 L106 92 L112 108 L142 118Z" fill="${RED}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M134 106 L124 92 M126 108 L116 92" ${st(1.3)}/>
+<circle cx="102" cy="72" r="16" fill="${INK}"/><path d="M88 64 L82 48 L94 58 L98 42 L104 58 L114 44 L116 62Z" fill="${INK}"/>
+<g class="weapon" style="transform-origin:126px 104px">${gaunt('M126 104 L142 90 L148 68')}<path d="M134 96 L142 100 M140 84 L148 86" ${st(1.5,PAPER)}/>
+<rect x="136" y="46" width="24" height="24" rx="6" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M141 52 L155 52 M141 58 L155 58 M141 64 L155 64" ${st(1.5)}/><path d="M160 50 L168 46 M160 58 L170 58" ${st(2.5)}/></g>
+${gaunt('M78 108 L68 132 L66 148')}<rect x="56" y="146" width="20" height="20" rx="5" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M60 152 L72 152 M60 158 L72 158" ${st(1.4)}/>`)},
 
 hand:()=>{const G='#f2b62e',GD='#c4660a';
-const open=(x,y,r,s)=>`<g class="ammo" transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><path d="M-13 -2 Q-14 18 0 20 Q14 18 13 -2 Z" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-13,-6.5,0,6.5].map((fx,i)=>`<rect x="${fx}" y="${-26+(i===0||i===3?5:0)}" width="6.2" height="${i===0||i===3?22:26}" rx="3.1" fill="${G}" stroke="${INK}" stroke-width="1.8"/>`).join('')}<rect x="9" y="2" width="16" height="7" rx="3.5" fill="${G}" stroke="${INK}" stroke-width="1.8" transform="rotate(-40 9 2)"/><path d="M-8 6 Q0 12 8 6" ${st(1.5,GD)}/></g>`;
-const fist=(x,y,r,s)=>`<g class="ammo" transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><rect x="-6" y="12" width="12" height="12" fill="${G}" stroke="${INK}" stroke-width="1.8"/><rect x="-14" y="-12" width="28" height="26" rx="9" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-9,-3,3,9].map(fx=>`<circle cx="${fx}" cy="-12" r="3.6" fill="${G}" stroke="${INK}" stroke-width="1.6"/>`).join('')}<path d="M-12 0 Q-2 6 8 2" ${st(2,GD)}/></g>`;
-const spark=(x,y,s)=>`<path d="M${x-s} ${y} L${x+s} ${y} M${x} ${y-s} L${x} ${y+s}" ${st(2.5,G)}/>`;
-return wrap(`<ellipse cx="100" cy="230" rx="52" ry="6" fill="${INK}" opacity=".2"/>
-${spark(18,40,10)}${spark(184,96,9)}${spark(12,170,8)}${spark(188,210,10)}${spark(100,16,8)}${spark(64,108,6)}${spark(140,104,6)}${spark(36,96,5)}
-${open(46,56,-30,1.35)}${open(156,54,32,1.35)}${fist(24,132,-80,1.15)}${open(178,128,80,1.2)}${fist(44,202,-140,1.05)}${open(160,200,140,1.1)}
-<path d="M94 104 L108 104 L118 150 L138 224 L114 212 L100 226 L86 214 L66 224 L86 150 Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+const open=(x,y,r,s)=>`<g class="ammo" transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><path d="M-14 -2 Q-15 19 0 21 Q15 19 14 -2 Z" fill="${G}" stroke="${INK}" stroke-width="2"/><path d="M-9 6 Q0 12 9 4 M-6 13 Q2 16 8 11" ${st(1.3,GD)}/>${[-14,-7,0,7].map((fx,i)=>{const h=i===0||i===3?23:28;return `<rect x="${fx}" y="${-h+2}" width="6.6" height="${h}" rx="3.3" fill="${G}" stroke="${INK}" stroke-width="1.8"/><path d="M${fx+1} ${-h*.45} L${fx+5.6} ${-h*.45} M${fx+1} ${-h*.05} L${fx+5.6} ${-h*.05}" ${st(1,GD)}/><path d="M${fx+5.2} ${-h+5} L${fx+5.2} 0" ${st(1.4,GD)} opacity=".6"/>`}).join('')}<rect x="9" y="2" width="18" height="8" rx="4" fill="${G}" stroke="${INK}" stroke-width="1.8" transform="rotate(-40 9 2)"/></g>`;
+const fist=(x,y,r,s)=>`<g class="ammo" transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><rect x="-6" y="12" width="12" height="12" fill="${G}" stroke="${INK}" stroke-width="1.8"/><rect x="-15" y="-13" width="30" height="27" rx="9" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-10,-3.5,3.5,10].map(fx=>`<circle cx="${fx}" cy="-12" r="3.8" fill="${G}" stroke="${INK}" stroke-width="1.6"/><path d="M${fx} -8 L${fx} 0" ${st(1,GD)}/>`).join('')}<path d="M-13 1 Q-2 7 9 3" ${st(2,GD)}/><path d="M10 -6 L14 8" ${st(2.5,GD)} opacity=".6"/></g>`;
+const spark=(x,y,s)=>`<path d="M${x-s} ${y} L${x+s} ${y} M${x} ${y-s} L${x} ${y+s}" ${st(2.6,G)}/><path d="M${x-s*.4} ${y-s*.4} L${x+s*.4} ${y+s*.4} M${x-s*.4} ${y+s*.4} L${x+s*.4} ${y-s*.4}" ${st(1.4,G)}/>`;
+return wrap(`<ellipse cx="100" cy="230" rx="54" ry="6" fill="${INK}" opacity=".2"/>
+${[...Array(12)].map((_,i)=>{const a=i*30*Math.PI/180;return `<path d="M${100+20*Math.cos(a)} ${120+20*Math.sin(a)} L${100+96*Math.cos(a)} ${120+96*Math.sin(a)}" stroke="${G}" stroke-width="1.5" opacity=".28"/>`}).join('')}
+${spark(14,36,11)}${spark(186,94,10)}${spark(10,170,9)}${spark(190,212,11)}${spark(100,12,9)}${spark(64,106,6)}${spark(140,102,6)}${spark(36,94,5)}${spark(166,30,6)}
+${open(44,54,-30,1.5)}${open(158,52,32,1.5)}${fist(22,132,-80,1.3)}${open(180,128,80,1.35)}${fist(44,204,-140,1.15)}${open(162,202,140,1.25)}
+<path d="M94 104 L108 104 L118 150 L142 226 L118 214 L104 228 L88 216 L62 226 L86 150 Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M98 120 L92 210 M104 120 L112 214 M90 150 L76 216 M112 150 L128 218" ${st(1.2)} opacity=".45"/>
 <path d="M96 100 L106 100 L104 162 L98 162 Z" fill="${INK}"/>
-<path d="M99 160 L94 226 M103 160 L112 192 L106 226" ${st(4.5)}/>
+<path d="M99 160 L94 226 L86 228 M103 160 L112 192 L106 226 L114 228" ${st(4.5)}/>
 <path d="M97 108 L88 126 L92 142 M105 108 L114 122 L110 138" ${st(4)}/>
 <circle cx="101" cy="88" r="12" fill="${INK}"/>
-<path d="M93 80 L89 66 L98 78 Z M108 78 L114 66 L111 81 Z" fill="${INK}"/>`)},
+<path d="M93 80 L88 64 L98 77 Z M108 77 L115 63 L111 81 Z" fill="${INK}"/><circle cx="97" cy="88" r="1.6" fill="${G}"/><circle cx="105" cy="88" r="1.6" fill="${G}"/>`)},
 
 panda:()=>wrap(`${shadow(102,64)}
 <g class="weapon" style="transform-origin:130px 128px"><line x1="26" y1="194" x2="188" y2="90" stroke="${INK}" stroke-width="10" stroke-linecap="round"/><line x1="27" y1="193.5" x2="187" y2="90.5" stroke="#6f9a3e" stroke-width="6" stroke-linecap="round"/>
@@ -890,18 +907,24 @@ knight:()=>wrap(`${shadow(100,66)}
 <path d="M120 118 L136 132" ${st(6,GOLD)}/>
 </g>`),
 
-reaper:()=>wrap(`<ellipse cx="100" cy="232" rx="54" ry="6" fill="${INK}" opacity=".18"/>
-<g class="weapon" style="transform-origin:108px 122px"><line x1="150" y1="230" x2="68" y2="16" stroke="#3a2d20" stroke-width="6" stroke-linecap="round"/>
-<path d="M68 18 C110 -4 172 4 200 46 C172 24 116 22 72 32 Z" fill="#e2ddd1" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
-<path d="M80 22 C120 10 168 18 190 38" ${st(1.4)} opacity=".45"/>
-<path d="M64 14 L58 8 M66 22 L58 26" ${st(3)}/></g>
-<path d="M100 60 C78 60 70 84 74 106 C64 148 56 184 40 222 L52 214 L58 228 L70 212 L80 232 L92 214 L102 234 L112 214 L124 230 L130 210 L144 222 C134 180 128 140 124 106 C128 82 120 60 100 60 Z" fill="#1f2a24" stroke="${INK}" stroke-width="2"/>
-<path d="M86 110 C80 150 74 180 64 214 M100 112 C98 150 96 190 92 214 M114 110 C116 150 120 180 124 214" ${st(2,'#3b5145')}/>
-<ellipse cx="101" cy="86" rx="12" ry="15" fill="#070807"/>
-<circle cx="105" cy="84" r="1.8" fill="#9fe0c0"/><circle cx="97" cy="84" r="1.6" fill="#9fe0c0"/>
-<path d="M124 108 C116 110 110 116 108 122" ${st(11,'#1f2a24')}/>
-<path d="M104 120 L116 114 M105 125 L117 119 M107 130 L117 125" ${st(2.5,'#e8e2d4')}/>
-<path d="M40 190 Q24 182 28 168 M150 196 Q170 186 164 170 M30 222 Q20 214 24 204" ${st(3,'#1f2a24')} opacity=".5"/>`),
+reaper:()=>wrap(`<ellipse cx="100" cy="232" rx="58" ry="6" fill="${INK}" opacity=".2"/>
+<path d="M36 196 Q18 186 22 168 M154 200 Q176 190 170 172 M26 224 Q12 214 18 202 M176 224 Q190 214 184 200" ${st(3,'#1f2a24')} opacity=".5"/>
+<g class="weapon" style="transform-origin:108px 122px">
+<line x1="152" y1="232" x2="68" y2="14" stroke="${INK}" stroke-width="9" stroke-linecap="round"/><line x1="151" y1="230" x2="69" y2="16" stroke="#4a3a2a" stroke-width="5" stroke-linecap="round"/>
+<path d="M78 40 L84 38 M86 60 L92 58 M126 162 L132 160 M134 182 L140 180" ${st(3,'#7a6a52')}/>
+<path d="M66 16 C110 -10 178 0 206 48 C196 40 182 32 166 28 C130 20 100 22 72 34 Z" fill="#e2ddd1" stroke="${INK}" stroke-width="2.8" stroke-linejoin="round"/>
+<path d="M80 24 C120 8 170 14 198 42" ${st(1.4)} opacity=".45"/><path d="M84 30 C120 18 160 22 186 38" ${st(4,'#b8b2a4')} opacity=".6"/>
+<path d="M70 14 L60 6 M70 22 L58 26 M66 18 L54 16" ${st(3)}/>
+</g>
+<path d="M100 58 C76 58 68 84 72 106 C62 150 54 186 38 222 L50 212 L54 230 L66 214 L76 234 L88 214 L100 236 L110 214 L122 232 L128 212 L142 226 L138 206 L150 222 C138 180 130 140 126 106 C130 80 122 58 100 58 Z" fill="#1f2a24" stroke="${INK}" stroke-width="2"/>
+<path d="M84 108 C78 150 70 184 58 216 M94 112 C92 150 88 190 84 220 M106 112 C106 150 108 190 112 222 M118 108 C120 150 126 186 134 216" ${st(2.2,'#3b5145')}/>
+<path d="M78 120 C70 150 64 170 56 196 M122 118 C128 150 134 170 142 196" ${st(1.4)} opacity=".6"/>
+<path d="M80 74 C84 60 116 60 120 74 C122 90 116 104 100 106 C84 104 78 90 80 74 Z" fill="#0a0d0b"/>
+<path d="M82 72 C86 62 114 62 118 72" ${st(2,'#3b5145')}/>
+<circle cx="105" cy="84" r="2.2" fill="#9fe0c0"/><circle cx="96" cy="84" r="2" fill="#9fe0c0"/><circle cx="105" cy="84" r="5" fill="#9fe0c0" opacity=".2"/><circle cx="96" cy="84" r="5" fill="#9fe0c0" opacity=".2"/>
+<path d="M124 108 C116 110 110 116 108 122" ${st(12,'#1f2a24')}/>
+<path d="M102 118 L116 112 M103 124 L117 118 M105 130 L117 124 M110 118 L111 132" ${st(2.5,'#e8e2d4')}/>
+<circle cx="78" cy="160" r="2.5" fill="#9fe0c0" opacity=".35"/><circle cx="124" cy="150" r="2" fill="#9fe0c0" opacity=".35"/>`),
 
 /* enemies (face left) */
 blob:(o={})=>wrap(`${shadow(100,64)}
@@ -1405,6 +1428,100 @@ ${[[60,150],[90,130],[130,134],[150,160],[80,170],[120,174]].map(([x,y])=>`<circ
 <circle cx="104" cy="150" r="13" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><rect x="99" y="145" width="10" height="10" fill="#c9a23a" stroke="${INK}" stroke-width="1.5"/>
 <path d="M84 76 L92 60 L100 74 L108 58 L116 74 L124 60 L128 78Z" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>`),
 
+jiangshi:(o={})=>wrap(`${shadow(100,46)}
+<path d="M90 176 L88 222 L76 224 M110 176 L112 222 L124 224" ${st(7,'#2c3a5a')}/>
+<path d="M78 100 L122 100 L128 180 L72 180Z" fill="#2c3a5a" stroke="${INK}" stroke-width="3"/>
+<path d="M78 118 L122 118 M100 100 L100 180" ${st(2,GOLD)}/><circle cx="100" cy="140" r="9" fill="${GOLD}" stroke="${INK}" stroke-width="1.5"/>
+<path d="M80 108 L30 112 M120 108 L70 116" ${st(9,'#2c3a5a')}/><path d="M30 106 L18 108 L18 118 L30 118 M70 110 L58 112 L58 122 L70 122" fill="#cfe0d0" stroke="${INK}" stroke-width="2"/>
+<rect x="80" y="52" width="40" height="48" rx="10" fill="#cfe0d0" stroke="${INK}" stroke-width="3"/>
+<path d="M76 54 L124 54 L118 30 L82 30Z" fill="${INK}"/><path d="M80 40 L120 40" ${st(2,RED)}/>
+<rect x="92" y="38" width="14" height="38" fill="#f2d24a" stroke="${INK}" stroke-width="1.5"/><path d="M96 44 Q104 48 97 54 Q105 58 97 64 Q103 68 99 72" ${st(1.5,RED)}/>
+<path d="M84 80 L92 82 M110 82 L118 80" ${st(2.5)}/><path d="M86 92 L90 96 L94 92 L98 96 L102 92 L106 96 L110 92" ${st(1.5,PAPER)}/>`),
+
+paperman:(o={})=>wrap(`${shadow(100,46)}
+<path d="M70 70 L130 70 L140 200 L60 200Z" fill="#f4f0e4" stroke="${INK}" stroke-width="2.5"/>
+<path d="M70 70 L60 200 M130 70 L140 200" ${st(1.2)} opacity=".4"/><path d="M76 110 L126 112 M74 150 L132 150" ${st(1.2,RED)} opacity=".6"/>
+<path d="M90 200 L86 226 M110 200 L114 226" ${st(4,'#d9cfb8')}/>
+<path d="M70 80 L36 110 L40 116 M130 80 L164 110 L160 116" ${st(5,'#f4f0e4')}/><path d="M70 80 L36 110 M130 80 L164 110" ${st(1.2)} opacity=".6"/>
+<circle cx="100" cy="46" r="26" fill="#f4f0e4" stroke="${INK}" stroke-width="2.5"/>
+<circle cx="88" cy="48" r="5" fill="${RED}" opacity=".6"/><circle cx="112" cy="48" r="5" fill="${RED}" opacity=".6"/>
+<path d="M84 40 Q88 36 92 40 M108 40 Q112 36 116 40" ${st(2.5)}/><path d="M92 58 Q100 64 108 58" ${st(2.5,RED)}/>
+<path d="M76 30 Q100 6 124 30 Q112 22 100 24 Q88 22 76 30Z" fill="${INK}"/>`),
+
+hairghost:(o={})=>wrap(`<ellipse cx="100" cy="230" rx="40" ry="5" fill="${INK}" opacity=".14"/>
+<path d="M66 100 C60 160 50 200 40 226 L60 214 L70 228 L82 212 L96 230 L108 212 L120 228 L132 212 L146 226 C140 200 134 160 130 100Z" fill="#f4f6f8" stroke="${INK}" stroke-width="2.5" opacity=".95"/>
+<path d="M68 70 C60 110 56 150 62 196 M74 76 C70 120 72 160 76 200 M126 74 C132 120 132 160 128 200 M132 70 C140 110 142 150 138 190" ${st(4)}/>
+<path d="M70 66 C70 30 130 30 130 66 L132 120 C120 128 80 128 68 120Z" fill="${INK}"/>
+<path d="M90 84 L96 88 L90 90Z M110 84 L104 88 L110 90Z" fill="${RED}"/>
+<path d="M66 120 L40 150 L34 146 M134 120 L160 150 L166 146" ${st(4,'#f4f6f8')}/><path d="M66 120 L40 150 M134 120 L160 150" ${st(1.2)}/>`),
+
+eyeball:(o={})=>wrap(`<ellipse cx="100" cy="230" rx="44" ry="5" fill="${INK}" opacity=".14"/>
+${[[60,180,40,226],[80,190,72,228],[120,190,128,228],[140,180,160,226],[56,160,24,200],[144,160,176,200]].map(([x1,y1,x2,y2])=>`<path d="M${x1} ${y1} Q${(x1+x2)/2+10} ${(y1+y2)/2} ${x2} ${y2}" ${st(5,'#7a2a3a')}/>`).join('')}
+<circle cx="100" cy="120" r="64" fill="#f4f0ea" stroke="${INK}" stroke-width="3.5"/>
+<path d="M50 96 Q60 110 54 124 M150 100 Q140 114 146 128 M70 162 Q80 156 86 168 M120 168 Q126 156 136 160" ${st(2,RED)}/>
+<circle cx="88" cy="118" r="28" fill="#7a3fa6" stroke="${INK}" stroke-width="2.5"/><circle cx="84" cy="118" r="13" fill="${INK}"/><circle cx="78" cy="112" r="5" fill="#ffffff"/>
+<path d="M44 84 Q100 50 156 84" ${st(5)}/>`),
+
+spiderqueen:()=>wrap(`${shadow(104,86)}
+${[0,1,2,3].map(i=>`<path d="M${88+i*8} 150 L${50-i*8} ${100+i*16} L${24-i*4} ${200+i*6}" ${st(6)}/><path d="M${112+i*8} 150 L${160+i*8} ${100+i*16} L${184+i*4} ${200+i*6}" ${st(6)}/>`).join('')}
+<ellipse cx="120" cy="150" rx="50" ry="42" fill="#2a1a2a" stroke="${INK}" stroke-width="3"/>
+<path d="M100 130 L110 120 L120 132 L130 120 L140 132 L130 146 L120 140 L110 146Z" fill="${RED}"/>
+<path d="M98 172 Q120 186 142 172" ${st(2,RED)}/>
+<ellipse cx="74" cy="150" rx="32" ry="28" fill="#f4f0e4" stroke="${INK}" stroke-width="3"/>
+<path d="M54 140 L66 146 L56 150Z M94 140 L82 146 L92 150Z" fill="${INK}"/><circle cx="62" cy="146" r="3" fill="${RED}"/><circle cx="86" cy="146" r="3" fill="${RED}"/>
+<path d="M58 164 L64 170 L70 164 L76 170 L82 164 L88 170" ${st(2)}/>
+<path d="M50 132 Q74 116 98 132" ${st(3,RED)}/>
+<path d="M60 118 L64 98 L72 114 L78 94 L84 114 L90 98 L94 118" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>`),
+
+oxhead:(o={})=>wrap(`${shadow(100,62)}
+<path d="M92 170 L86 222 L72 224 M110 170 L116 222 L130 224" ${st(9,'#5a3a2a')}/>
+<path d="M74 100 L128 100 L132 174 L70 174Z" fill="#3a2a22" stroke="${INK}" stroke-width="3"/><path d="M74 120 L128 120 M100 100 L100 174" ${st(2,RED)}/>
+<line x1="40" y1="40" x2="56" y2="224" stroke="#6b4a2a" stroke-width="6" stroke-linecap="round"/><path d="M28 36 L52 30 L54 60 L40 66 Z M40 40 L20 28" fill="#9aa7b4" stroke="${INK}" stroke-width="2"/>
+<path d="M74 110 L52 130" ${st(9,'#5a3a2a')}/>
+<path d="M76 68 C72 44 128 44 124 68 C124 92 112 102 100 102 C88 102 76 92 76 68Z" fill="#5a3a2a" stroke="${INK}" stroke-width="3"/>
+<path d="M78 56 C60 50 50 34 54 20 C64 34 76 40 86 46 M122 56 C140 50 150 34 146 20 C136 34 124 40 114 46" fill="#e8e2d4" stroke="${INK}" stroke-width="2.5"/>
+<ellipse cx="100" cy="88" rx="14" ry="10" fill="#7a5a4a" stroke="${INK}" stroke-width="2"/><circle cx="95" cy="88" r="2.5" fill="${INK}"/><circle cx="105" cy="88" r="2.5" fill="${INK}"/>
+<path d="M86 66 L94 70 M114 66 L106 70" ${st(3)}/><circle cx="90" cy="72" r="3" fill="${RED}"/><circle cx="110" cy="72" r="3" fill="${RED}"/><circle cx="100" cy="98" r="4" fill="none" stroke="${GOLD}" stroke-width="2"/>`),
+
+horseface:(o={})=>wrap(`${shadow(100,62)}
+<path d="M92 170 L86 222 L72 224 M110 170 L116 222 L130 224" ${st(9,'#3a3a46')}/>
+<path d="M74 100 L128 100 L132 174 L70 174Z" fill="#2a2a36" stroke="${INK}" stroke-width="3"/><path d="M74 120 L128 120 M100 100 L100 174" ${st(2,'#9aa7b4')}/>
+<path d="M74 110 L44 126" ${st(9,'#3a3a46')}/><path d="M44 126 C20 120 10 140 22 150 C34 160 50 146 44 126Z" fill="none" stroke="#9aa7b4" stroke-width="3"/><path d="M28 150 L20 180 M30 150 L40 184" ${st(2,'#9aa7b4')}/>
+<path d="M88 100 C70 96 60 70 66 48 C70 34 92 30 104 40 C116 50 112 70 110 100Z" fill="#6a6a7a" stroke="${INK}" stroke-width="3"/>
+<path d="M66 48 C58 60 56 74 62 84 C70 90 80 86 82 78" fill="#8a8a9a" stroke="${INK}" stroke-width="2"/>
+<path d="M92 36 L86 16 L100 32 M104 40 L110 18 L112 42" fill="#6a6a7a" stroke="${INK}" stroke-width="2"/>
+<path d="M104 34 Q116 50 112 80" ${st(5,INK)}/>
+<circle cx="84" cy="56" r="3.5" fill="${RED}"/><path d="M62 78 L68 76" ${st(2)}/>`),
+
+wraith:(o={})=>wrap(`<ellipse cx="100" cy="230" rx="40" ry="5" fill="${INK}" opacity=".14"/>
+<path d="M100 40 C60 40 52 90 58 130 C54 170 44 200 34 228 C52 216 60 226 74 214 C84 228 96 218 104 228 C114 216 126 226 136 212 C146 222 156 214 166 222 C152 190 144 160 142 128 C150 90 140 40 100 40Z" fill="#14161c" opacity=".92"/>
+<path d="M60 130 C40 120 26 100 20 80 M140 128 C160 120 174 100 180 80" ${st(5,'#14161c')}/><path d="M20 80 L10 72 M20 80 L12 86 M180 80 L190 72 M180 80 L188 86" ${st(2.5,'#14161c')}/>
+<ellipse cx="86" cy="84" rx="8" ry="5" fill="#9fe0ff"/><ellipse cx="114" cy="84" rx="8" ry="5" fill="#9fe0ff"/><ellipse cx="86" cy="84" rx="14" ry="9" fill="#9fe0ff" opacity=".2"/><ellipse cx="114" cy="84" rx="14" ry="9" fill="#9fe0ff" opacity=".2"/>
+<path d="M88 104 Q100 112 112 104" ${st(2,'#9fe0ff')} opacity=".7"/>`),
+
+bonehound:(o={})=>{const B2='#f2ece0';const bone=d=>`<path d="${d}" ${st(8)}/><path d="${d}" ${st(4,B2)}/>`;
+return wrap(`${shadow(104,70)}
+${bone('M70 150 L64 222')}${bone('M90 154 L88 222')}${bone('M136 150 L140 222')}${bone('M154 148 L162 222')}
+${bone('M70 140 L158 136')}${[86,102,118,134].map(x=>bone(`M${x} 140 Q${x+4} 160 ${x} 172`)).join('')}
+${bone('M158 136 Q184 120 190 96')}
+<path d="M72 130 L30 126 L18 140 L36 152 L70 150 Z" fill="${B2}" stroke="${INK}" stroke-width="3"/>
+<path d="M60 128 L62 106 L74 128 Z" fill="${B2}" stroke="${INK}" stroke-width="2"/>
+<circle cx="48" cy="134" r="5" fill="${INK}"/><circle cx="48" cy="134" r="2" fill="${RED}"/>
+<path d="M20 142 L24 148 L28 142 L32 148 L36 142" ${st(2)}/>
+<path d="M30 160 Q24 172 30 184 M44 160 Q40 176 46 186" ${st(2,'#9fe0c0')} opacity=".6"/>`)},
+
+ghostemperor:()=>wrap(`${shadow(100,86)}
+<polygon points="${spikes(100,100,62,96,24)}" fill="#3a6a5a" opacity=".3" filter="url(#flame)"/>
+<path d="M60 96 L140 96 L162 222 L38 222Z" fill="#1a1e24" stroke="${INK}" stroke-width="3"/>
+<path d="M70 110 L130 110 M66 140 L134 140 M62 170 L138 170 M58 200 L142 200" ${st(2.5,'#3a6a5a')}/>
+<path d="M90 96 L100 130 L110 96" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>
+<path d="M60 104 L28 150 L40 160 L64 128 M140 104 L172 70 L162 60 L136 92" ${st(11,'#1a1e24')}/>
+<path d="M172 70 L180 30 M174 52 L196 46" ${st(5,GOLD)}/><circle cx="182" cy="26" r="9" fill="#9fe0c0" stroke="${INK}" stroke-width="2"/>
+<rect x="72" y="40" width="56" height="58" rx="12" fill="#c8d8d0" stroke="${INK}" stroke-width="3"/>
+<path d="M66 44 L134 44 L128 18 L72 18Z" fill="${INK}"/><rect x="62" y="40" width="76" height="6" fill="${GOLD}"/>
+${[76,86,96,106,116,126].map(x=>`<line x1="${x}" y1="46" x2="${x}" y2="62" stroke="${INK}" stroke-width="1.5"/><circle cx="${x}" cy="64" r="2" fill="${GOLD}"/>`).join('')}
+<path d="M82 74 L94 78 L82 82Z M118 74 L106 78 L118 82Z" fill="#3aff9a"/><path d="M84 90 L90 94 L96 90 L102 94 L108 90 L114 94" ${st(2)}/>`),
+
 golem:()=>wrap(`${shadow(100,76)}
 <rect x="66" y="168" width="28" height="54" rx="6" fill="#8b8478" stroke="${INK}" stroke-width="3.5"/>
 <rect x="108" y="168" width="28" height="54" rx="6" fill="#8b8478" stroke="${INK}" stroke-width="3.5"/>
@@ -1616,6 +1733,26 @@ moon:()=>{let stars='';for(let i=0;i<70;i++)stars+=`<circle cx="${(i*151)%1200}"
  ${inkCloud(300,250,1.6,'#ffffff',.5)}${inkCloud(820,240,1.8,'#ffffff',.5)}
  <rect x="0" y="300" width="1200" height="100" fill="#e8ecf6"/>
  <path d="M0 336 H1200 M0 368 H1200" stroke="#c9cde0" stroke-width="2"/>`)},
+haunted:()=>{let fog='';for(let i=0;i<5;i++)fog+=`<ellipse cx="${i*260+80}" cy="${300+(i%2)*20}" rx="200" ry="26" fill="#cfd4e0" opacity=".18"/>`;
+ const tree=(x,s)=>`<path d="M${x} 340 L${x} ${340-120*s} M${x} ${340-80*s} L${x-50*s} ${340-130*s} L${x-70*s} ${340-128*s} M${x} ${340-100*s} L${x+46*s} ${340-150*s} L${x+60*s} ${340-160*s} M${x-30*s} ${340-112*s} L${x-40*s} ${340-150*s}" fill="none" stroke="#14161c" stroke-width="${7*s}" stroke-linecap="round"/>`;
+ return bgWrap(`<rect width="1200" height="400" fill="url(#g-haunted)"/>
+ <circle cx="960" cy="90" r="56" fill="#e8e0c8"/><circle cx="986" cy="78" r="50" fill="#2a2440" opacity=".55"/>
+ <path d="M500 330 L500 170 L560 120 L620 170 L620 330Z M540 140 L540 100 L556 100 L556 124" fill="#14161c"/><path d="M450 330 L450 210 L500 180 L500 330Z M620 330 L620 200 L690 160 L740 200 L740 330Z" fill="#1c1e26"/>
+ ${[[520,200],[580,200],[520,260],[580,260],[660,230],[700,230],[470,250]].map(([x,y],i)=>`<rect x="${x}" y="${y}" width="16" height="22" fill="${i%3?'#ffd23a':'#3a3a46'}" opacity="${i%3?.7:1}"/>`).join('')}
+ ${tree(150,1.2)}${tree(1080,1.1)}${tree(320,.8)}
+ ${[0,1,2].map(i=>`<path d="M${820+i*70} 330 L${820+i*70} 300 Q${830+i*70} 284 ${840+i*70} 300 L${840+i*70} 330Z" fill="#3a3a46" stroke="#14161c" stroke-width="2"/>`).join('')}
+ <path d="M380 80 q8 -8 16 0 q8 -8 16 0 M420 60 q6 -6 12 0 q6 -6 12 0" fill="none" stroke="#14161c" stroke-width="2.5"/>
+ ${fog}<rect x="0" y="330" width="1200" height="70" fill="#4a4a3a"/>
+ <path d="M0 350 Q300 340 600 352 Q900 362 1200 348" stroke="#3a3a2a" stroke-width="3" fill="none"/>`)},
+underworld:()=>{let fl='';for(let i=0;i<26;i++)fl+=`<circle cx="${(i*149)%1200}" cy="${40+(i*67)%240}" r="${3+(i%3)*2}" fill="#3aff9a" opacity=".35"/>`;
+ return bgWrap(`<rect width="1200" height="400" fill="url(#g-under)"/>
+ <path d="M0 250 Q200 190 400 240 Q600 180 800 236 Q1000 190 1200 240 L1200 400 L0 400Z" fill="#2a1418" opacity=".7"/>
+ <path d="M0 300 Q300 284 600 300 Q900 316 1200 296 L1200 336 L0 336Z" fill="#8a1c1c" opacity=".85"/><path d="M0 312 Q300 300 600 314 Q900 326 1200 310" stroke="#d23a2a" stroke-width="3" fill="none"/>
+ <path d="M420 300 Q600 220 780 300" fill="none" stroke="#5a4a3a" stroke-width="14"/><path d="M420 300 Q600 220 780 300" fill="none" stroke="#7a6a52" stroke-width="6"/>
+ ${[460,520,580,640,700,750].map((x,i)=>`<line x1="${x}" y1="${296-Math.sin((x-420)/360*Math.PI)*78}" x2="${x}" y2="${276-Math.sin((x-420)/360*Math.PI)*78}" stroke="#5a4a3a" stroke-width="5"/>`).join('')}
+ ${pagoda(180,300,1.1,'#14161c')}${pagoda(1040,300,1.3,'#14161c')}
+ ${[300,900].map(x=>`<line x1="${x}" y1="0" x2="${x}" y2="80" stroke="#14161c" stroke-width="2"/><ellipse cx="${x}" cy="100" rx="18" ry="24" fill="#3aff9a" opacity=".55" stroke="#14161c" stroke-width="2"/>`).join('')}
+ ${fl}<rect x="0" y="336" width="1200" height="64" fill="#3a2a2a"/>`)},
 demon:()=>{let fl='';for(let x=0;x<1200;x+=30){const h=18+((x*7)%23);fl+=`<path d="M${x} 336 Q${x+8} ${336-h} ${x+15} ${336-h-8} Q${x+20} ${336-h+6} ${x+30} 336Z" fill="${RED}" opacity=".75"/><path d="M${x+8} 336 Q${x+13} ${336-h/2} ${x+16} ${336-h/2-6} Q${x+19} ${336-h/2} ${x+22} 336Z" fill="${GOLD}" opacity=".8"/>`}
  const emb=[...Array(26)].map((_,i)=>`<circle cx="${(i*137)%1200}" cy="${60+(i*53)%240}" r="${1.5+(i%3)}" fill="${GOLD}" opacity=".7"/>`).join('');
  return bgWrap(`<rect width="1200" height="400" fill="url(#g-demon)"/>
@@ -1642,7 +1779,7 @@ const BEHAV={
  puffer:{blk:.3,ctr:.15,verb:'鼓成刺球挡住'},jellyfish:{blk:.25,ctr:.15,verb:'变透明躲开'},seahorse:{blk:.2,ctr:.25,verb:'卷起尾巴躲开'},shark:{blk:.1,ctr:.35,verb:'甩尾躲开'},kraken:{blk:.25,ctr:.3,verb:'喷墨躲开'},
  shrimp:{blk:.25,ctr:.2,verb:'弹跳闪开'},clam:{blk:.45,ctr:.05,verb:'合上贝壳'},eel:{blk:.15,ctr:.3,verb:'滑溜溜地躲开'},angler:{blk:.2,ctr:.25,verb:'关灯躲进黑暗'},dragonking:{blk:.3,ctr:.25,verb:'用三叉戟格挡'},
  lavaman:{blk:.35,ctr:.1,verb:'用岩石身体硬挡'},salamander:{blk:.15,ctr:.3,verb:'钻进火里躲开'},wisp:{blk:.3,ctr:.15,verb:'化成火苗躲开'},imp:{blk:.15,ctr:.3,verb:'跳来跳去躲开'},flamelord:{blk:.3,ctr:.25,verb:'用火焰盾格挡'},
- rabbit:{blk:.25,ctr:.2,verb:'蹦跳躲开'},moth:{blk:.3,ctr:.15,verb:'扇翅飞开'},jadeguard:{blk:.4,ctr:.1,verb:'举玉盾格挡'},starspirit:{blk:.2,ctr:.25,verb:'闪成星光躲开'},toad:{blk:.3,ctr:.25,verb:'缩成金球'}};
+ rabbit:{blk:.25,ctr:.2,verb:'蹦跳躲开'},jiangshi:{blk:.2,ctr:.3,verb:'僵硬地一跳躲开'},paperman:{blk:.3,ctr:.15,verb:'变成一张薄纸躲开'},hairghost:{blk:.3,ctr:.2,verb:'用长发挡住'},eyeball:{blk:.2,ctr:.25,verb:'眨眼闪开'},spiderqueen:{blk:.3,ctr:.3,verb:'织网挡住'},oxhead:{blk:.35,ctr:.2,verb:'用钢叉格挡'},horseface:{blk:.25,ctr:.3,verb:'甩锁链格挡'},wraith:{blk:.35,ctr:.15,verb:'化成黑雾躲开'},bonehound:{blk:.15,ctr:.35,verb:'骨头散开躲过'},ghostemperor:{blk:.3,ctr:.3,verb:'用幽冥之力格挡'},moth:{blk:.3,ctr:.15,verb:'扇翅飞开'},jadeguard:{blk:.4,ctr:.1,verb:'举玉盾格挡'},starspirit:{blk:.2,ctr:.25,verb:'闪成星光躲开'},toad:{blk:.3,ctr:.25,verb:'缩成金球'}};
 
 /* ============ DATA ============ */
 const CHARS={
@@ -1733,7 +1870,7 @@ const ULT={
  knight:{name:'圣光审判',desc:'圣光3击无视护盾，并恢复20%生命',heal:.2,hits:3,mult:1.8,ign:1,fx:'ice'}};
 Object.keys(ULT).forEach(k=>{if(SKILLS[k])SKILLS[k].push(Object.assign({cost:5,unlock:5},ULT[k]))});
 const GAUGE_MAX=5;
-function worldLv(){return [1,2,3,4,5,6,7,8,9,10,11,12].filter(c=>S.prog[c]>=5).length}
+function worldLv(){return [1,2,3,4,5,6,7,8,9,10,11,12,13,14].filter(c=>S.prog[c]>=5).length}
 const CHAR_ORDER=['brush','monk','panda','liondance','hand','taoist','archer','qin','mech','reaper','sword','taiji','hammer','fan','frost','blades','ninja','spear','healer','kitegirl','rider','monkey','painter','drummer','bee','knight','giant'];
 const RAR=[{n:'普通',c:'#6d6a63'},{n:'稀有',c:'#2f6fb0'},{n:'史诗',c:'#7a3fa6'},{n:'传说',c:'#c98f17'},{n:'神话',c:'#d23a2a'}];
 const CHESTS=[
@@ -1779,7 +1916,11 @@ const CHAPTERS=[
  {id:11,tower:4,name:'火焰山',bg:'volcano',unit:'第四塔 · 一层 · 综合挑战',topics:['u1','u2','u3','u4'],enemies:[['熔岩怪','lavaman',{}],['火蜥蜴','salamander',{}],['火灵','wisp',{}],['火焰小鬼','imp',{}]],
   boss:{name:'火焰魔君',art:'flamelord',powers:['shield','timer'],desc:'火焰之王！带着护盾，每题限时60秒。'}},
  {id:12,tower:4,name:'广寒月宫',bg:'moon',unit:'第四塔 · 塔顶 · 终极挑战',topics:['u1','u2','u3','u4'],enemies:[['玉兔卫士','rabbit',{}],['月光蛾','moth',{}],['玉石守卫','jadeguard',{}],['星灵','starspirit',{}]],
-  boss:{name:'三足金蟾',art:'toad',powers:['shield','heal','timer'],desc:'最终首领！护盾、答错回血、每题限时60秒。'}}
+  boss:{name:'三足金蟾',art:'toad',powers:['shield','heal','timer'],desc:'最终首领！护盾、答错回血、每题限时60秒。'}},
+ {id:13,tower:5,name:'幽冥鬼宅',bg:'haunted',unit:'第五塔 · 一层 · 恐怖挑战',topics:['u1','u2','u3','u4'],enemies:[['跳跳僵尸','jiangshi',{}],['纸人','paperman',{}],['长发鬼','hairghost',{}],['巨眼怪','eyeball',{}]],
+  boss:{name:'鬼面蛛后',art:'spiderqueen',powers:['shield','heal','timer'],desc:'鬼宅之主！护盾、答错回血、每题限时60秒。'}},
+ {id:14,tower:5,name:'幽冥地府',bg:'underworld',unit:'第五塔 · 塔顶 · 恐怖终极',topics:['u1','u2','u3','u4'],enemies:[['牛头鬼卒','oxhead',{}],['马面鬼卒','horseface',{}],['黑影幽魂','wraith',{}],['骨犬','bonehound',{}]],
+  boss:{name:'幽冥鬼帝',art:'ghostemperor',powers:['shield','heal','timer'],desc:'最强首领！护盾、答错回血、每题限时60秒。'}}
 ];
 const TOPIC_NAME={u1:'认识更大的数',u2:'线与角',u3:'乘法',u4:'运算律'};
 
@@ -1914,7 +2055,7 @@ let homeArmed=null;
 $('#homeBtn').onclick=()=>{const b=$('#homeBtn');
  if(screen==='battle'&&B&&!B.over){if(!homeArmed){b.textContent='再点一次回首页';b.classList.add('armed');homeArmed=setTimeout(()=>{homeArmed=null;b.textContent='首页';b.classList.remove('armed')},3000);return}clearTimeout(homeArmed);homeArmed=null;b.textContent='首页';b.classList.remove('armed');stopTimer();B.over=true}
  closeModal();renderHome()};
-$('#musicBtn').onclick=()=>{S.music=!S.music;save();$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');if(S.music){if(screen==='battle'&&B)musicStart(B.isBoss?'boss':((B.C.tower||1)>=2?'tower':'battle'))}else musicStop()};
+$('#musicBtn').onclick=()=>{S.music=!S.music;save();$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');if(S.music){if(screen==='battle'&&B)musicStart(B.isBoss?'boss':(B.C.tower===5?'horror':(B.C.tower||1)>=2?'tower':'battle'))}else musicStop()};
 $('#soundBtn').onclick=()=>{S.sound=!S.sound;save();$('#soundBtn').textContent='音效：'+(S.sound?'开':'关');if(S.sound)SFX.coin()};
 
 function makePad(host,onSubmit){
@@ -1967,7 +2108,7 @@ function showHowTo(){const m=$('#modal');m.innerHTML=`<div class="modal-card" ro
 function renderBook(){const el=$('#scr-book');S.seen=S.seen||{};const mons=monsterList();
  el.innerHTML=`<div class="sec-head"><div><h2>怪物图鉴</h2><p class="muted" style="margin:4px 0 0">打过的怪物会出现在这里。已遇到 ${mons.filter(m=>S.seen[m.key]).length} / ${mons.length} 种。</p></div><button class="btn" type="button" id="bkBack">返回首页</button></div>
  ${TOWERS.map(t=>`<h3 class="shoph">${t.name}</h3><div class="bookgrid">${mons.filter(m=>(m.C.tower||1)===t.id).map(m=>{const sn=S.seen[m.key],s1=MSKILL[m.art],s2=MSKILL2[m.art],bh=BEHAV[m.art]||{};
-  return `<div class="bookcard ${sn?'':'unseen'} ${m.boss?'boss':''}">${ART[m.art](m.opt||{})}<b>${sn?m.name:'？？？'}</b><p class="muted">${m.C.name}${m.boss?' · 首领':''}</p>${sn?`<p>大招：${s1?s1.name:''}${s2?'、'+s2.name:''}</p><p class="muted">${bh.blk>=.3?'爱格挡 ':''}${bh.ctr>=.25?'爱反击':''}</p>`:'<p class="muted">还没遇到</p>'}</div>`}).join('')}</div>`).join('')}`;
+  return `<div class="bookcard ${sn?'':'unseen'} ${m.boss?'boss':''}">${ART[m.art](m.opt||{})}<b>${sn?m.name:'？？？'}</b><p class="muted">${m.C.name}${m.boss?' · 首领':''}</p>${sn&&m.boss&&S.trophies&&S.trophies[m.key]?`<p class="trophy">首领奖杯 ×${S.trophies[m.key]}</p>`:''}${sn?`<p>大招：${s1?s1.name:''}${s2?'、'+s2.name:''}</p><p class="muted">${bh.blk>=.3?'爱格挡 ':''}${bh.ctr>=.25?'爱反击':''}</p>`:'<p class="muted">还没遇到</p>'}</div>`}).join('')}</div>`).join('')}`;
  $('#bkBack').onclick=renderHome;show('book')}
 
 /* ============ MAP ============ */
@@ -1975,8 +2116,9 @@ let mapTab=1;
 function tower2Open(){return S.prog[5]>=5||!!S.t2open}
 function tower3Open(){return S.prog[8]>=5||!!S.t3open}
 function tower4Open(){return S.prog[10]>=5||!!S.t4open}
-const TOWERS=[{id:1,name:'第一塔 · 墨之塔',open:()=>true,lock:''},{id:2,name:'第二塔 · 云霄塔',open:()=>tower2Open(),lock:'打败墨魔王后开启'},{id:3,name:'第三塔 · 龙宫',open:()=>tower3Open(),lock:'打败天狗后开启'},{id:4,name:'第四塔 · 炎月塔',open:()=>tower4Open(),lock:'打败东海龙王后开启'}];
-function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Open();if(C.id===9)return !tower3Open();if(C.id===11)return !tower4Open();if(C.id>=7)return S.prog[C.id-1]<5;return false}
+function tower5Open(){return S.prog[12]>=5||!!S.t5open}
+const TOWERS=[{id:1,name:'第一塔 · 墨之塔',open:()=>true,lock:''},{id:2,name:'第二塔 · 云霄塔',open:()=>tower2Open(),lock:'打败墨魔王后开启'},{id:3,name:'第三塔 · 龙宫',open:()=>tower3Open(),lock:'打败天狗后开启'},{id:4,name:'第四塔 · 炎月塔',open:()=>tower4Open(),lock:'打败东海龙王后开启'},{id:5,name:'第五塔 · 幽冥塔',open:()=>tower5Open(),lock:'打败三足金蟾后开启'}];
+function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Open();if(C.id===9)return !tower3Open();if(C.id===11)return !tower4Open();if(C.id===13)return !tower5Open();if(C.id>=7)return S.prog[C.id-1]<5;return false}
 function ch5Open(){return [1,2,3,4].filter(c=>S.prog[c]>=5).length>=3}
 function renderMap(){
  const el=$('#scr-map');const hs=heroStats();
@@ -1987,7 +2129,7 @@ function renderMap(){
   return `<div class="chapter ${locked?'locked':''}"><div class="scene">${BG[C.bg]()}</div><div><h3>${C.name}</h3><div class="unit">${C.unit}</div></div>
   <div class="nodes">${[1,2,3,4,5].map(l=>{const done=p>=l,open=!locked&&l<=p+1;return `${l>1?'<span class="link"></span>':''}<button type="button" class="node ${l===5?'boss':''} ${done?'done':''} ${open&&!done?'next':''}" data-ch="${C.id}" data-lv="${l}" ${open?'':'disabled'} title="${l===5?C.boss.name:C.enemies[l-1][0]}">${l===5?'首领':l}</button>`}).join('')}</div>
   <div class="bossline"><b>首领：${C.boss.name}</b> <span class="muted">— ${C.boss.desc}</span></div>
-  ${locked?`<div class="lockmsg">${C.id===5?'打败前四个单元中任意三个首领后开启':C.id===6?'打败第一塔的墨魔王后开启':C.id===9?'打败第二塔的天狗后开启':C.id===11?'打败第三塔的东海龙王后开启':'打败上一层的首领后开启'}</div>`:''}</div>`}).join('')}</div>`;
+  ${locked?`<div class="lockmsg">${C.id===5?'打败前四个单元中任意三个首领后开启':C.id===6?'打败第一塔的墨魔王后开启':C.id===9?'打败第二塔的天狗后开启':C.id===11?'打败第三塔的东海龙王后开启':C.id===13?'打败第四塔的三足金蟾后开启':'打败上一层的首领后开启'}</div>`:''}</div>`}).join('')}</div>`;
  el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{mapTab=+b.dataset.tab;renderMap()});
  el.querySelectorAll('.node').forEach(b=>b.onclick=()=>startBattle(+b.dataset.ch,+b.dataset.lv));
  $('#mGear').onclick=renderGear;
@@ -2041,6 +2183,11 @@ const MSKILL={
  eel:{name:'电鳗放电',type:'weaken',mult:1.3,fx:'thunder',desc:'全身放电，伤害×1.3并让你攻击力下降'},
  angler:{name:'诱光吞噬',type:'drain',mult:1.3,fx:'gold',desc:'用亮光引你过去，一口吸走生命'},
  dragonking:{name:'翻江倒海',type:'big',mult:2.1,fx:'ice',desc:'掀起巨浪，伤害×2.1'},
+ jiangshi:{name:'僵尸跳扑',type:'big',mult:1.7,fx:'shadow',desc:'一蹦扑过来，伤害×1.7'},paperman:{name:'纸人缠身',type:'weaken',mult:1,fx:'ink',desc:'纸条缠住你，攻击力下降2回合'},
+ hairghost:{name:'长发缠绕',type:'double',mult:.9,fx:'ink',desc:'长发甩两下'},eyeball:{name:'邪眼凝视',type:'charm',mult:1.2,fx:'poison',desc:'盯着你看，偷走你的技能能量'},
+ spiderqueen:{name:'鬼面毒网',type:'poison',mult:1.6,fx:'poison',desc:'吐出毒网，伤害×1.6并让你中毒'},oxhead:{name:'钢叉横扫',type:'big',mult:1.8,fx:'stone',desc:'钢叉一扫，伤害×1.8'},
+ horseface:{name:'勾魂锁链',type:'drain',mult:1.3,fx:'shadow',desc:'锁链勾住你，吸走生命'},wraith:{name:'幽影穿心',type:'weaken',mult:1.3,fx:'shadow',desc:'黑影穿过你，伤害×1.3并让你攻击力下降'},
+ bonehound:{name:'骨犬连咬',type:'double',mult:1,fx:'stone',desc:'连咬两口'},ghostemperor:{name:'幽冥审判',type:'drain',mult:2.3,fx:'shadow',desc:'幽冥之力重击，并吸走你的生命'},
  lavaman:{name:'熔岩重拳',type:'big',mult:1.8,fx:'fire',desc:'岩浆拳头砸下，伤害×1.8'},salamander:{name:'火焰吐息',type:'poison',mult:1,fx:'fire',desc:'喷出火焰，让你持续掉血3回合'},
  wisp:{name:'鬼火缠身',type:'weaken',mult:1,fx:'fire',desc:'鬼火缠住你，攻击力下降2回合'},imp:{name:'三叉火叉',type:'double',mult:.9,fx:'fire',desc:'火叉连戳两下'},
  flamelord:{name:'焚天烈焰',type:'big',mult:2.2,fx:'fire',desc:'烈焰焚天，伤害×2.2'},rabbit:{name:'玉杵捣击',type:'big',mult:1.6,fx:'stone',desc:'玉杵用力一捣，伤害×1.6'},
@@ -2078,22 +2225,22 @@ const MSKILL2={
  seahorse:{name:'潮汐回春',type:'heal',fx:'ice',desc:'潮水涌来，恢复20%生命'},shark:{name:'嗜血狂暴',type:'buff',fx:'blood',desc:'闻到血腥味，攻击力提高25%'},
  kraken:{name:'墨汁护体',type:'shield',fx:'ink',desc:'喷出墨汁，给自己加护盾'},shrimp:{name:'虾壳硬化',type:'shield',fx:'stone',desc:'外壳变硬，给自己加护盾'},
  clam:{name:'珍珠疗伤',type:'heal',fx:'snow',desc:'珍珠发光，恢复20%生命'},eel:{name:'电流连击',type:'double',mult:.9,fx:'thunder',desc:'连放两次电'},
- angler:{name:'深海迷光',type:'weaken',mult:1,fx:'gold',desc:'闪光晃眼，让你攻击力下降2回合'},lavaman:{name:'岩浆护甲',type:'shield',fx:'fire',desc:'岩浆凝成护甲，给自己加护盾'},salamander:{name:'尾巴横扫',type:'big',mult:1.6,fx:'fire',desc:'火尾巴横扫，伤害×1.6'},wisp:{name:'火灵分身',type:'heal',fx:'fire',desc:'分出火苗，恢复20%生命'},imp:{name:'恶作剧',type:'charm',mult:1,fx:'fire',desc:'捣乱偷走你的技能能量'},flamelord:{name:'魔君之怒',type:'buff',fx:'fire',desc:'怒火冲天，攻击力提高25%'},rabbit:{name:'捣药回春',type:'heal',fx:'stone',desc:'捣出仙药，恢复20%生命'},moth:{name:'鳞粉毒雾',type:'poison',mult:.9,fx:'poison',desc:'毒雾弥漫，让你中毒3回合'},jadeguard:{name:'玉石护体',type:'shield',fx:'stone',desc:'玉石护甲，给自己加护盾'},starspirit:{name:'星光治愈',type:'heal',fx:'star',desc:'星光照耀，恢复20%生命'},toad:{name:'金钱护体',type:'shield',fx:'gold',desc:'金钱环绕，给自己加护盾'},
+ angler:{name:'深海迷光',type:'weaken',mult:1,fx:'gold',desc:'闪光晃眼，让你攻击力下降2回合'},jiangshi:{name:'尸气护体',type:'shield',fx:'shadow',desc:'尸气环绕，给自己加护盾'},paperman:{name:'纸人分身',type:'heal',fx:'ink',desc:'剪出新纸人，恢复20%生命'},hairghost:{name:'鬼哭',type:'weaken',mult:1,fx:'ice',desc:'凄厉的哭声，让你攻击力下降'},eyeball:{name:'血丝毒光',type:'poison',mult:1,fx:'poison',desc:'射出毒光，让你中毒3回合'},spiderqueen:{name:'蛛丝茧',type:'shield',fx:'snow',desc:'用蛛丝包住自己，加护盾'},oxhead:{name:'牛魔怒吼',type:'buff',fx:'stone',desc:'怒吼一声，攻击力提高25%'},horseface:{name:'锁链连击',type:'double',mult:1,fx:'shadow',desc:'锁链连甩两下'},wraith:{name:'暗影复生',type:'heal',fx:'shadow',desc:'黑雾聚合，恢复20%生命'},bonehound:{name:'骨甲',type:'shield',fx:'stone',desc:'骨头拼成护甲，加护盾'},ghostemperor:{name:'鬼帝之怒',type:'buff',fx:'shadow',desc:'鬼气冲天，攻击力提高25%'},lavaman:{name:'岩浆护甲',type:'shield',fx:'fire',desc:'岩浆凝成护甲，给自己加护盾'},salamander:{name:'尾巴横扫',type:'big',mult:1.6,fx:'fire',desc:'火尾巴横扫，伤害×1.6'},wisp:{name:'火灵分身',type:'heal',fx:'fire',desc:'分出火苗，恢复20%生命'},imp:{name:'恶作剧',type:'charm',mult:1,fx:'fire',desc:'捣乱偷走你的技能能量'},flamelord:{name:'魔君之怒',type:'buff',fx:'fire',desc:'怒火冲天，攻击力提高25%'},rabbit:{name:'捣药回春',type:'heal',fx:'stone',desc:'捣出仙药，恢复20%生命'},moth:{name:'鳞粉毒雾',type:'poison',mult:.9,fx:'poison',desc:'毒雾弥漫，让你中毒3回合'},jadeguard:{name:'玉石护体',type:'shield',fx:'stone',desc:'玉石护甲，给自己加护盾'},starspirit:{name:'星光治愈',type:'heal',fx:'star',desc:'星光照耀，恢复20%生命'},toad:{name:'金钱护体',type:'shield',fx:'gold',desc:'金钱环绕，给自己加护盾'},
  dragonking:{name:'龙王召雨',type:'heal',fx:'ice',desc:'召来大雨，恢复20%生命'}};
 function startBattle(ch,lv){
  mapTab=CHAPTERS[ch-1].tower||1;
- const C=CHAPTERS[ch-1],isBoss=lv===5,m=ch>=11?3.2+.25*(ch-11):ch>=9?2.6+.25*(ch-9):ch>=6?2+.2*(ch-6):1+.25*(ch-1);let e;
- if(isBoss)e={name:C.boss.name,art:C.boss.art,opt:{},max:Math.round(100*m),atk:12+2*ch,powers:C.boss.powers.slice()};
+ const C=CHAPTERS[ch-1],isBoss=lv===5,m=ch>=13?3.8+.25*(ch-13):ch>=11?3.2+.25*(ch-11):ch>=9?2.6+.25*(ch-9):ch>=6?2+.2*(ch-6):1+.25*(ch-1);let e;
+ if(isBoss)e={name:C.boss.name,art:C.boss.art,opt:{},max:Math.round(100*m),atk:Math.round(12+1.5*ch),powers:C.boss.powers.slice()};
  else{const[n,a,o]=C.enemies[lv-1];e={name:n,art:a,opt:o,max:Math.round((36+lv*6)*m),atk:6+ch+lv,powers:[]}}
  const bh=BEHAV[e.art]||{blk:.2,ctr:.15,verb:'格挡'};e.blk=bh.blk;e.ctr=bh.ctr;e.verb=bh.verb;
  S.seen=S.seen||{};if(!S.seen[e.name]){S.seen[e.name]=true;save()}
  e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
- const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.15*wl));e.atk=Math.round(e.atk*(1+.08*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;e.burn=0;
+ const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.1*wl));e.atk=Math.round(e.atk*(1+.05*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;e.burn=0;
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
  let d;if(ch>=6)d=isBoss?3:(lv<=2?2:3);else if(ch===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
  B={skills:SKILLS[S.cur].filter(x=>x.unlock<=wl),ch,lv,isBoss,C,e,d,hero:{hp:hs.hp,max:hs.hp,atk:hs.atk},combo:0,gauge:0,blocks:0,poison:0,weak:0,rights:0,wrongs:0,regenUsed:false,busy:true,over:false};
- renderBattle();show('battle');musicStart(isBoss?'boss':((C.tower||1)>=2?'tower':'battle'));keyHandler=battleKey;startWalk()}
+ renderBattle();show('battle');musicStart(isBoss?'boss':(C.tower===5?'horror':(C.tower||1)>=2?'tower':'battle'));keyHandler=battleKey;startWalk()}
 
 function renderBattle(){
  const el=$('#scr-battle'),C=B.C,e=B.e,ch=CHARS[S.cur];
@@ -2522,10 +2669,13 @@ function useSkill(i){if(!B||B.over||B.busy||B.review||B.def)return;const x=B.ski
   setTimeout(()=>heroAttackSeq(x.hits,dmg,x.fx,!!x.ign,()=>{if(x.steal)heal(dmg)},done),sfx?560:buff?480:0)})}
 
 /* ============ RESULT ============ */
-function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=null;
- if(win){coins=b.isBoss?50+20*b.ch+(b.wrongs===0?30:0):20+5*b.ch+(b.wrongs===0?10:0);if(S.prog[b.ch]<b.lv)S.prog[b.ch]=b.lv;S.stats.wins++;SFX.win();
+function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=null,bossR=null;
+ if(win){coins=b.isBoss?80+30*b.ch+(b.wrongs===0?40:0):20+5*b.ch+(b.wrongs===0?10:0);if(S.prog[b.ch]<b.lv)S.prog[b.ch]=b.lv;S.stats.wins++;SFX.win();
   if(b.isBoss&&!S.partDone[b.ch]){S.partDone[b.ch]=true;S.chests.push(2);coins+=50;partWin=true}
-  if(b.isBoss){drop=b.ch>=11?8:b.ch>=6?3:1}else if(b.wrongs===0&&Math.random()<.3){drop=b.ch>=6?7:0}
+  if(b.isBoss){drop=b.ch>=11?8:b.ch>=6?3:1;
+   const tw=b.C.tower||1,rr=tw===1?pick([1,2]):tw===2?2:tw===3?pick([2,3]):tw===4?pick([3,4]):4;const ty=Math.random()<.5?'w':'a';const[lo,hi]=RANGE[ty][rr];
+   const bi={id:S.nextId++,type:ty,rar:rr,val:ri(lo,hi),name:pick(NAMES[ty][rr])};S.inv.push(bi);S.potions=S.potions||{};const pots=[pick(Object.keys(POTIONS)),pick(Object.keys(POTIONS))];pots.forEach(k=>S.potions[k]=(S.potions[k]||0)+1);
+   S.trophies=S.trophies||{};S.trophies[b.e.name]=(S.trophies[b.e.name]||0)+1;bossR={item:bi,pots,tro:S.trophies[b.e.name]}}else if(b.wrongs===0&&Math.random()<.3){drop=b.ch>=6?7:0}
   if(drop!==null)S.chests.push(drop)}
  else{coins=5;SFX.lose()}
  S.coins+=coins;save();
@@ -2539,6 +2689,11 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=nu
    <div class="partrow">${chestSVG(2)}<div>完成奖励：<b>金宝箱 ×1</b> + <b>50 金币</b><br><span class="muted">金宝箱已放进商店，答对一道题就能打开。</span></div></div>
    <div class="warnline">所有怪物都变强了！（怪物强化 Lv.${wl}：生命和攻击提高，还学会了第二个大招）</div>
    ${ns.length?`<div>${CHARS[S.cur].name} 学会了新技能：<b>${ns.map(x=>x.name).join('、')}</b>（${ns[0].desc}）</div>`:''}</div>`})():''}
+  ${bossR?`<div class="bossbox"><h3>首领奖励</h3><div class="bossrow">
+    <div class="bri">${itemIcon(bossR.item)}<b style="color:${RAR[bossR.item.rar].c}">${bossR.item.name}</b><span>${RAR[bossR.item.rar].n}${bossR.item.type==='w'?'武器 · 攻击':'盔甲 · 生命'} +${bossR.item.val}</span><button class="chipbtn" type="button" id="rEquip">立即装备</button></div>
+    <div class="bri">${bossR.pots.map(k=>potionIcon(k)).join('')}<b>药品 ×2</b><span>${bossR.pots.map(k=>POTIONS[k].name).join('、')}</span></div>
+    <div class="bri"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 6 L34 6 L34 18 Q34 30 24 32 Q14 30 14 18Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><path d="M14 10 Q4 10 6 18 Q8 24 14 22 M34 10 Q44 10 42 18 Q40 24 34 22" fill="none" stroke="${INK}" stroke-width="2.5"/><rect x="20" y="32" width="8" height="6" fill="${GOLD}" stroke="${INK}" stroke-width="2"/><rect x="14" y="38" width="20" height="6" rx="2" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/></svg><b>首领奖杯</b><span>击败 ${b.e.name} 第 ${bossR.tro} 次</span></div>
+   </div></div>`:''}
   ${drop!==null?`<div class="dropline">${chestSVG(drop)}<span>${b.isBoss?'首领掉落':'全对奖励'}：<b>${CHESTS[drop].name}</b> 已放进商店</span></div>`:''}
   <div class="earn">获得 <div class="seal"><span class="coin-ico"></span><b id="earnNum">+0</b><small>金币</small></div></div>
   <div class="row" style="justify-content:center">
@@ -2550,6 +2705,7 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=nu
  show('result');
  let n=0;const step=Math.max(1,Math.ceil(coins/20));const iv=setInterval(()=>{n=Math.min(coins,n+step);$('#earnNum').textContent='+'+n;if(n%3===0||n===coins)SFX.coin();if(n>=coins){clearInterval(iv);updateCoins(true)}},50);
  $('#rShop').onclick=renderShop;$('#rMap').onclick=renderMap;
+ if($('#rEquip'))$('#rEquip').onclick=()=>{S.eq[bossR.item.type]=bossR.item.id;save();toast('已装备 '+bossR.item.name);$('#rEquip').disabled=true;$('#rEquip').textContent='已装备'};
  if($('#rNext'))$('#rNext').onclick=()=>startBattle(b.ch,b.lv+1);
  if($('#rAgain'))$('#rAgain').onclick=()=>startBattle(b.ch,b.lv);
  B=null}
@@ -2578,6 +2734,7 @@ const CODES={
  'YUNXIAO':{txt:'第二塔 · 云霄塔 已开启',f:()=>{S.t2open=true}},
  'LONGGONG':{txt:'第三塔 · 龙宫 已开启',f:()=>{S.t3open=true}},
  'YANYUE':{txt:'第四塔 · 炎月塔 已开启',f:()=>{S.t4open=true}},
+ 'YOUMING':{txt:'第五塔 · 幽冥塔 已开启',f:()=>{S.t5open=true}},
  'TEACHER500':{txt:'获得 500 金币',f:()=>{S.coins+=500}},
  'YAOPIN':{txt:'回血丹、能量丹、护身符 各 2 个',f:()=>{['heal','energy','guard'].forEach(k=>S.potions[k]=(S.potions[k]||0)+2)}}};
 function potionIcon(k){const c=POTIONS[k].c;return `<svg viewBox="0 0 48 48" aria-hidden="true"><g filter="url(#rough)"><rect x="18" y="4" width="12" height="8" rx="2" fill="#6b4a2a" stroke="${INK}" stroke-width="2"/><circle cx="24" cy="18" r="7" fill="${c}" stroke="${INK}" stroke-width="2.5"/><circle cx="24" cy="33" r="12" fill="${c}" stroke="${INK}" stroke-width="2.5"/><path d="M17 30 Q20 24 26 25" fill="none" stroke="${PAPER}" stroke-width="2" opacity=".7"/></g></svg>`}
