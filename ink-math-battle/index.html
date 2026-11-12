@@ -174,6 +174,28 @@ svg.art{display:block;overflow:visible}
 .warn{color:var(--cinnabar);font-size:.85em}
 .fighter.windup .art-wrap{animation:windup .5s ease-in-out infinite}
 @keyframes windup{50%{transform:translateX(12px) rotate(4deg)}}
+.float.poison{color:var(--violet)}
+.rage{display:flex;align-items:center;gap:6px;font-size:.8rem;flex-wrap:wrap}
+.rage .pips{display:flex;gap:4px}
+.rage .pips i{width:9px;height:9px;border:1.5px solid var(--ink);transform:rotate(45deg);background:var(--card)}
+.rage .pips i.on{background:var(--cinnabar)}
+.rage .skname{color:var(--ink-soft)}
+.fighter.enraged .art-wrap svg.art{filter:drop-shadow(0 0 10px rgba(200,40,30,.95))}
+.proj{position:absolute;left:0;top:0;width:clamp(60px,9vw,110px);height:clamp(60px,9vw,110px);pointer-events:none;z-index:6}
+.proj svg{width:100%;height:100%;display:block;overflow:visible}
+.burst{position:absolute;left:50%;top:35%;width:60%;max-width:170px;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;z-index:5;animation:burst .5s ease-out forwards}
+.burst svg{width:100%;height:100%;display:block}
+@keyframes burst{from{transform:translate(-50%,-50%) scale(.3);opacity:1}to{transform:translate(-50%,-50%) scale(1.2);opacity:0}}
+.cutin{position:absolute;left:0;right:0;top:26%;height:44%;display:flex;align-items:center;gap:4%;padding:0 6%;z-index:8;color:var(--card);pointer-events:none;box-sizing:border-box}
+.cutin.hero{background:linear-gradient(100deg,rgba(29,27,24,.95) 60%,rgba(29,27,24,.6));animation:cutL 1.4s ease forwards}
+.cutin.enemy{background:linear-gradient(260deg,rgba(130,26,20,.95) 60%,rgba(130,26,20,.6));flex-direction:row-reverse;text-align:right;animation:cutR 1.4s ease forwards}
+.cut-art{height:130%;display:flex;align-items:center}
+.cut-art svg.art{height:100%;width:auto;filter:drop-shadow(0 0 6px rgba(248,241,226,.9))}
+.cut-txt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.cut-txt b{font-family:var(--f-display);font-size:clamp(2rem,5.5vw,4rem);letter-spacing:.12em;line-height:1.1}
+.cut-txt span{font-size:clamp(.9rem,1.6vw,1.2rem)}
+@keyframes cutL{0%{transform:translateX(-100%)}14%{transform:translateX(0)}86%{transform:translateX(0);opacity:1}100%{transform:translateX(30%);opacity:0}}
+@keyframes cutR{0%{transform:translateX(100%)}14%{transform:translateX(0)}86%{transform:translateX(0);opacity:1}100%{transform:translateX(-30%);opacity:0}}
 .feedback{position:absolute;inset:0;background:var(--card);border-radius:12px;display:flex;align-items:center;justify-content:center;gap:16px;padding:12px 18px;flex-wrap:wrap;z-index:3}
 .feedback.right{background:var(--card)}
 .feedback .big{font-family:var(--f-display);font-size:2.2rem;font-weight:700}
@@ -708,9 +730,9 @@ const BEHAV={
 
 /* ============ DATA ============ */
 const CHARS={
- brush:{name:'墨笔侠',hp:90,atk:12,price:0,skill:'泼墨狂书',desc:'下一次攻击伤害×3'},
- monk:{name:'赤焰僧',hp:110,atk:10,price:150,skill:'焰心回春',desc:'立刻恢复40%的生命'},
- hand:{name:'金掌师',hp:95,atk:11,price:300,skill:'千手护体',desc:'挡住敌人接下来的2次攻击'},
+ brush:{name:'墨笔侠',hp:90,atk:12,price:0,skill:'泼墨狂书',desc:'甩出巨大墨浪，造成2.5倍攻击伤害'},
+ monk:{name:'赤焰僧',hp:110,atk:10,price:150,skill:'烈焰金身',desc:'恢复40%生命，解除中毒和虚弱，再打出一记火焰拳'},
+ hand:{name:'金掌师',hp:95,atk:11,price:300,skill:'千手连击',desc:'4只金手连打（共2.4倍伤害），并挡住下一次攻击'},
  reaper:{name:'影镰客',hp:80,atk:14,price:500,skill:'暗影收割',desc:'直接造成敌人最大生命30%的伤害，无视护盾'}
 };
 const CHAR_ORDER=['brush','monk','hand','reaper'];
@@ -890,7 +912,7 @@ function renderHome(){
   <button class="btn gold" id="hShop" type="button">宝箱铺${S.chests.length?`（${S.chests.length}个待开）`:''}</button>
   <button class="btn" id="hGear" type="button">角色与装备</button>
  </div>
- <div class="howto"><span>① 选关卡，和敌人对战</span><span>② 答对 → 你出招</span><span>③ 敌人攻击时，10秒内答对防御题就能挡住</span><span>④ 赢了得金币</span><span>⑤ 买宝箱，答对题开箱，抽武器和盔甲</span></div>
+ <div class="howto"><span>① 选关卡，和敌人对战</span><span>② 答对 → 你出招；答对3题可放技能</span><span>③ 敌人攻击或放大招时，10秒内答对防御题就能挡住</span><span>④ 赢了得金币</span><span>⑤ 买宝箱，答对题开箱，抽武器和盔甲</span></div>
  </div></div>`;
  $('#hStart').onclick=renderMap;$('#hShop').onclick=renderShop;$('#hGear').onclick=renderGear;
  show('home')}
@@ -912,15 +934,38 @@ function renderMap(){
 
 /* ============ BATTLE ============ */
 let B=null,pad=null,timerId=null;
+const HERO_ATK={brush:{name:'墨痕斩',fx:'ink'},monk:{name:'火焰拳',fx:'fire'},hand:{name:'金掌击',fx:'gold'},reaper:{name:'镰影斩',fx:'shadow'}};
+const FX_COL={ink:INK,fire:'#e0552a',gold:'#f2b62e',shadow:'#2c4a3c',poison:'#7a3fa6',blood:'#9a1c1c',stone:'#7d756a',thunder:'#e8c23a',ice:'#5fb0d8',wood:'#5f7d3a'};
+const MSKILL={
+ blob:{name:'墨汁喷射',type:'big',mult:1.6,fx:'ink',desc:'喷出一大团墨汁，伤害×1.6'},
+ lantern:{name:'鬼火连发',type:'double',mult:.8,fx:'fire',desc:'连放两团鬼火'},
+ assassin:{name:'竹影连刺',type:'double',mult:.8,fx:'wood',desc:'竹枪连刺两下'},
+ skeleton:{name:'白骨盾',type:'shield',fx:'stone',desc:'给自己加上一层护盾'},
+ bat:{name:'吸血獠牙',type:'drain',mult:1.2,fx:'blood',desc:'咬你一口，并吸走你的生命'},
+ crow:{name:'乌鸦啄眼',type:'weaken',mult:1,fx:'ink',desc:'啄你，让你的攻击力下降2回合'},
+ wolf:{name:'狂狼连咬',type:'double',mult:.9,fx:'blood',desc:'连咬两口'},
+ treant:{name:'生命之根',type:'heal',fx:'wood',desc:'扎根吸水，恢复20%生命'},
+ mushroom:{name:'毒孢子',type:'poison',mult:.8,fx:'poison',desc:'喷出毒孢子，让你中毒3回合'},
+ ghost:{name:'寒气冻结',type:'weaken',mult:1,fx:'ice',desc:'吹出寒气，让你的攻击力下降2回合'},
+ scorpion:{name:'毒尾刺',type:'poison',mult:1,fx:'poison',desc:'用毒尾刺你，让你中毒3回合'},
+ crab:{name:'铁钳夹击',type:'big',mult:1.8,fx:'stone',desc:'大钳子狠狠一夹，伤害×1.8'},
+ snake:{name:'青蛇毒牙',type:'poison',mult:1,fx:'poison',desc:'毒牙一咬，让你中毒3回合'},
+ golem:{name:'亿吨重拳',type:'big',mult:2,fx:'stone',desc:'石拳砸下，伤害×2'},
+ fox:{name:'九尾幻术',type:'charm',mult:1.2,fx:'fire',desc:'狐火幻术，偷走你的技能能量'},
+ drum:{name:'雷鼓震天',type:'weaken',mult:1.6,fx:'thunder',desc:'雷声震耳，伤害×1.6并让你攻击力下降'},
+ dragon:{name:'墨龙吐息',type:'poison',mult:1.5,fx:'ink',desc:'吐出墨色龙息，伤害×1.5并让你中毒'},
+ demon:{name:'墨魔吞噬',type:'drain',mult:1.8,fx:'blood',desc:'重重一击，并吸走你的生命'}
+};
 function startBattle(ch,lv){
  const C=CHAPTERS[ch-1],isBoss=lv===5,m=1+.25*(ch-1);let e;
  if(isBoss)e={name:C.boss.name,art:C.boss.art,opt:{},max:Math.round(100*m),atk:12+2*ch,powers:C.boss.powers.slice()};
  else{const[n,a,o]=C.enemies[lv-1];e={name:n,art:a,opt:o,max:Math.round((36+lv*6)*m),atk:6+ch+lv,powers:[]}}
  const bh=BEHAV[e.art]||{blk:.2,ctr:.15,verb:'格挡'};e.blk=bh.blk;e.ctr=bh.ctr;e.verb=bh.verb;
+ e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
  let d;if(ch===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
- B={ch,lv,isBoss,C,e,d,hero:{hp:hs.hp,max:hs.hp,atk:hs.atk},combo:0,gauge:0,mult:1,blocks:0,rights:0,wrongs:0,regenUsed:false,busy:true,over:false};
+ B={ch,lv,isBoss,C,e,d,hero:{hp:hs.hp,max:hs.hp,atk:hs.atk},combo:0,gauge:0,blocks:0,poison:0,weak:0,rights:0,wrongs:0,regenUsed:false,busy:true,over:false};
  renderBattle();show('battle');keyHandler=battleKey;setTimeout(nextQ,300)}
 
 function renderBattle(){
@@ -928,12 +973,13 @@ function renderBattle(){
  el.innerHTML=`<div class="banner"><span class="lvl">${C.name} · ${B.isBoss?'首领关':'第'+B.lv+'关'}</span><span class="mission">任务：答对题目，击败 ${e.name}！</span><button class="retreat" type="button" id="bRetreat">撤退</button></div>
  <div class="arena">${BG[C.bg]()}
   <div class="fighter hero" id="fHero"><div class="art-wrap">${ART[S.cur]()}</div>
-   <div class="hud"><div class="nm">${ch.name}<small>攻击 ${B.hero.atk}</small></div><div class="bar hero" id="hpHero"><i></i><span></span></div>
-   <div class="row" style="gap:8px"><button class="skillbtn" id="bSkill" type="button" title="${ch.desc}">${ch.skill}<span class="pips"><i></i><i></i><i></i></span></button><span class="buffs" id="buffs"></span></div></div></div>
+   <div class="hud"><div class="nm">${ch.name}<small>攻击 ${B.hero.atk} · ${HERO_ATK[S.cur].name}</small></div><div class="bar hero" id="hpHero"><i></i><span></span></div>
+   <div class="row" style="gap:8px"><button class="skillbtn" id="bSkill" type="button" title="${ch.desc}">技能 · ${ch.skill}<span class="pips"><i></i><i></i><i></i></span></button><span class="buffs" id="buffs"></span></div></div></div>
   <div class="center"><div class="vs">战</div><div class="combo" id="combo"></div></div>
   <div class="fighter enemy" id="fEnemy"><div class="art-wrap">${enemyArt(e)}</div>
    <div class="hud"><div class="nm">${e.name}<small>攻击 ${e.atk}</small></div><div class="bar" id="hpEnemy"><i></i><span></span></div>
-   ${e.shieldMax?'<div class="bar shield" id="shEnemy"><i></i></div>':''}
+   <div class="bar shield" id="shEnemy" ${e.shieldMax?'':'hidden'}><i></i></div>
+   <div class="rage" title="${e.sk.desc}"><span>怒气</span><span class="pips" id="ragePips">${'<i></i>'.repeat(e.rageMax)}</span><span class="skname">大招「${e.sk.name}」</span></div>
    <div class="powers">${e.powers.map(p=>`<span class="power">${POWER_TXT[p]}</span>`).join('')}${e.blk>=.3?'<span class="trait">爱格挡</span>':''}${e.ctr>=.25?'<span class="trait">爱反击</span>':''}</div></div></div>
  </div>
  <div class="desk" id="desk"><div class="timer" id="timer" ${e.powers.includes('timer')?'':'hidden'}><i></i></div>
@@ -947,21 +993,49 @@ function renderBattle(){
  updateHud()}
 
 function setBar(el,cur,max,label=true){if(!el)return;el.querySelector('i').style.width=Math.max(0,cur/max*100)+'%';const s=el.querySelector('span');if(s&&label)s.textContent=`${Math.max(0,cur)} / ${max}`}
-function updateHud(){
- setBar($('#hpHero'),B.hero.hp,B.hero.max);setBar($('#hpEnemy'),B.e.hp,B.e.max);if(B.e.shieldMax)setBar($('#shEnemy'),B.e.shield,B.e.shieldMax,false);
- const sk=$('#bSkill');sk.querySelectorAll('.pips i').forEach((p,i)=>p.classList.toggle('on',i<B.gauge));sk.classList.toggle('ready',B.gauge>=3);sk.disabled=B.gauge<3;
- const bf=[];if(B.mult>1)bf.push('下一击×'+B.mult);if(B.blocks>0)bf.push('护体×'+B.blocks);$('#buffs').textContent=bf.join(' ')}
+function updateHud(){if(!B)return;const e=B.e;
+ setBar($('#hpHero'),B.hero.hp,B.hero.max);setBar($('#hpEnemy'),e.hp,e.max);
+ const sh=$('#shEnemy');if(sh){sh.hidden=!e.shieldMax;if(e.shieldMax)setBar(sh,e.shield,e.shieldMax,false)}
+ const rp=$('#ragePips');if(rp)rp.querySelectorAll('i').forEach((p,i)=>p.classList.toggle('on',i<e.rage));
+ const fe=$('#fEnemy');if(fe)fe.classList.toggle('enraged',e.rage>=e.rageMax);
+ const sk=$('#bSkill');sk.querySelectorAll('.pips i').forEach((p,i)=>p.classList.toggle('on',i<B.gauge));const ready=B.gauge>=3;sk.classList.toggle('ready',ready);sk.disabled=!ready;
+ const bf=[];if(B.blocks>0)bf.push('护体×'+B.blocks);if(B.poison>0)bf.push('中毒'+B.poison);if(B.weak>0)bf.push('虚弱'+B.weak);$('#buffs').textContent=bf.join(' ')}
 function floatText(fid,txt,cls,top){const f=$(fid);if(!f)return;const s=document.createElement('div');s.className='float '+cls;s.textContent=txt;if(top)s.style.top=top;f.appendChild(s);setTimeout(()=>s.remove(),1200)}
 function anim(fid,cls){const f=$(fid);if(!f)return;f.classList.remove(cls);void f.offsetWidth;f.classList.add(cls);setTimeout(()=>f.classList.remove(cls),500)}
 function slash(fid,color){const f=$(fid);if(!f)return;const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 200 200');s.setAttribute('class','slash');s.setAttribute('preserveAspectRatio','none');
  s.innerHTML=`<path d="M20 30 Q100 90 180 170" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round" filter="url(#rough)"/><path d="M180 40 Q110 100 30 160" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" opacity=".7" filter="url(#rough)"/>`;f.appendChild(s);setTimeout(()=>s.remove(),600)}
 
+/* projectiles, bursts, cut-ins */
+function projSVG(kind){const c=FX_COL[kind]||INK;let g;
+ if(kind==='fire')g=`<path d="M8 45 C26 30 40 36 52 30 C46 40 50 44 44 50 C54 50 40 58 8 45Z" fill="#f2b62e" opacity=".8"/><circle cx="60" cy="45" r="20" fill="${c}" stroke="${INK}" stroke-width="2.5"/><circle cx="64" cy="42" r="10" fill="#f2b62e"/>`;
+ else if(kind==='gold')g=`<path d="M10 40 L36 40 M14 52 L34 52" stroke="#f2b62e" stroke-width="4" stroke-linecap="round" opacity=".7"/><rect x="40" y="26" width="34" height="36" rx="11" fill="${c}" stroke="${INK}" stroke-width="2.5"/>${[0,1,2,3].map(i=>`<circle cx="76" cy="${31+i*9}" r="5" fill="${c}" stroke="${INK}" stroke-width="2"/>`).join('')}`;
+ else if(kind==='shadow'||kind==='blood')g=`<path d="M30 8 C70 18 86 50 66 84 C76 52 62 28 30 8Z" fill="${c}" stroke="${INK}" stroke-width="2.5"/><path d="M14 20 C46 30 58 52 48 74" fill="none" stroke="${c}" stroke-width="4" opacity=".5"/>`;
+ else if(kind==='stone')g=`<polygon points="40,20 70,24 82,48 66,70 36,68 24,44" fill="${c}" stroke="${INK}" stroke-width="3"/><path d="M8 40 L22 40 M12 54 L24 52" stroke="${INK}" stroke-width="3" stroke-linecap="round" opacity=".5"/>`;
+ else if(kind==='thunder')g=`<polyline points="10,30 40,44 30,50 64,62 54,68 86,80" fill="none" stroke="${c}" stroke-width="7" stroke-linejoin="round"/><polyline points="10,30 40,44 30,50 64,62 54,68 86,80" fill="none" stroke="${INK}" stroke-width="2"/>`;
+ else if(kind==='ice'||kind==='wood')g=`<polygon points="86,45 50,32 14,40 50,58" fill="${c}" stroke="${INK}" stroke-width="2.5"/><path d="M50 32 L50 58" stroke="${PAPER}" stroke-width="2" opacity=".7"/>`;
+ else g=`<path d="M8 45 C30 28 52 26 70 34 C86 42 86 54 70 60 C50 66 30 62 8 45Z" fill="${c}"/><circle cx="24" cy="28" r="5" fill="${c}"/><circle cx="18" cy="62" r="4" fill="${c}"/>${kind==='poison'?`<circle cx="62" cy="44" r="6" fill="${PAPER}" opacity=".5"/><circle cx="48" cy="52" r="3" fill="${PAPER}" opacity=".5"/>`:''}`;
+ return `<svg viewBox="0 0 90 90" aria-hidden="true"><g filter="url(#rough)">${g}</g></svg>`}
+function shoot(from,to,kind,cb){const ar=$('.arena'),a=$(from+' .art-wrap'),b=$(to+' .art-wrap');if(!ar||!a||!b){cb&&cb();return}
+ const R=ar.getBoundingClientRect(),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
+ const x1=ra.left+ra.width/2-R.left,y1=ra.top+ra.height*.4-R.top,x2=rb.left+rb.width/2-R.left,y2=rb.top+rb.height*.5-R.top;
+ const el=document.createElement('div');el.className='proj'+(x2<x1?' flip':'');el.innerHTML=projSVG(kind);ar.appendChild(el);
+ const fl=x2<x1?' scaleX(-1)':'';
+ const an=el.animate([{transform:`translate(${x1}px,${y1}px) translate(-50%,-50%) scale(.6)${fl}`},{transform:`translate(${x2}px,${y2}px) translate(-50%,-50%) scale(1.15)${fl}`}],{duration:380,easing:'ease-in',fill:'both'});
+ an.onfinish=()=>{el.remove();burst(to,kind);cb&&cb()}}
+function burst(to,kind){const f=$(to);if(!f)return;const c=FX_COL[kind]||INK;const d=document.createElement('div');d.className='burst';
+ d.innerHTML=`<svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="${spikes(60,60,22,56,11)}" fill="${c}" opacity=".85" filter="url(#rough)"/><polygon points="${spikes(60,60,10,28,8)}" fill="${PAPER}" opacity=".8"/></svg>`;f.appendChild(d);setTimeout(()=>d.remove(),520)}
+function cutIn(side,art,title,sub,cb){const ar=$('.arena');if(!ar){cb&&cb();return}SFX.skill();const c=document.createElement('div');c.className='cutin '+side;
+ c.innerHTML=`<div class="cut-art">${art}</div><div class="cut-txt"><b>${title}</b><span>${sub}</span></div>`;ar.appendChild(c);setTimeout(()=>{c.remove();cb&&cb()},1400)}
+
+function heroHit(dmg,kind,ignoreShield,cb){anim('#fHero','lunge-r');shoot('#fHero','#fEnemy',kind,()=>{if(!B)return;SFX.hit();anim('#fEnemy','hurt');dealDamage(dmg,ignoreShield);updateHud();cb&&cb()})}
+
 function nextQ(){if(!B||B.over)return;B.def=null;
+ if(B.poison>0){B.poison--;const d=3+B.ch;B.hero.hp=Math.max(0,B.hero.hp-d);floatText('#fHero','中毒 −'+d,'poison');anim('#fHero','hurt');updateHud();if(B.hero.hp<=0){heroDown();return}}
  const topic=pick(B.C.topics);B.q=genQ(topic,B.d);
  $('#desk').classList.remove('defend');$('#fEnemy').classList.remove('windup');
  $('#qText').innerHTML=`<span class="qtag">${TOPIC_NAME[topic]}</span><br>${B.q.text}`;
  const fig=$('#qFig');fig.innerHTML=B.q.fig||'';fig.hidden=!B.q.fig;
- $('#fb').hidden=true;pad.clear();pad.setUnit(B.q.unit);pad.lock(false);B.busy=false;keyHandler=battleKey;
+ $('#fb').hidden=true;pad.clear();pad.setUnit(B.q.unit);pad.lock(false);B.busy=false;keyHandler=battleKey;updateHud();
  const timed=B.e.powers.includes('timer');$('#timer').hidden=!timed;
  if(timed)startTimer(60,()=>{B.busy=true;pad.lock(true);onWrong(true)})}
 function battleKey(k){if(!B||screen!=='battle')return false;if(B.review){if(k==='Enter'||k===' '){continueAfterReview();return true}return false}if(B.busy)return false;return pad.press(k)}
@@ -973,7 +1047,54 @@ function stopTimer(){if(timerId){clearInterval(timerId);timerId=null}}
 
 function submitAnswer(v){if(!B||B.busy||B.over)return;B.busy=true;pad.lock(true);stopTimer();
  if(B.def){defenseResolve(Number(v)===B.q.ans,false);return}
+ B.e.rage=Math.min(B.e.rageMax,B.e.rage+1);
  if(Number(v)===B.q.ans)onRight();else onWrong(false)}
+
+function dealDamage(dmg,ignoreShield){const e=B.e;let absorbed=0;
+ if(!ignoreShield&&e.shield>0){absorbed=Math.min(e.shield,dmg);e.shield-=absorbed;dmg-=absorbed}
+ e.hp=Math.max(0,e.hp-dmg);
+ if(absorbed)floatText('#fEnemy','护盾 −'+absorbed,'blue');
+ if(dmg>0)setTimeout(()=>floatText('#fEnemy','−'+dmg,'dmg'),absorbed?250:0);
+ if(e.powers.includes('shield')&&!B.regenUsed&&e.hp>0&&e.hp<=e.max/2){B.regenUsed=true;e.shield=e.shieldMax;setTimeout(()=>{floatText('#fEnemy','护盾重生！','blue');updateHud()},700)}}
+
+function guardFx(fid){const f=$(fid);if(!f)return;const g=document.createElementNS('http://www.w3.org/2000/svg','svg');g.setAttribute('viewBox','0 0 60 120');g.setAttribute('class','guardfx');
+ const hero=fid==='#fHero';g.innerHTML=`<g filter="url(#rough)" ${hero?'transform="translate(60 0) scale(-1 1)"':''}><path d="M48 6 C8 30 8 90 48 114" fill="none" stroke="${INK}" stroke-width="14" stroke-linecap="round"/><path d="M48 6 C8 30 8 90 48 114" fill="none" stroke="#2f6fb0" stroke-width="8" stroke-linecap="round"/></g>`;f.appendChild(g);setTimeout(()=>g.remove(),850)}
+function enemyAct(){const e=B.e,r=Math.random();if(r<e.blk)return'block';if(r<e.blk+e.ctr)return'counter';return'none'}
+function heroDown(){if(!B||B.over&&$('#fHero').classList.contains('dead'))return;B.over=true;stopTimer();keyHandler=null;$('#fHero').classList.add('dead');setTimeout(()=>finishBattle(false),1100)}
+function enemyDown(){B.over=true;stopTimer();keyHandler=null;setTimeout(()=>{$('#fEnemy').classList.add('dead')},300);setTimeout(()=>finishBattle(true),1400)}
+function showFb(cls,big,html){const fb=$('#fb');fb.className='feedback '+cls;fb.innerHTML=`<span class="big">${big}</span><span class="exp">${html}</span>`;fb.hidden=false}
+
+function onRight(){SFX.right();B.rights++;S.stats.right++;B.combo++;B.gauge=Math.min(3,B.gauge+1);
+ const e=B.e,ha=HERO_ATK[S.cur];const bonus=1+.1*Math.min(B.combo-1,5);let dmg=Math.round(B.hero.atk*bonus*(B.weak>0?.7:1));if(B.weak>0)B.weak--;
+ const rageFull=e.rage>=e.rageMax;const act=enemyAct();if(act==='block')dmg=Math.ceil(dmg/2);
+ let note=B.combo>1?`${ha.name}！连击 ×${B.combo}，伤害 +${Math.round((bonus-1)*100)}%`:`${ha.name}！`;
+ if(act==='block')note=`${ha.name}！可是 ${e.name} ${e.verb}，伤害减半！`;
+ if(rageFull)note+=`　${e.name} 怒气满了，要放大招！`;else if(act==='counter')note+=`　小心，${e.name} 要反击！`;
+ showFb('right','答对了！',note);
+ const cb=$('#combo');cb.textContent=B.combo>1?`连击 ×${B.combo}`:'';cb.classList.remove('pop');void cb.offsetWidth;cb.classList.add('pop');
+ if(act==='block')setTimeout(()=>{guardFx('#fEnemy');floatText('#fEnemy','格挡！','blue','6%')},300);
+ heroHit(dmg,ha.fx,false,()=>{if(!B||B.over)return;
+  if(B.e.hp<=0){enemyDown();return}
+  if(rageFull)setTimeout(monsterSpecial,600);
+  else if(act==='counter')setTimeout(()=>{if(!B||B.over)return;floatText('#fEnemy','反击！','dmg','6%');startDefense({mult:.6})},650);
+  else setTimeout(()=>{if(B&&!B.over)nextQ()},900)})}
+
+function onWrong(timeout){SFX.wrong();B.wrongs++;S.stats.wrong++;B.combo=0;$('#combo').textContent='';
+ const e=B.e,q=B.q;const rageFull=e.rage>=e.rageMax;
+ const fb=$('#fb');fb.className='feedback wrong';
+ fb.innerHTML=`<span class="big">${timeout?'时间到！':'答错了'}</span><div class="exp"><b>正确答案：${N(q.ans)}${q.unit&&q.unit!=='位数'?' '+q.unit:''}</b><br>${q.explain}${rageFull?`<br><b style="color:var(--cinnabar)">${e.name} 怒气满了，要放大招「${e.sk.name}」！</b>`:''}</div><button class="btn primary" type="button" id="fbGo">准备防御 ▶</button>`;fb.hidden=false;
+ $('#fbGo').onclick=continueAfterReview;B.review=true;$('#fEnemy').classList.add('windup');
+ if(e.powers.includes('heal')&&e.hp>0){const h=Math.round(e.max*.15);e.hp=Math.min(e.max,e.hp+h);setTimeout(()=>{floatText('#fEnemy','+'+h,'heal');updateHud()},300)}
+ updateHud()}
+function continueAfterReview(){if(!B||!B.review)return;B.review=false;$('#fb').hidden=true;
+ if(B.e.rage>=B.e.rageMax)monsterSpecial();else startDefense({mult:1})}
+
+/* monster special move */
+function monsterSpecial(){if(!B||B.over)return;const e=B.e,sk=e.sk;e.rage=0;updateHud();$('#fEnemy').classList.remove('windup');$('#fb').hidden=true;
+ cutIn('enemy',enemyArt(e),sk.name,`${e.name}的大招：${sk.desc}`,()=>{if(!B||B.over)return;
+  if(sk.type==='shield'){const v=Math.round(e.max*.25);e.shieldMax=Math.max(e.shieldMax,v);e.shield=Math.min(e.shieldMax,e.shield+v);guardFx('#fEnemy');floatText('#fEnemy','护盾 +'+v,'blue');updateHud();setTimeout(()=>{if(B&&!B.over)nextQ()},1000);return}
+  if(sk.type==='heal'){const h=Math.round(e.max*.2);e.hp=Math.min(e.max,e.hp+h);floatText('#fEnemy','+'+h,'heal');updateHud();setTimeout(()=>{if(B&&!B.over)nextQ()},1000);return}
+  startDefense({mult:sk.mult||1,special:sk})})}
 
 /* defence: monster attacks -> 10-second quick question; right = block */
 function quickQ(){const T=[
@@ -986,71 +1107,43 @@ function quickQ(){const T=[
  ()=>{const x=ri(1,17)*10;return[`180° − ${x}° = ？`,180-x,'°']},
  ()=>pick([['1个周角 = 几个直角？',4,'个'],['1个平角是多少度？',180,'°'],['1个直角是多少度？',90,'°'],['1亿里面有几个一千万？',10,'个'],['10个十万是多少万？',100,'万'],['1万里面有几个一千？',10,'个']])];
  const[t,a,u]=pick(T)();return{text:`<span class="num">${t}</span>`,ans:a,unit:u}}
-function startDefense(mult){if(!B||B.over)return;
- if(B.blocks>0){$('#fEnemy').classList.remove('windup');enemyStrike(mult,()=>setTimeout(()=>{if(B&&!B.over)nextQ()},900));return}
- const e=B.e;B.def={mult};B.q=quickQ();
+function startDefense(opt){if(!B||B.over)return;const e=B.e;
+ if(B.blocks>0){$('#fEnemy').classList.remove('windup');B.blocks--;anim('#fEnemy','lunge-l');setTimeout(()=>{guardFx('#fHero');floatText('#fHero','护体挡住了！','blue');updateHud()},220);setTimeout(()=>{if(B&&!B.over)nextQ()},1100);return}
+ B.def=opt;B.q=quickQ();
  $('#desk').classList.add('defend');$('#fEnemy').classList.add('windup');
- $('#qText').innerHTML=`<span class="qtag danger-tag">防御题</span> <span class="tcount" id="tcount">10</span><br><b class="warn">${e.name} 要攻击你了！10秒内答对就能挡住！</b><br>${B.q.text}`;
+ const what=opt.special?`要放大招「${opt.special.name}」了`:'要攻击你了';
+ $('#qText').innerHTML=`<span class="qtag danger-tag">防御题</span> <span class="tcount" id="tcount">10</span><br><b class="warn">${e.name} ${what}！10秒内答对就能挡住！</b><br>${B.q.text}`;
  const fig=$('#qFig');fig.innerHTML='';fig.hidden=true;
  $('#fb').hidden=true;pad.clear();pad.setUnit(B.q.unit);pad.lock(false);B.busy=false;keyHandler=battleKey;
  $('#timer').hidden=false;SFX.wrong();
  startTimer(10,()=>{B.busy=true;pad.lock(true);defenseResolve(false,true)})}
-function defenseResolve(ok,timeout){stopTimer();const mult=B.def?B.def.mult:1;const q=B.q;B.def=null;B.busy=true;pad.lock(true);
+function defenseResolve(ok,timeout){stopTimer();const opt=B.def||{mult:1};const q=B.q,e=B.e;B.def=null;B.busy=true;pad.lock(true);
  $('#fEnemy').classList.remove('windup');
- const fb=$('#fb');
- if(ok){SFX.right();fb.className='feedback right';fb.innerHTML=`<span class="big">挡住了！</span><span class="exp">防御成功，${B.e.name} 的攻击被你挡下了！</span>`;fb.hidden=false;
-  anim('#fEnemy','lunge-l');setTimeout(()=>{if(!B)return;SFX.hit();guardFx('#fHero');floatText('#fHero','挡住了！','blue')},220);
-  setTimeout(()=>{if(B&&!B.over)nextQ()},1300)}
- else{fb.className='feedback wrong';fb.innerHTML=`<span class="big">${timeout?'来不及了！':'没挡住！'}</span><span class="exp"><b>防御题答案：${N(q.ans)}${q.unit&&q.unit!=='个'?' '+q.unit:''}</b></span>`;fb.hidden=false;
-  enemyStrike(mult,()=>{if(B.hero.hp<=0)setTimeout(heroDown,600);else setTimeout(()=>{if(B&&!B.over)nextQ()},1500)})}}
+ const what=opt.special?`大招「${opt.special.name}」`:`${e.name} 的攻击`;
+ if(ok){SFX.right();showFb('right','挡住了！',`防御成功，${what}被你挡下了！`);monsterShoot(opt,true,()=>setTimeout(()=>{if(B&&!B.over)nextQ()},900))}
+ else{showFb('wrong',timeout?'来不及了！':'没挡住！',`<b>防御题答案：${N(q.ans)}${q.unit&&q.unit!=='个'?' '+q.unit:''}</b>`);
+  monsterShoot(opt,false,()=>{if(B.hero.hp<=0)setTimeout(heroDown,500);else setTimeout(()=>{if(B&&!B.over)nextQ()},1300)})}}
+function monsterShoot(opt,blocked,cb){const e=B.e,sk=opt.special;const hits=sk&&sk.type==='double'?2:1;let n=0;
+ const land=()=>{if(!B)return;SFX.hit();
+  if(blocked){guardFx('#fHero');floatText('#fHero','挡住了！','blue')}
+  else{const dmg=Math.max(1,Math.round((e.atk+ri(-2,2))*(opt.mult||1)));B.hero.hp=Math.max(0,B.hero.hp-dmg);anim('#fHero','hurt');floatText('#fHero','−'+dmg,'dmg',n?'45%':undefined);
+   if(sk){if(sk.type==='drain'){e.hp=Math.min(e.max,e.hp+dmg);setTimeout(()=>floatText('#fEnemy','+'+dmg,'heal'),200)}
+    if(n===0){if(sk.type==='poison'){B.poison=3;floatText('#fHero','中毒！','poison','6%')}
+     if(sk.type==='weaken'){B.weak=2;floatText('#fHero','虚弱！','poison','6%')}
+     if(sk.type==='charm'&&B.gauge>0){B.gauge=0;floatText('#fHero','能量被偷走！','poison','6%')}}}}
+  updateHud();n++;if(n<hits&&B.hero.hp>0)setTimeout(one,380);else cb&&cb()};
+ const one=()=>{anim('#fEnemy','lunge-l');if(sk)shoot('#fEnemy','#fHero',sk.fx,land);else setTimeout(()=>{if(!blocked)slash('#fHero',RED);land()},220)};
+ one()}
 
-function dealDamage(dmg,ignoreShield){const e=B.e;let absorbed=0;
- if(!ignoreShield&&e.shield>0){absorbed=Math.min(e.shield,dmg);e.shield-=absorbed;dmg-=absorbed}
- e.hp=Math.max(0,e.hp-dmg);
- if(absorbed)floatText('#fEnemy','护盾 −'+absorbed,'blue');
- if(dmg>0)setTimeout(()=>floatText('#fEnemy','−'+dmg,'dmg'),absorbed?250:0);
- if(e.powers.includes('shield')&&!B.regenUsed&&e.hp>0&&e.hp<=e.max/2){B.regenUsed=true;e.shield=e.shieldMax;setTimeout(()=>{floatText('#fEnemy','护盾重生！','blue');updateHud()},700)}}
-
-function guardFx(fid){const f=$(fid);if(!f)return;const g=document.createElementNS('http://www.w3.org/2000/svg','svg');g.setAttribute('viewBox','0 0 60 120');g.setAttribute('class','guardfx');
- const hero=fid==='#fHero';g.innerHTML=`<g filter="url(#rough)" ${hero?'transform="translate(60 0) scale(-1 1)"':''}><path d="M48 6 C8 30 8 90 48 114" fill="none" stroke="${INK}" stroke-width="14" stroke-linecap="round"/><path d="M48 6 C8 30 8 90 48 114" fill="none" stroke="#2f6fb0" stroke-width="8" stroke-linecap="round"/></g>`;f.appendChild(g);setTimeout(()=>g.remove(),850)}
-function enemyAct(){const e=B.e,r=Math.random();if(r<e.blk)return'block';if(r<e.blk+e.ctr)return'counter';return'none'}
-function enemyStrike(mult,cb){anim('#fEnemy','lunge-l');setTimeout(()=>{if(!B)return;SFX.hit();const e=B.e;
-  if(B.blocks>0){B.blocks--;guardFx('#fHero');floatText('#fHero','挡住了！','blue')}
-  else{const dmg=Math.max(1,Math.round((e.atk+ri(-2,2))*mult));B.hero.hp=Math.max(0,B.hero.hp-dmg);slash('#fHero',RED);anim('#fHero','hurt');floatText('#fHero','−'+dmg,'dmg')}
-  updateHud();cb&&cb()},220)}
-function heroDown(){B.over=true;stopTimer();keyHandler=null;$('#fHero').classList.add('dead');setTimeout(()=>finishBattle(false),1100)}
-
-function onRight(){SFX.right();B.rights++;S.stats.right++;B.combo++;B.gauge=Math.min(3,B.gauge+1);
- const e=B.e;const bonus=1+.1*Math.min(B.combo-1,5);let dmg=Math.round(B.hero.atk*bonus*B.mult);const big=B.mult>1;B.mult=1;
- const act=enemyAct();if(act==='block')dmg=Math.ceil(dmg/2);
- const comboTxt=B.combo>1?`连击 ×${B.combo}，伤害 +${Math.round((bonus-1)*100)}%`:'出招！';
- const note=act==='block'?`可是 ${e.name} ${e.verb}，伤害减半！`:act==='counter'?`${comboTxt}　小心，${e.name} 要反击了，准备防御！`:comboTxt;
- const fb=$('#fb');fb.className='feedback right';fb.innerHTML=`<span class="big">答对了！</span><span class="exp">${note}</span>`;fb.hidden=false;
- const cb=$('#combo');cb.textContent=B.combo>1?`连击 ×${B.combo}`:'';cb.classList.remove('pop');void cb.offsetWidth;cb.classList.add('pop');
- anim('#fHero','lunge-r');
- setTimeout(()=>{if(!B||B.over)return;SFX.hit();
-  if(act==='block'){guardFx('#fEnemy');floatText('#fEnemy','格挡！','blue','6%')}
-  slash('#fEnemy',big?GOLD:INK);anim('#fEnemy','hurt');dealDamage(dmg,false);updateHud();
-  if(B.e.hp<=0){enemyDown();return}
-  if(act==='counter'){setTimeout(()=>{if(!B||B.over)return;floatText('#fEnemy','反击！','dmg','6%');startDefense(.6)},700)}
-  else setTimeout(()=>{if(B&&!B.over)nextQ()},1080)},220)}
-
-function enemyDown(){B.over=true;stopTimer();keyHandler=null;setTimeout(()=>{$('#fEnemy').classList.add('dead')},300);setTimeout(()=>finishBattle(true),1400)}
-
-function onWrong(timeout){SFX.wrong();B.wrongs++;S.stats.wrong++;B.combo=0;$('#combo').textContent='';
- const e=B.e,q=B.q;
- const fb=$('#fb');fb.className='feedback wrong';
- fb.innerHTML=`<span class="big">${timeout?'时间到！':'答错了'}</span><div class="exp"><b>正确答案：${N(q.ans)}${q.unit&&q.unit!=='位数'?' '+q.unit:''}</b><br>${q.explain}</div><button class="btn primary" type="button" id="fbGo">准备防御 ▶</button>`;fb.hidden=false;
- $('#fbGo').onclick=continueAfterReview;B.review=true;$('#fEnemy').classList.add('windup');
- if(e.powers.includes('heal')&&e.hp>0){const h=Math.round(e.max*.15);e.hp=Math.min(e.max,e.hp+h);setTimeout(()=>{floatText('#fEnemy','+'+h,'heal');updateHud()},300)}}
-function continueAfterReview(){if(!B||!B.review)return;B.review=false;$('#fb').hidden=true;startDefense(1)}
-
-function useSkill(){if(!B||B.over||B.gauge<3||B.review||B.def)return;B.gauge=0;SFX.skill();const k=S.cur;
- if(k==='brush'){B.mult=3;floatText('#fHero','泼墨狂书！','dmg')}
- else if(k==='monk'){const h=Math.round(B.hero.max*.4);B.hero.hp=Math.min(B.hero.max,B.hero.hp+h);floatText('#fHero','+'+h,'heal')}
- else if(k==='hand'){B.blocks+=2;floatText('#fHero','千手护体！','blue')}
- else if(k==='reaper'){anim('#fHero','lunge-r');const dmg=Math.round(B.e.max*.3);setTimeout(()=>{SFX.hit();slash('#fEnemy','#27302a');anim('#fEnemy','hurt');dealDamage(dmg,true);updateHud();if(B.e.hp<=0){B.busy=true;pad.lock(true);enemyDown()}},220)}
- updateHud()}
+/* player special skill */
+function useSkill(){if(!B||B.over||B.busy||B.gauge<3||B.review||B.def)return;
+ B.gauge=0;B.busy=true;pad.lock(true);updateHud();const k=S.cur,c=CHARS[k],a=B.hero.atk;
+ cutIn('hero',ART[k](),c.skill,c.desc,()=>{if(!B||B.over)return;
+  const done=()=>{if(!B)return;updateHud();if(B.e.hp<=0){enemyDown();return}B.busy=false;pad.lock(false)};
+  if(k==='brush')heroHit(Math.round(a*2.5),'ink',false,done);
+  else if(k==='monk'){const h=Math.round(B.hero.max*.4);B.hero.hp=Math.min(B.hero.max,B.hero.hp+h);B.poison=0;B.weak=0;floatText('#fHero','+'+h,'heal');updateHud();heroHit(a,'fire',false,done)}
+  else if(k==='hand'){B.blocks+=1;let i=0;const hit=()=>heroHit(Math.round(a*.6),'gold',false,()=>{i++;if(i<4&&B.e.hp>0)setTimeout(hit,90);else done()});hit()}
+  else heroHit(Math.round(B.e.max*.3),'shadow',true,done)})}
 
 /* ============ RESULT ============ */
 function finishBattle(win){stopTimer();const b=B;let coins;
@@ -1134,7 +1227,7 @@ function renderGear(){
   <p style="margin:6px 0 0">技能 <b>${c.skill}</b>：${c.desc}（答对3题充满）</p>
   <div class="slots">${slot(hs.w,'武器')}${slot(hs.a,'盔甲')}</div></div></div>
  <h3 style="font-size:1.5rem;margin-bottom:8px">角色</h3>
- <div class="chars">${CHAR_ORDER.map(k=>{const C=CHARS[k],own=S.chars.includes(k),cur=S.cur===k;return `<div class="card charcard ${cur?'cur':''}">${ART[k]()}<h3>${C.name}</h3><p>生命 ${C.hp} · 攻击 ${C.atk}</p><p class="muted">${C.skill}：${C.desc}</p>
+ <div class="chars">${CHAR_ORDER.map(k=>{const C=CHARS[k],own=S.chars.includes(k),cur=S.cur===k;return `<div class="card charcard ${cur?'cur':''}">${ART[k]()}<h3>${C.name}</h3><p>生命 ${C.hp} · 攻击 ${C.atk} · 普攻「${HERO_ATK[k].name}」</p><p class="muted">${C.skill}：${C.desc}</p>
   ${cur?'<button class="btn" type="button" disabled>使用中</button>':own?`<button class="btn primary" type="button" data-use="${k}">选择</button>`:`<button class="btn gold" type="button" data-hire="${k}" ${S.coins>=C.price?'':'disabled'}>招募 · ${C.price}金币</button>`}</div>`}).join('')}</div>
  <h3 style="font-size:1.5rem;margin-bottom:8px">背包（${S.inv.length}）</h3>
  ${inv.length?`<div class="inv">${inv.map(it=>{const eq=S.eq[it.type]===it.id;return `<div class="item ${eq?'eq':''}">${itemIcon(it)}<span class="tag" style="background:${RAR[it.rar].c}">${RAR[it.rar].n}${it.type==='w'?'武器':'盔甲'}</span><span class="nm">${it.name}</span><span>${it.type==='w'?'攻击':'生命'} +${it.val}</span>${eq?'<button type="button" disabled>已装备</button>':`<button type="button" data-eq="${it.id}">装备</button>`}</div>`}).join('')}</div>`:'<div class="empty">背包是空的。去宝箱铺开宝箱，就能得到武器和盔甲。</div>'}
