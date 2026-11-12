@@ -536,7 +536,7 @@ const INK='#1d1b18',RED='#b5352b',GOLD='#d89b1d',PAPER='#f8f1e2',JADE='#2e6a58';
 const SAVE_KEY='moxia-math-save-v1',MODE_KEY='moxia-mode';
 let curMode=(()=>{try{return localStorage.getItem(MODE_KEY)||'normal'}catch(e){return 'normal'}})();
 function saveKey(m){m=m||curMode;return m==='normal'?SAVE_KEY:SAVE_KEY+'-'+m}
-const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0},seen:{},trophies:{},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{},potions:{},codes:{},t2open:false});
+const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0},seen:{},trophies:{},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{},potions:{},codes:{},t2open:false});
 function load(){try{const r=localStorage.getItem(saveKey());if(r){const o=JSON.parse(r);const d=defaultSave();return Object.assign(d,o,{prog:Object.assign(d.prog,o.prog||{}),eq:Object.assign(d.eq,o.eq||{}),stats:Object.assign(d.stats,o.stats||{})})}}catch(e){}return defaultSave()}
 function save(){try{localStorage.setItem(saveKey(),JSON.stringify(S))}catch(e){}}
 let S=load();S.mode=curMode;
@@ -586,7 +586,7 @@ function arcSpikes(cx,cy,r1,r2,a0,a1,n){const p=[];for(let i=0;i<=n;i++){const a
 const wrap=(inner,vb='0 0 200 240')=>`<svg class="art" viewBox="${vb}" aria-hidden="true"><g filter="url(#inkart)">${inner}</g></svg>`;
 
 /* stick-man ink figures */
-function stickFig(o){const w=o.w||5,pl=(p,ww)=>`<path d="M${p.map(q=>q.join(' ')).join(' L')}" ${st(ww)}/>`;
+function stickFig(o){const w=o.w||5,pl=(p,ww)=>p.length?`<path d="M${p.map(q=>q.join(' ')).join(' L')}" ${st(ww)}/>`:'';
  const foot=p=>{const a=p[p.length-1],b=p[p.length-2];const dx=a[0]>=b[0]?1:-1;return `<path d="M${a[0]-4*dx} ${a[1]} L${a[0]+9*dx} ${a[1]+1}" ${st(w+1.5)}/>`};
  const hr=o.hr||12,[hx,hy]=o.head;
  return `${pl(o.legL,w)}${pl(o.legR,w)}${foot(o.legL)}${foot(o.legR)}${pl([o.neck,o.hip],w+2.5)}${pl(o.armL,w-.6)}${pl(o.armR,w-.6)}
@@ -1809,8 +1809,204 @@ const ULT={
  knight:{name:'圣光审判',desc:'圣光3击无视护盾，并恢复20%生命',heal:.2,hits:3,mult:1.8,ign:1,fx:'ice'}};
 Object.keys(ULT).forEach(k=>{if(SKILLS[k])SKILLS[k].push(Object.assign({cost:5,unlock:5},ULT[k]))});
 const GAUGE_MAX=5;
-function worldLv(){return [1,2,3,4,5,6,7,8,9,10,11,12,13,14].filter(c=>S.prog[c]>=5).length}
+function worldLv(){return [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].filter(c=>S.prog[c]>=5).length}
 const CHAR_ORDER=['brush','monk','panda','liondance','hand','taoist','archer','qin','mech','reaper','sword','taiji','hammer','fan','frost','blades','ninja','spear','healer','kitegirl','rider','monkey','painter','drummer','bee','knight','giant'];
+/* ===== new strong heroes + tower 6 monsters ===== */
+Object.assign(ART,{
+swordsaint:()=>wrap(`${inkShadow(100,64)}
+<path d="M98 100 C80 118 68 164 58 206 C76 200 88 186 96 170Z" fill="#e9e2cf" stroke="${INK}" stroke-width="2"/>
+<path d="M60 206 L58 214 M70 200 L68 212" ${st(2)}/>
+${stickFig({head:[100,80],neck:[100,96],hip:[98,152],armL:[[100,104],[84,124],[96,136]],armR:[],legL:[[98,152],[72,186],[60,220]],legR:[[98,152],[128,182],[142,220]]})}
+<path d="M86 74 L114 74" ${st(4.5,RED)}/><path d="M86 74 Q70 70 62 82 M86 76 Q74 84 70 98" ${st(3,RED)}/>
+<path d="M88 136 L120 144" ${st(5,'#3a2a2a')}/>
+<g class="weapon" style="transform-origin:124px 120px">
+<path d="M101 104 L118 118 L124 120" ${st(4.4)}/><circle cx="124" cy="120" r="4" fill="${INK}"/>
+<path d="M112 128 L124 120" ${st(5.5,'#3a2a2a')}/><path d="M118 112 L132 126" ${st(6,GOLD)}/>
+<path d="M127 117 Q168 80 200 34 L203 38 Q178 84 131 123Z" fill="#f2f7fa" stroke="${INK}" stroke-width="2.2"/>
+<path d="M134 114 Q170 82 196 44" ${st(1.2,'#8aa')}/></g>`),
+
+warlord:()=>wrap(`${inkShadow(100,72)}
+<path d="M96 100 C70 120 52 170 38 216 C66 208 84 192 94 172Z" fill="${RED}" stroke="${INK}" stroke-width="2.5"/>
+<path d="M40 214 L46 204 L52 214 L58 202" ${st(2)}/>
+${stickFig({head:[100,80],hr:14,neck:[100,96],hip:[98,152],armL:[],armR:[],legL:[[98,152],[70,186],[58,220]],legR:[[98,152],[130,184],[144,220]],w:7})}
+<path d="M84 80 Q100 54 116 80 L116 88 L84 88Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/>
+<path d="M100 60 Q90 34 106 24 Q104 42 120 48 Q108 52 100 60Z" fill="${RED}" stroke="${INK}" stroke-width="2"/>
+<path d="M86 104 L114 104 L116 134 L84 134Z" fill="#8a96a3" stroke="${INK}" stroke-width="2.5"/><path d="M100 104 L100 134 M86 118 L114 118" ${st(2,INK)}/>
+<circle cx="86" cy="104" r="7" fill="${GOLD}" stroke="${INK}" stroke-width="2"/><circle cx="114" cy="104" r="7" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>
+<g class="weapon" style="transform-origin:122px 118px">
+<path d="M99 106 L82 122 L96 128 M101 106 L118 118 L124 120" ${st(6)}/>
+<line x1="34" y1="166" x2="184" y2="58" stroke="#6b4a2a" stroke-width="6.5" stroke-linecap="round"/>
+<path d="M180 58 L206 34 L192 66Z" fill="#cfd3d6" stroke="${INK}" stroke-width="2"/>
+<path d="M170 66 Q190 86 170 100 Q172 84 158 76Z" fill="#cfd3d6" stroke="${INK}" stroke-width="2"/>
+<path d="M162 74 L154 94 M166 76 L162 96" ${st(3.2,RED)}/></g>`),
+
+phoenix:()=>wrap(`${inkShadow(100,60)}
+<g filter="url(#flame)"><path d="M96 108 C60 66 30 78 10 56 C26 98 38 120 68 136 C38 136 24 152 16 172 C48 162 70 156 92 140Z" fill="#ff7a2a" opacity=".85"/>
+<path d="M90 116 C66 96 48 100 34 92 C46 114 58 124 80 132Z" fill="#ffd23a" opacity=".8"/></g>
+${stickFig({head:[100,80],neck:[100,96],hip:[100,148],armL:[[100,104],[80,94],[68,78]],armR:[[100,104],[124,98],[144,86]],legL:[[100,148],[92,186],[88,220]],legR:[[100,148],[110,186],[114,220]]})}
+<path d="M98 100 L74 200 L128 200 Z" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M84 168 L118 168 M80 184 L122 184" ${st(2.4,GOLD)}/>
+<path d="M90 70 Q92 46 100 64 Q104 40 108 64 Q116 48 112 72Z" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>
+<circle cx="152" cy="80" r="11" fill="#ff7a2a" stroke="${INK}" stroke-width="2"/><circle cx="154" cy="78" r="5" fill="#ffe58a"/>`),
+
+starsage:()=>{const star=(x,y,r)=>`<polygon points="${[0,1,2,3,4,5,6,7,8,9].map(i=>{const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.42:r;return (x+rr*Math.cos(a)).toFixed(1)+','+(y+rr*Math.sin(a)).toFixed(1)}).join(' ')}" fill="#ffe58a" stroke="${INK}" stroke-width="1.6"/>`;
+return wrap(`${inkShadow(100,62)}
+<circle cx="100" cy="86" r="44" fill="#2f4a8a" opacity=".22"/>
+${stickFig({head:[100,80],neck:[100,96],hip:[100,150],armL:[[100,104],[82,126],[94,138]],armR:[[100,104],[124,114],[140,110]],legL:[[100,150],[86,186],[80,220]],legR:[[100,150],[116,186],[122,220]]})}
+<path d="M98 100 C84 140 76 180 70 212 L132 212 C126 180 116 140 102 100Z" fill="#2f4a8a" stroke="${INK}" stroke-width="2.5"/>
+${[[88,150,5],[112,176,6],[92,196,4],[116,130,4]].map(([x,y,r])=>star(x,y,r)).join('')}
+<path d="M84 70 L100 36 L116 70Z" fill="#2f4a8a" stroke="${INK}" stroke-width="2.5"/>${star(100,38,7)}
+<path d="M88 92 Q100 120 112 92" fill="#e9e2cf" stroke="${INK}" stroke-width="1.8"/>
+<line x1="142" y1="40" x2="140" y2="222" stroke="#6b4a2a" stroke-width="5" stroke-linecap="round"/>
+<circle cx="142" cy="34" r="16" fill="#9fd3ea" opacity=".35"/>${star(142,34,13)}`)},
+
+dragonemperor:()=>wrap(`${inkShadow(100,80)}
+<path d="M40 210 C10 170 30 120 60 110 C40 80 60 40 100 36 C140 32 168 60 160 92" fill="none" stroke="${GOLD}" stroke-width="16" stroke-linecap="round" opacity=".9"/>
+<path d="M40 210 C10 170 30 120 60 110 C40 80 60 40 100 36 C140 32 168 60 160 92" fill="none" stroke="${INK}" stroke-width="2" stroke-dasharray="6 8"/>
+<path d="M150 88 L176 78 L188 92 L172 104 L156 102Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><circle cx="174" cy="88" r="3" fill="${RED}"/>
+<path d="M176 78 L184 62 M168 80 L170 64" ${st(3,INK)}/><path d="M188 98 Q198 104 196 114" ${st(2.5,GOLD)}/>
+${stickFig({head:[100,84],hr:14,neck:[100,100],hip:[98,154],armL:[[100,108],[82,130],[94,140]],armR:[[100,108],[124,118],[142,112]],legL:[[98,154],[76,188],[68,220]],legR:[[98,154],[124,188],[132,220]],w:6})}
+<path d="M98 104 C80 144 72 184 66 214 L134 214 C128 184 118 144 102 104Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/>
+<path d="M84 150 Q100 140 116 150 M80 176 Q100 166 120 176 M76 200 Q100 190 124 200" ${st(2.4,RED)}/>
+<path d="M84 74 L86 58 L94 68 L100 54 L106 68 L114 58 L116 74Z" fill="${GOLD}" stroke="${INK}" stroke-width="2"/><circle cx="100" cy="64" r="3" fill="${RED}"/>
+<circle cx="150" cy="110" r="12" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M144 106 Q150 100 156 108" ${st(2,GOLD)}/>`),
+
+thunderbird:()=>wrap(`${shadow(100,60)}
+<path d="M100 110 L20 40 L60 60 L40 20 L90 80Z" fill="#2f4a8a" stroke="${INK}" stroke-width="3"/>
+<path d="M110 110 L190 50 L150 66 L176 24 L120 84Z" fill="#2f4a8a" stroke="${INK}" stroke-width="3"/>
+<polyline points="34,30 52,58 42,60 62,86" fill="none" stroke="#ffe58a" stroke-width="4"/><polyline points="170,36 152,62 164,64 142,88" fill="none" stroke="#ffe58a" stroke-width="4"/>
+<ellipse cx="104" cy="130" rx="34" ry="38" fill="#1f2f5a" stroke="${INK}" stroke-width="3"/>
+<path d="M90 164 L80 200 L96 196 L104 214 L112 196 L128 200 L118 164" fill="#1f2f5a" stroke="${INK}" stroke-width="3"/>
+<circle cx="84" cy="98" r="22" fill="#1f2f5a" stroke="${INK}" stroke-width="3"/>
+<path d="M64 96 L40 104 L64 108Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><circle cx="78" cy="92" r="5" fill="#ffe58a"/><circle cx="77" cy="92" r="2" fill="${INK}"/>
+<path d="M90 78 L96 58 L100 80 L108 62 L106 84" fill="#ffe58a" stroke="${INK}" stroke-width="2"/>
+<path d="M88 214 L84 224 M104 214 L104 226 M120 214 L124 224" ${st(4,GOLD)}/>`),
+
+bronzebot:()=>wrap(`${shadow(100,64)}
+<rect x="66" y="96" width="70" height="70" rx="8" fill="#b07a3a" stroke="${INK}" stroke-width="3.5"/>
+${[110,124,138,152].map(y=>`<line x1="70" y1="${y}" x2="132" y2="${y}" stroke="#6b4a2a" stroke-width="2"/>`).join('')}
+<circle cx="101" cy="130" r="12" fill="#ffd23a" stroke="${INK}" stroke-width="2.5"/><path d="M95 130 L107 130 M101 124 L101 136" ${st(2)}/>
+<rect x="72" y="50" width="56" height="44" rx="6" fill="#c98a4a" stroke="${INK}" stroke-width="3.5"/>
+<rect x="78" y="62" width="44" height="12" fill="${INK}"/><circle cx="88" cy="68" r="4" fill="#3aff9a"/><circle cx="108" cy="68" r="4" fill="#3aff9a"/>
+<path d="M84 84 L116 84" ${st(3,'#6b4a2a')}/><line x1="100" y1="50" x2="100" y2="32" stroke="${INK}" stroke-width="3"/><circle cx="100" cy="28" r="5" fill="${RED}" stroke="${INK}" stroke-width="2"/>
+<path d="M66 104 L38 130 L30 166" ${st(12,'#b07a3a')}/><path d="M66 104 L38 130 L30 166" ${st(2,INK)}/>
+<path d="M24 162 L22 180 L34 182 L38 166Z" fill="#8a96a3" stroke="${INK}" stroke-width="2.5"/>
+<path d="M136 104 L160 132 L168 160" ${st(12,'#b07a3a')}/><path d="M136 104 L160 132 L168 160" ${st(2,INK)}/>
+<rect x="76" y="166" width="18" height="52" fill="#b07a3a" stroke="${INK}" stroke-width="3"/><rect x="108" y="166" width="18" height="52" fill="#b07a3a" stroke="${INK}" stroke-width="3"/>
+<rect x="70" y="214" width="28" height="10" rx="3" fill="#6b4a2a" stroke="${INK}" stroke-width="2"/><rect x="104" y="214" width="28" height="10" rx="3" fill="#6b4a2a" stroke="${INK}" stroke-width="2"/>`),
+
+gargoyle:()=>wrap(`${shadow(100,66)}
+<path d="M80 100 C40 60 20 80 8 60 C14 100 30 120 70 130Z" fill="#7d756a" stroke="${INK}" stroke-width="3"/>
+<path d="M124 100 C164 60 184 80 196 60 C190 100 174 120 134 130Z" fill="#7d756a" stroke="${INK}" stroke-width="3"/>
+<path d="M30 80 L60 110 M174 80 L144 110" ${st(2)}/>
+<path d="M70 110 C66 150 76 180 84 190 L120 190 C130 180 140 150 134 110 C124 96 82 96 70 110Z" fill="#8b8478" stroke="${INK}" stroke-width="3"/>
+<path d="M84 190 L72 222 L94 222 L100 196 L106 222 L130 222 L120 190" fill="#8b8478" stroke="${INK}" stroke-width="3"/>
+<path d="M86 130 Q100 122 116 130 M84 150 Q100 142 118 150" ${st(2)}/>
+<circle cx="96" cy="80" r="26" fill="#8b8478" stroke="${INK}" stroke-width="3"/>
+<path d="M76 62 L66 36 L86 58 M114 62 L126 36 L108 58" fill="#7d756a" stroke="${INK}" stroke-width="3"/>
+<circle cx="86" cy="78" r="5" fill="${RED}"/><circle cx="106" cy="78" r="5" fill="${RED}"/>
+<path d="M78 94 L84 100 L90 94 L96 100 L102 94 L108 100 L114 94" fill="#f4f8fb" stroke="${INK}" stroke-width="2"/>
+<path d="M72 120 L46 150 L40 166 M48 150 L36 156" ${st(8,'#8b8478')}/>`),
+
+stormsprite:()=>wrap(`${shadow(100,52)}
+<g filter="url(#flame)"><path d="M40 120 C30 80 70 50 100 60 C130 40 176 70 164 110 C190 130 160 170 124 160 C100 180 60 176 52 150 C26 150 24 128 40 120Z" fill="#5f6b78" opacity=".9"/></g>
+<path d="M40 120 C30 80 70 50 100 60 C130 40 176 70 164 110 C190 130 160 170 124 160 C100 180 60 176 52 150 C26 150 24 128 40 120Z" fill="none" stroke="${INK}" stroke-width="3"/>
+<path d="M70 120 Q80 110 92 120 M108 120 Q120 110 132 120" ${st(4)}/><circle cx="82" cy="120" r="6" fill="#ffe58a"/><circle cx="120" cy="120" r="6" fill="#ffe58a"/>
+<path d="M88 144 Q100 152 114 144" ${st(3)}/>
+<polyline points="80,170 70,192 84,192 74,220" fill="none" stroke="#ffe58a" stroke-width="5"/><polyline points="124,166 134,190 120,190 132,216" fill="none" stroke="#ffe58a" stroke-width="5"/>
+<path d="M30 140 Q14 150 20 170 M174 140 Q190 150 184 170" ${st(3,'#9aa7b4')}/>`),
+
+thunderbeast:()=>wrap(`${shadow(100,88)}
+<polygon points="${spikes(100,110,60,98,22)}" fill="#ffe58a" opacity=".25" filter="url(#flame)"/>
+<path d="M40 130 C40 96 80 80 130 86 C170 92 190 120 184 150 C182 176 170 186 160 188 L162 222 L144 222 L140 192 L84 192 L80 222 L62 222 L60 188 C46 180 40 160 40 130Z" fill="#2a3a5a" stroke="${INK}" stroke-width="3.5"/>
+<path d="M60 118 L50 96 L68 108 L66 84 L82 104 L88 80 L98 102 L110 78 L114 102 L128 82 L130 104 L146 88" fill="#ffe58a" stroke="${INK}" stroke-width="2.5"/>
+<path d="M50 130 C30 120 14 126 8 140 C14 160 30 166 50 160Z" fill="#2a3a5a" stroke="${INK}" stroke-width="3"/>
+<path d="M42 118 C34 96 40 80 50 70 M54 116 C54 96 62 82 72 76" ${st(6,'#e9e2cf')}/><path d="M42 118 C34 96 40 80 50 70 M54 116 C54 96 62 82 72 76" ${st(1.6)}/>
+<circle cx="30" cy="136" r="5" fill="#ffe58a"/><circle cx="29" cy="136" r="2" fill="${INK}"/>
+<path d="M10 146 L14 152 L18 146 L22 152 L26 146 L30 152" ${st(2,'#f4f8fb')}/>
+<polyline points="184,140 196,110 186,112 198,80" fill="none" stroke="#ffe58a" stroke-width="5"/>
+${[[90,140],[120,150],[150,130]].map(([x,y])=>`<polyline points="${x},${y} ${x+8},${y+12} ${x},${y+14} ${x+8},${y+28}" fill="none" stroke="#ffe58a" stroke-width="3"/>`).join('')}`),
+
+twinhound:()=>wrap(`${shadow(104,70)}
+<path d="M70 130 C80 112 140 110 164 124 C178 134 180 158 170 168 L164 168 L166 222 L152 222 L148 176 L104 178 L100 222 L86 222 L84 172 C72 164 64 148 70 130Z" fill="#3a1512" stroke="${INK}" stroke-width="3"/>
+<path d="M164 126 C190 112 196 92 186 76" ${st(6,'#3a1512')}/>
+<path d="M76 124 L42 118 L22 128 L40 140 L68 140Z" fill="#3a1512" stroke="${INK}" stroke-width="3"/><path d="M58 116 L62 96 L72 120Z" fill="#3a1512" stroke="${INK}" stroke-width="2"/>
+<circle cx="44" cy="124" r="4" fill="#ff7a2a"/><path d="M24 134 L28 140 L32 134 L36 140" ${st(2,'#f4f8fb')}/>
+<path d="M86 116 L70 86 L48 78 L56 96 L76 108Z" fill="#3a1512" stroke="${INK}" stroke-width="3"/><path d="M74 86 L80 66 L86 92Z" fill="#3a1512" stroke="${INK}" stroke-width="2"/>
+<circle cx="62" cy="84" r="4" fill="#ff7a2a"/><path d="M50 86 L54 92 L58 86" ${st(2,'#f4f8fb')}/>
+<g filter="url(#flame)"><path d="M90 110 Q110 90 130 108 Q150 92 160 116" fill="none" stroke="#ff7a2a" stroke-width="6" opacity=".8"/></g>
+<path d="M90 150 L120 148 M130 146 L150 146" ${st(2,'#5a1410')}/>`),
+
+warlock:()=>wrap(`${shadow(100,58)}
+<path d="M100 60 C70 90 60 160 52 222 L148 222 C140 160 130 90 100 60Z" fill="#3a1a4a" stroke="${INK}" stroke-width="3"/>
+<path d="M76 222 L82 200 L90 222 L98 200 L106 222 L114 200 L122 222" fill="#2a1236" stroke="${INK}" stroke-width="2"/>
+<path d="M70 70 L100 14 L130 70Z" fill="#3a1a4a" stroke="${INK}" stroke-width="3"/><path d="M100 14 Q118 10 124 22" ${st(3,'#3a1a4a')}/>
+<ellipse cx="100" cy="80" rx="20" ry="16" fill="${INK}"/><circle cx="92" cy="80" r="3.5" fill="#d36aff"/><circle cx="108" cy="80" r="3.5" fill="#d36aff"/>
+<path d="M90 96 L100 130 L110 96" fill="#cfd4e0" stroke="${INK}" stroke-width="1.6"/>
+<path d="M78 120 L48 110 L34 98" ${st(9,'#3a1a4a')}/>
+<line x1="34" y1="40" x2="40" y2="222" stroke="#5a4a3a" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="34" cy="36" rx="18" ry="13" fill="#f4f8fb" stroke="${INK}" stroke-width="2.5"/><circle cx="32" cy="36" r="7" fill="#7a3fa6"/><circle cx="31" cy="36" r="3" fill="${INK}"/>
+<circle cx="34" cy="36" r="24" fill="#d36aff" opacity=".18"/>`),
+
+obsidianknight:()=>wrap(`${shadow(100,66)}
+<path d="M70 104 L132 104 L140 170 L62 170Z" fill="#1a1a22" stroke="#7a3fa6" stroke-width="3"/>
+<path d="M100 108 L100 166 M74 130 L128 130" ${st(2.5,'#7a3fa6')}/>
+<rect x="72" y="168" width="22" height="54" fill="#1a1a22" stroke="${INK}" stroke-width="3"/><rect x="108" y="168" width="22" height="54" fill="#1a1a22" stroke="${INK}" stroke-width="3"/>
+<path d="M78 56 Q100 40 122 56 L124 100 L76 100Z" fill="#1a1a22" stroke="#7a3fa6" stroke-width="3"/>
+<rect x="82" y="72" width="36" height="6" fill="#d36aff"/><path d="M100 46 L100 26 M100 26 Q86 16 80 30 M100 26 Q114 16 120 30" ${st(3,'#7a3fa6')}/>
+<path d="M132 110 L162 92 L170 64 L164 58 L156 86 L130 100Z" fill="#1a1a22" stroke="${INK}" stroke-width="2.5"/>
+<path d="M70 110 L40 128" ${st(10,'#1a1a22')}/>
+<path d="M44 132 L4 72 L10 66 L52 124Z" fill="#2a2a36" stroke="#d36aff" stroke-width="2.5"/><path d="M34 140 L56 120" ${st(6,'#7a3fa6')}/>
+<path d="M140 120 L176 112 L180 168 Q160 184 142 168Z" fill="#2a2a36" stroke="${INK}" stroke-width="3"/><path d="M160 124 L160 166" ${st(3,'#d36aff')}/>`),
+
+chaosslime:()=>wrap(`${shadow(100,82)}
+<path d="M20 222 C10 160 40 90 100 84 C160 90 190 160 180 222Z" fill="#5a2a7a" stroke="${INK}" stroke-width="3.5"/>
+<path d="M40 200 C38 160 60 120 100 116" ${st(5,'#9a5fd0')} opacity=".7"/>
+${[[70,140,12],[118,128,16],[96,180,10],[146,176,9],[56,186,7]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#f4f8fb" stroke="${INK}" stroke-width="2"/><circle cx="${x-r*.3}" cy="${y}" r="${r*.45}" fill="${INK}"/>`).join('')}
+<path d="M70 210 Q100 196 132 210" ${st(4)}/>
+<circle cx="40" cy="96" r="7" fill="#5a2a7a" stroke="${INK}" stroke-width="2"/><circle cx="168" cy="110" r="5" fill="#5a2a7a" stroke="${INK}" stroke-width="2"/>`),
+
+chaosgod:()=>wrap(`${shadow(100,92)}
+<polygon points="${spikes(100,110,64,102,26)}" fill="#7a3fa6" opacity=".3" filter="url(#flame)"/>
+<path d="M62 96 L138 96 L160 222 L40 222Z" fill="#1a1022" stroke="${INK}" stroke-width="3.5"/>
+<path d="M100 100 L100 220 M70 140 L130 140 M62 180 L138 180" ${st(2.5,'#d36aff')}/>
+<path d="M64 104 L30 80 L14 92 M64 118 L22 130 L10 150 M64 134 L36 170 L36 190" ${st(10,'#1a1022')}/>
+<path d="M136 104 L170 80 L186 92 M136 118 L178 130 L190 150 M136 134 L164 170 L164 190" ${st(10,'#1a1022')}/>
+<circle cx="14" cy="92" r="9" fill="#d36aff" opacity=".8"/><circle cx="10" cy="150" r="8" fill="${RED}" opacity=".8"/><circle cx="186" cy="92" r="9" fill="#d36aff" opacity=".8"/><circle cx="190" cy="150" r="8" fill="${RED}" opacity=".8"/>
+<rect x="72" y="40" width="56" height="58" rx="14" fill="#2a1a36" stroke="${INK}" stroke-width="3"/>
+<path d="M68 44 L74 14 L86 34 L100 6 L114 34 L126 14 L132 44Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><circle cx="100" cy="28" r="5" fill="#d36aff"/>
+<path d="M80 66 L94 70 L80 76Z M120 66 L106 70 L120 76Z" fill="#d36aff"/><circle cx="100" cy="56" r="5" fill="${RED}" stroke="${INK}" stroke-width="1.5"/>
+<path d="M84 86 L90 92 L96 86 L102 92 L108 86 L114 92" ${st(2,'#f4f8fb')}/>`)
+});
+Object.assign(BG,{
+storm:()=>{let r='';for(let i=0;i<40;i++)r+=`<line x1="${(i*97)%1200}" y1="${(i*53)%300}" x2="${(i*97)%1200-10}" y2="${(i*53)%300+26}" stroke="#9fd3ea" stroke-width="1.5" opacity=".35"/>`;
+ return bgWrap(`<rect width="1200" height="400" fill="#1c2436"/><rect width="1200" height="200" fill="#2f3c58" opacity=".6"/>
+ ${[120,420,760,1060].map((x,i)=>`<ellipse cx="${x}" cy="${50+(i%2)*30}" rx="190" ry="44" fill="#4a566e" opacity=".8"/>`).join('')}
+ <polyline points="300,60 280,130 304,130 276,220" fill="none" stroke="#ffe58a" stroke-width="5"/><polyline points="900,40 920,110 896,112 924,200" fill="none" stroke="#ffe58a" stroke-width="4"/>
+ ${[200,400,800,1000].map(x=>`<rect x="${x-18}" y="150" width="36" height="186" fill="#3a4258" stroke="#1a1e24" stroke-width="3"/><rect x="${x-26}" y="140" width="52" height="14" fill="#4a566e"/>`).join('')}
+ <path d="M520 336 L520 180 L600 120 L680 180 L680 336Z" fill="#2a3044"/><circle cx="600" cy="200" r="22" fill="#ffe58a" opacity=".6"/>
+ ${r}<rect x="0" y="336" width="1200" height="64" fill="#2a2e3a"/><path d="M0 340 L1200 340" stroke="#4a566e" stroke-width="3"/>`)},
+chaos:()=>{let s='';for(let i=0;i<30;i++)s+=`<circle cx="${(i*131)%1200}" cy="${30+(i*71)%260}" r="${2+(i%3)*2}" fill="#d36aff" opacity=".4"/>`;
+ return bgWrap(`<rect width="1200" height="400" fill="#140a1e"/>
+ <circle cx="600" cy="150" r="120" fill="none" stroke="#7a3fa6" stroke-width="10" opacity=".6"/><circle cx="600" cy="150" r="80" fill="#2a1236"/><circle cx="600" cy="150" r="40" fill="#d36aff" opacity=".35"/>
+ ${[0,1,2,3,4,5].map(i=>`<path d="M${i*220} 336 L${i*220+60} ${160+(i%3)*30} L${i*220+90} 220 L${i*220+140} ${130+(i%2)*40} L${i*220+200} 336Z" fill="#241430" stroke="#3a1a4a" stroke-width="3"/>`).join('')}
+ ${[150,1050].map(x=>`<polygon points="${x},336 ${x-20},250 ${x},200 ${x+20},250" fill="#7a3fa6" opacity=".8" stroke="#d36aff" stroke-width="2"/>`).join('')}
+ ${s}<rect x="0" y="336" width="1200" height="64" fill="#1e1028"/><path d="M0 344 Q300 330 600 346 Q900 360 1200 340" stroke="#7a3fa6" stroke-width="3" fill="none"/>`)}
+});
+Object.assign(CHARS,{
+ swordsaint:{name:'剑圣',hp:200,atk:45,price:2300,skill:'拔剑斩',desc:'没有法术，靠真功夫：一刀3倍伤害'},
+ warlord:{name:'霸王',hp:300,atk:60,price:3000,skill:'霸王横扫',desc:'没有法术，力大无穷：横扫3倍伤害'},
+ phoenix:{name:'凤凰仙子',hp:220,atk:70,price:3600,skill:'凤火连珠',desc:'凤凰之火连射4下'},
+ starsage:{name:'星宿真人',hp:240,atk:90,price:4300,skill:'流星雨',desc:'召唤流星连砸5下'},
+ dragonemperor:{name:'龙皇',hp:350,atk:130,price:5200,skill:'龙皇之怒',desc:'金龙怒吼，3.2倍伤害'}
+});
+Object.assign(SKILLS,{
+ swordsaint:[{name:'拔剑斩',cost:3,unlock:0,desc:'快如闪电的一刀，3倍伤害',hits:1,mult:3,fx:'blood'},{name:'见切',cost:4,unlock:1,desc:'看穿敌人的招式，挡住3次攻击，再还一刀',block:3,hits:1,mult:1.5,fx:'blood'},{name:'无影剑',cost:5,unlock:3,desc:'连砍7刀，无视护盾（共4.9倍伤害）',hits:7,mult:.7,ign:1,fx:'blood'},{name:'剑心通明',cost:5,unlock:5,desc:'心剑合一，7倍伤害，无视护盾',hits:1,mult:7,ign:1,fx:'blood'}],
+ warlord:[{name:'霸王横扫',cost:3,unlock:0,desc:'大戟横扫，3倍伤害',hits:1,mult:3,fx:'stone'},{name:'破釜沉舟',cost:4,unlock:1,desc:'恢复30%生命，挡住2次攻击，再砸一下',heal:.3,block:2,hits:1,mult:1.5,fx:'stone'},{name:'力拔山兮',cost:5,unlock:3,desc:'力气大到能拔起大山，5倍伤害，无视护盾',hits:1,mult:5,ign:1,fx:'stone'},{name:'天下无双',cost:5,unlock:5,desc:'连砸3下，每下2.5倍，无视护盾',hits:3,mult:2.5,ign:1,fx:'stone'}],
+ phoenix:[{name:'凤火连珠',cost:3,unlock:0,desc:'凤凰之火连射4下（共3.2倍伤害）',hits:4,mult:.8,fx:'fire'},{name:'浴火重生',cost:4,unlock:1,desc:'恢复50%生命，解除中毒虚弱，挡住2次攻击',heal:.5,clear:1,block:2},{name:'凤舞九天',cost:5,unlock:3,desc:'5团凤火，无视护盾，并让敌人燃烧',burn:3,hits:5,mult:1,ign:1,fx:'fire'},{name:'涅槃',cost:5,unlock:5,desc:'恢复全部生命，再打出6倍火焰伤害，无视护盾',heal:1,hits:1,mult:6,ign:1,fx:'fire'}],
+ starsage:[{name:'流星雨',cost:3,unlock:0,desc:'流星连砸5下（共3.5倍伤害）',hits:5,mult:.7,fx:'star'},{name:'星辰护体',cost:4,unlock:1,desc:'星光护体挡住3次攻击，清空敌人怒气',block:3,rage0:1},{name:'七星连珠',cost:5,unlock:3,desc:'七颗星连击，无视护盾（共5.6倍伤害）',hits:7,mult:.8,ign:1,fx:'star'},{name:'斗转星移',cost:5,unlock:5,desc:'星空翻转，敌人攻击力下降30%，再打6.5倍伤害',eweak:.3,hits:1,mult:6.5,ign:1,fx:'star'}],
+ dragonemperor:[{name:'龙皇之怒',cost:3,unlock:0,desc:'金龙怒吼，3.2倍伤害',hits:1,mult:3.2,fx:'gold'},{name:'龙鳞金身',cost:4,unlock:1,desc:'挡住4次攻击，恢复25%生命',block:4,heal:.25},{name:'九龙出海',cost:5,unlock:3,desc:'九条金龙连撞，无视护盾（共6.3倍伤害）',hits:9,mult:.7,ign:1,fx:'gold'},{name:'万龙朝宗',cost:5,unlock:5,desc:'万龙齐飞，8倍伤害，无视护盾，清空敌人怒气',rage0:1,hits:1,mult:8,ign:1,fx:'gold'}]
+});
+CHAR_ORDER.push('swordsaint','warlord','phoenix','starsage','dragonemperor');
 /* power layer: dark ink smoke, glowing aura and sparks around every hero */
 const HERO_COLOR={brush:'#3a3a3a',monk:'#d23a2a',hand:'#f2b62e',reaper:'#3fbf8a',panda:'#6f9a3e',sword:'#5fb0d8',qin:'#6f9c94',taoist:'#e8c23a',liondance:'#d23a2a',archer:'#6f9a3e',mech:'#c98a4a',taiji:'#c9cdd2',hammer:'#5fb0d8',fan:'#9aa7b4',frost:'#9fd3ea',blades:'#d23a2a',ninja:'#9a5fd0',spear:'#d23a2a',healer:'#5fae8a',kitegirl:'#d9487a',rider:'#ff7a2a',monkey:'#f2b62e',painter:'#3a3a3a',drummer:'#d23a2a',bee:'#f2b62e',knight:'#9fd3ea',giant:'#f2b62e'};
 function coolify(k,fn){return(...a)=>{const svg=fn(...a),c=HERO_COLOR[k]||INK;
@@ -2080,7 +2276,7 @@ function tower3Open(){return S.prog[8]>=5||!!S.t3open}
 function tower4Open(){return S.prog[10]>=5||!!S.t4open}
 function tower5Open(){return S.prog[12]>=5||!!S.t5open}
 const TOWERS=[{id:1,name:'第一塔 · 墨之塔',open:()=>true,lock:''},{id:2,name:'第二塔 · 云霄塔',open:()=>tower2Open(),lock:'打败墨魔王后开启'},{id:3,name:'第三塔 · 龙宫',open:()=>tower3Open(),lock:'打败天狗后开启'},{id:4,name:'第四塔 · 炎月塔',open:()=>tower4Open(),lock:'打败东海龙王后开启'},{id:5,name:'第五塔 · 幽冥塔',open:()=>tower5Open(),lock:'打败三足金蟾后开启'}];
-function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Open();if(C.id===9)return !tower3Open();if(C.id===11)return !tower4Open();if(C.id===13)return !tower5Open();if(C.id>=7)return S.prog[C.id-1]<5;return false}
+function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Open();if(C.id===9)return !tower3Open();if(C.id===11)return !tower4Open();if(C.id===13)return !tower5Open();if(C.id===15)return !tower6Open();if(C.id>=7)return S.prog[C.id-1]<5;return false}
 function ch5Open(){return [1,2,3,4].filter(c=>S.prog[c]>=5).length>=3}
 function renderMap(){
  const el=$('#scr-map');const hs=heroStats();
@@ -2091,7 +2287,7 @@ function renderMap(){
   return `<div class="chapter ${locked?'locked':''}"><div class="scene">${BG[C.bg]()}</div><div><h3>${C.name}</h3><div class="unit">${C.unit}</div></div>
   <div class="nodes">${[1,2,3,4,5].map(l=>{const done=p>=l,open=!locked&&l<=p+1;return `${l>1?'<span class="link"></span>':''}<button type="button" class="node ${l===5?'boss':''} ${done?'done':''} ${open&&!done?'next':''}" data-ch="${C.id}" data-lv="${l}" ${open?'':'disabled'} title="${l===5?C.boss.name:C.enemies[l-1][0]}">${l===5?'首领':l}</button>`}).join('')}</div>
   <div class="bossline"><b>首领：${C.boss.name}</b> <span class="muted">— ${C.boss.desc}</span></div>
-  ${locked?`<div class="lockmsg">${C.id===5?'打败前四个单元中任意三个首领后开启':C.id===6?'打败第一塔的墨魔王后开启':C.id===9?'打败第二塔的天狗后开启':C.id===11?'打败第三塔的东海龙王后开启':C.id===13?'打败第四塔的三足金蟾后开启':'打败上一层的首领后开启'}</div>`:''}</div>`}).join('')}</div>`;
+  ${locked?`<div class="lockmsg">${C.id===5?'打败前四个单元中任意三个首领后开启':C.id===6?'打败第一塔的墨魔王后开启':C.id===9?'打败第二塔的天狗后开启':C.id===11?'打败第三塔的东海龙王后开启':C.id===13?'打败第四塔的三足金蟾后开启':C.id===15?'打败第五塔的幽冥鬼帝后开启':'打败上一层的首领后开启'}</div>`:''}</div>`}).join('')}</div>`;
  el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{mapTab=+b.dataset.tab;renderMap()});
  el.querySelectorAll('.node').forEach(b=>b.onclick=()=>startBattle(+b.dataset.ch,+b.dataset.lv));
  $('#mGear').onclick=renderGear;
@@ -2191,7 +2387,7 @@ const MSKILL2={
  dragonking:{name:'龙王召雨',type:'heal',fx:'ice',desc:'召来大雨，恢复20%生命'}};
 function startBattle(ch,lv){
  mapTab=CHAPTERS[ch-1].tower||1;
- const C=CHAPTERS[ch-1],isBoss=lv===5,m=ch>=13?3.8+.25*(ch-13):ch>=11?3.2+.25*(ch-11):ch>=9?2.6+.25*(ch-9):ch>=6?2+.2*(ch-6):1+.25*(ch-1);let e;
+ const C=CHAPTERS[ch-1],isBoss=lv===5,m=ch>=15?4.6+.3*(ch-15):ch>=13?3.8+.25*(ch-13):ch>=11?3.2+.25*(ch-11):ch>=9?2.6+.25*(ch-9):ch>=6?2+.2*(ch-6):1+.25*(ch-1);let e;
  if(isBoss)e={name:C.boss.name,art:C.boss.art,opt:{},max:Math.round(100*m),atk:Math.round(12+1.5*ch),powers:C.boss.powers.slice()};
  else{const[n,a,o]=C.enemies[lv-1];e={name:n,art:a,opt:o,max:Math.round((36+lv*6)*m),atk:6+ch+lv,powers:[]}}
  const bh=BEHAV[e.art]||{blk:.2,ctr:.15,verb:'格挡'};e.blk=bh.blk;e.ctr=bh.ctr;e.verb=bh.verb;
@@ -2336,6 +2532,8 @@ function itemSVG(it){let g;
  else if(it==='feather')g=`<path d="M4 45 Q46 22 88 45 Q46 68 4 45Z" fill="#f4f8fb" stroke="${INK}" stroke-width="2"/><path d="M2 45 L90 45" stroke="${INK}" stroke-width="1.6"/>${[20,34,48,62].map(x=>`<path d="M${x} 45 L${x+8} ${36} M${x} 45 L${x+8} 54" stroke="#9aa7b4" stroke-width="1"/>`).join('')}`;
  else if(it==='shard')g=`<polygon points="88,45 50,32 8,45 50,58" fill="#cdeef8" stroke="#2c6f8a" stroke-width="2.5"/><path d="M8 45 L88 45" stroke="#ffffff" stroke-width="2"/><path d="M0 38 L14 40 M0 52 L14 50" stroke="#9fd3ea" stroke-width="3" stroke-linecap="round"/>`;
  else if(it==='arrow')g=`<line x1="6" y1="45" x2="72" y2="45" stroke="#6b4a2a" stroke-width="4" stroke-linecap="round"/><polygon points="70,37 90,45 70,53" fill="#cfd3d6" stroke="${INK}" stroke-width="2"/><path d="M6 45 L-4 36 M6 45 L-4 54 M14 45 L4 36 M14 45 L4 54" stroke="${RED}" stroke-width="3.5" stroke-linecap="round"/>`;
+ else if(it==='star')g=`<path d="M0 40 L22 42 M2 54 L24 50" stroke="#ffe58a" stroke-width="3" stroke-linecap="round" opacity=".7"/><polygon points="${[0,1,2,3,4,5,6,7,8,9].map(i=>{const a=-Math.PI/2+i*Math.PI/5,r=i%2?13:32;return (52+r*Math.cos(a)).toFixed(1)+','+(45+r*Math.sin(a)).toFixed(1)}).join(' ')}" fill="#ffe58a" stroke="${INK}" stroke-width="2.5"/>`;
+ else if(it==='orb')g=`<path d="M4 45 C24 30 34 34 44 30 M4 52 C20 60 30 58 40 62" stroke="${GOLD}" stroke-width="4" stroke-linecap="round" fill="none" opacity=".75"/><circle cx="58" cy="45" r="22" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><path d="M44 46 Q52 32 62 40 Q72 48 66 56 Q58 62 52 54" fill="none" stroke="${RED}" stroke-width="3"/><circle cx="64" cy="38" r="5" fill="#fff1b8"/>`;
  else g=`<path d="M8 18 Q30 45 8 72 M20 12 Q46 45 20 78" fill="none" stroke="#6f9c94" stroke-width="4" stroke-linecap="round" opacity=".75"/><ellipse cx="54" cy="60" rx="9" ry="7" fill="${INK}" transform="rotate(-20 54 60)"/><path d="M62 58 L62 22 L80 28 L80 52" fill="none" stroke="${INK}" stroke-width="3.5"/><ellipse cx="72" cy="54" rx="8.5" ry="6.5" fill="${INK}" transform="rotate(-20 72 54)"/>`;
  return `<svg viewBox="0 0 90 90" aria-hidden="true"><g filter="url(#rough)">${g}</g></svg>`}
 function shootItem(item,fx,dy,cb,from){const ar=$('.arena'),a=heroWrap(),b=$('#fEnemy .art-wrap');if(!ar||!a||!b||!ar.animate){cb&&cb();return}
@@ -2344,7 +2542,7 @@ function shootItem(item,fx,dy,cb,from){const ar=$('.arena'),a=heroWrap(),b=$('#f
  const el=document.createElement('div');el.className='proj pitem';el.innerHTML=itemSVG(item);ar.appendChild(el);
  const aim=item==='arrow'||item==='flysword'||item==='feather'||item==='shard',arc=item==='arrow'?-46:item==='flysword'?-10:-30;
  const mx=(x1+x2)/2,my=(y1+y2)/2+arc,deg=(ax,ay,bx,by)=>Math.atan2(by-ay,bx-ax)*180/Math.PI;
- const r0=aim?deg(x1,y1,mx,my):0,r2=aim?deg(mx,my,x2,y2):(item==='talisman'?540:item==='shuriken'?900:0),r1=aim?(r0+r2)/2:r2/2;
+ const r0=aim?deg(x1,y1,mx,my):0,r2=aim?deg(mx,my,x2,y2):(item==='talisman'?540:item==='shuriken'?900:item==='star'?720:0),r1=aim?(r0+r2)/2:r2/2;
  const sc=item==='arrow'?[.9,1,1.05]:[.5,.95,1.15];
  const an=el.animate([{transform:`translate(${x1}px,${y1}px) translate(-50%,-50%) scale(${sc[0]}) rotate(${r0}deg)`},{transform:`translate(${mx}px,${my}px) translate(-50%,-50%) scale(${sc[1]}) rotate(${r1}deg)`},{transform:`translate(${x2}px,${y2}px) translate(-50%,-50%) scale(${sc[2]}) rotate(${r2}deg)`}],{duration:item==='arrow'?360:440,easing:item==='arrow'?'linear':'ease-in',fill:'both'});
  an.onfinish=()=>{burst('#fEnemy',fx);cb&&cb();
@@ -2617,6 +2815,37 @@ const SKILL_FX={
  '冥河之门':()=>{FXL.reaperghost();FXL.soul()},'剑阵九霄':()=>{FXL.rain('sword');setTimeout(()=>FXL.rain('sword'),350)},'太极两仪':()=>{FXL.taiji(1.8);FXL.dome('#c9cdd2',INK)},
  '雷神降世':()=>{FXL.pillar('#9fd3ea');FXL.lightning();setTimeout(()=>FXL.lightning(),500)},'八阵图':()=>{FXL.bladering();FXL.ring('#6f9c94','#fEnemy')},'冰封千里':()=>{FXL.wave('#cdeef8');FXL.pillar('#9fd3ea')},'斩月':()=>FXL.bigsword()
 };
+/* ===== tower 6 data, new hero wiring, non-magic heroes keep weapons in hand ===== */
+Object.assign(HERO_COLOR,{swordsaint:'#e6f3f8',warlord:'#d23a2a',phoenix:'#ff7a2a',starsage:'#9fd3ea',dragonemperor:'#f2b62e'});
+Object.assign(HERO_ATK,{swordsaint:{name:'居合斩',fx:'blood'},warlord:{name:'大戟劈',fx:'stone'},phoenix:{name:'凤火',fx:'fire'},starsage:{name:'星光弹',fx:'star'},dragonemperor:{name:'龙珠',fx:'gold'}});
+Object.assign(HERO_SWING,{swordsaint:'blades',warlord:'staff'});
+Object.assign(HERO_RANGED,{phoenix:'fireball',starsage:'star',dragonemperor:'orb'});
+/* no magic = the weapon stays in the hand: they run up and hit instead of sending it flying */
+delete HERO_RANGED.mech;delete HERO_RANGED.kitegirl;
+Object.assign(BLOCK_ITEM,{swordsaint:'长剑',warlord:'方天画戟',phoenix:'凤凰火翼',starsage:'星辰法杖',dragonemperor:'金龙'});
+Object.assign(SKILL_FX,{
+ '百鸟朝凤枪':()=>FXL.streaks(RED),'正义之剑':()=>FXL.shock('#8a96a3','斩'),'斩月':()=>FXL.bladering(),
+ '拔剑斩':()=>FXL.streaks('#e6f3f8'),'见切':()=>FXL.dome('#e6f3f8',RED),'无影剑':()=>FXL.bladering(),'剑心通明':()=>{FXL.bladering();FXL.shock('#e6f3f8','剑')},
+ '霸王横扫':()=>FXL.shock(RED,'扫'),'破釜沉舟':()=>{FXL.aura(RED);FXL.dome(RED,GOLD)},'力拔山兮':()=>FXL.mountain(),'天下无双':()=>{FXL.shock(GOLD,'霸');setTimeout(()=>FXL.mountain(),300)},
+ '凤火连珠':()=>FXL.streaks('#ff7a2a'),'浴火重生':()=>{FXL.aura('#ff7a2a');FXL.dome('#ff7a2a',GOLD)},'凤舞九天':()=>FXL.tornado('#ff7a2a',false),'涅槃':()=>{FXL.pillar('#ff7a2a');FXL.aura(GOLD)},
+ '流星雨':()=>FXL.streaks('#ffe58a'),'星辰护体':()=>FXL.dome('#9fd3ea','#2f4a8a'),'七星连珠':()=>{FXL.ring('#ffe58a','#fEnemy');FXL.streaks('#ffe58a')},'斗转星移':()=>{FXL.taiji(1.6);FXL.pillar('#ffe58a')},
+ '龙皇之怒':()=>FXL.shock(GOLD,'龙'),'龙鳞金身':()=>FXL.dome(GOLD,RED),'九龙出海':()=>FXL.tornado(GOLD,true),'万龙朝宗':()=>{FXL.tornado(GOLD,true);FXL.pillar(GOLD)}
+});
+Object.assign(BEHAV,{thunderbird:{blk:.2,ctr:.3,verb:'振翅躲开'},bronzebot:{blk:.4,ctr:.1,verb:'用铜臂硬挡'},gargoyle:{blk:.35,ctr:.2,verb:'变回石头挡住'},stormsprite:{blk:.25,ctr:.25,verb:'化成风躲开'},thunderbeast:{blk:.3,ctr:.3,verb:'用雷电护体挡住'},
+ twinhound:{blk:.15,ctr:.35,verb:'跳开躲闪'},warlock:{blk:.3,ctr:.2,verb:'开出魔法屏障'},obsidianknight:{blk:.45,ctr:.15,verb:'举起黑曜石盾'},chaosslime:{blk:.3,ctr:.15,verb:'身体一软弹开'},chaosgod:{blk:.35,ctr:.3,verb:'用混沌之力挡住'}});
+Object.assign(MSKILL,{thunderbird:{name:'雷霆俯冲',type:'big',mult:1.7,fx:'thunder',desc:'带着雷电俯冲，伤害×1.7'},bronzebot:{name:'铜拳连击',type:'double',mult:.9,fx:'stone',desc:'铜拳连打两下'},gargoyle:{name:'石化凝视',type:'weaken',mult:1,fx:'stone',desc:'让你身体发僵，攻击力下降2回合'},stormsprite:{name:'风暴漩涡',type:'charm',mult:1.2,fx:'wind',desc:'卷走你的技能能量'},
+ thunderbeast:{name:'万雷轰顶',type:'big',mult:2.4,fx:'thunder',desc:'召唤万道雷电，伤害×2.4'},twinhound:{name:'双头撕咬',type:'double',mult:1.1,fx:'blood',desc:'两个头一起咬'},warlock:{name:'暗影诅咒',type:'poison',mult:1,fx:'poison',desc:'诅咒让你中毒3回合'},obsidianknight:{name:'黑曜重斩',type:'big',mult:1.8,fx:'shadow',desc:'黑曜石剑重斩，伤害×1.8'},chaosslime:{name:'分裂吞噬',type:'drain',mult:1.3,fx:'poison',desc:'吞掉你一口，吸走生命'},
+ chaosgod:{name:'混沌灭世',type:'drain',mult:2.6,fx:'shadow',desc:'混沌之力重击，并吸走你的生命'}});
+Object.assign(MSKILL2,{thunderbird:{name:'雷羽护身',type:'shield',fx:'thunder',desc:'雷电羽毛护身，加护盾'},bronzebot:{name:'齿轮修复',type:'heal',fx:'stone',desc:'修好零件，恢复20%生命'},gargoyle:{name:'石皮',type:'shield',fx:'stone',desc:'皮肤变成石头，加护盾'},stormsprite:{name:'狂风连击',type:'double',mult:.9,fx:'wind',desc:'狂风连吹两下'},
+ thunderbeast:{name:'雷兽狂暴',type:'buff',fx:'thunder',desc:'雷电冲天，攻击力提高'},twinhound:{name:'地狱火息',type:'big',mult:1.6,fx:'fire',desc:'两个头一起喷火'},warlock:{name:'魔力屏障',type:'shield',fx:'poison',desc:'开出魔法屏障，加护盾'},obsidianknight:{name:'黑曜之心',type:'heal',fx:'shadow',desc:'黑曜石发光，恢复20%生命'},chaosslime:{name:'混沌黏液',type:'weaken',mult:1,fx:'poison',desc:'黏住你，攻击力下降2回合'},
+ chaosgod:{name:'混沌降临',type:'buff',fx:'shadow',desc:'混沌之力爆发，攻击力提高'}});
+CHAPTERS.push(
+ {id:15,tower:6,name:'雷霆神殿',bg:'storm',unit:'第六塔 · 一层 · 雷霆挑战',topics:['u1','u2','u3','u4'],enemies:[['雷鸟','thunderbird',{}],['铜甲傀儡','bronzebot',{}],['石像鬼','gargoyle',{}],['风暴精灵','stormsprite',{}]],
+  boss:{name:'雷霆巨兽',art:'thunderbeast',powers:['shield','heal','timer'],desc:'全身是雷电！护盾、答错回血、每题限时60秒。'}},
+ {id:16,tower:6,name:'混沌魔窟',bg:'chaos',unit:'第六塔 · 塔顶 · 混沌终极',topics:['u1','u2','u3','u4'],enemies:[['双头魔犬','twinhound',{}],['魔眼法师','warlock',{}],['黑曜骑士','obsidianknight',{}],['混沌史莱姆','chaosslime',{}]],
+  boss:{name:'混沌魔神',art:'chaosgod',powers:['shield','heal','timer'],desc:'真正的最强首领！护盾、答错回血、每题限时60秒。'}});
+function tower6Open(){return S.prog[14]>=5||!!S.t6open}
+TOWERS.push({id:6,name:'第六塔 · 雷霆魔塔',open:()=>tower6Open(),lock:'打败幽冥鬼帝后开启'});
 /* player special skill */
 function useSkill(i){if(!B||B.over||B.busy||B.review||B.def)return;const x=B.skills[i];if(!x||B.gauge<x.cost)return;
  B.gauge-=x.cost;B.busy=true;pad.lock(true);updateHud();const k=S.cur,a=B.hero.atk,e=B.e;
@@ -2706,6 +2935,7 @@ const CODES={
  'LONGGONG':{txt:'第三塔 · 龙宫 已开启',f:()=>{S.t3open=true}},
  'YANYUE':{txt:'第四塔 · 炎月塔 已开启',f:()=>{S.t4open=true}},
  'YOUMING':{txt:'第五塔 · 幽冥塔 已开启',f:()=>{S.t5open=true}},
+ 'LEITING':{txt:'第六塔 · 雷霆魔塔 已开启',f:()=>{S.t6open=true}},
  'TEACHER500':{txt:'获得 500 金币',f:()=>{S.coins+=500}},
  'YAOPIN':{txt:'回血丹、能量丹、护身符 各 2 个',f:()=>{['heal','energy','guard'].forEach(k=>S.potions[k]=(S.potions[k]||0)+2)}}};
 function potionIcon(k){const c=POTIONS[k].c;return `<svg viewBox="0 0 48 48" aria-hidden="true"><g filter="url(#rough)"><rect x="18" y="4" width="12" height="8" rx="2" fill="#6b4a2a" stroke="${INK}" stroke-width="2"/><circle cx="24" cy="18" r="7" fill="${c}" stroke="${INK}" stroke-width="2.5"/><circle cx="24" cy="33" r="12" fill="${c}" stroke="${INK}" stroke-width="2.5"/><path d="M17 30 Q20 24 26 25" fill="none" stroke="${PAPER}" stroke-width="2" opacity=".7"/></g></svg>`}
