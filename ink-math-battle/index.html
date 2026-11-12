@@ -83,6 +83,12 @@ svg.art{display:block;overflow:visible}
 .codemsg{min-height:1.4em;font-size:1.15rem;font-weight:700}
 .codemsg .good{color:var(--jade)}
 .codemsg .bad{color:var(--cinnabar)}
+.credit{margin:0;font-family:var(--f-display);font-size:1.1rem;color:var(--cinnabar);font-weight:700;letter-spacing:.06em}
+.credits{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 0 4px;border-top:2px solid var(--ink)}
+.credits .cstamp{display:inline-grid;place-items:center;width:40px;height:40px;background:var(--cinnabar);color:var(--card);font-family:var(--f-display);font-size:1.3rem;border-radius:6px;transform:rotate(-6deg)}
+.credits div{display:flex;flex-direction:column;gap:2px}
+.credits b{font-family:var(--f-display);font-size:1.3rem;letter-spacing:.08em}
+.credits div span{font-family:var(--f-display);font-size:1.15rem}
 .homepage{display:flex;flex-direction:column;gap:14px;max-width:1240px;margin:0 auto}
 .hero-banner{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center;border:3px solid var(--ink);border-radius:18px;padding:14px 24px;position:relative;overflow:hidden;background:var(--card);isolation:isolate}
 .hb-bg{position:absolute;inset:0;opacity:.35;z-index:-1}
@@ -2026,7 +2032,7 @@ function renderHome(){
  el.innerHTML=`<div class="homepage">
   <section class="hero-banner"><div class="hb-bg">${BG[next.bg]()}</div>
    <div class="hb-art">${ART[S.cur]()}</div>
-   <div class="hb-text"><h1>墨侠算术</h1><p class="sub">北师大版四年级上册 · 数学闯塔大冒险</p>
+   <div class="hb-text"><h1>墨侠算术</h1><p class="sub">北师大版四年级上册 · 数学闯塔大冒险</p><p class="credit">made by auri · 作者：朱彬 · 来自：404班</p>
     <div class="hb-hero"><b>${CHARS[S.cur].name}</b>　攻击 ${hs.atk} · 生命 ${hs.hp}${hs.w?' · '+hs.w.name:''}${hs.a?' · '+hs.a.name:''}</div>
     <div class="row"><button class="btn primary big" type="button" id="hGo">继续冒险：${next.name} ${nextLv===5?'首领关':'第'+nextLv+'关'}</button><button class="btn" type="button" id="hHow">玩法说明</button></div></div>
   </section>
@@ -2046,6 +2052,7 @@ function renderHome(){
    ${card('hBook','',ART.dragon(),'怪物图鉴',`已遇到 ${seen} 种怪物`)}
   </section>
   <section><h3 class="shoph">英雄</h3><div class="lineup">${CHAR_ORDER.map(k=>`<figure class="${S.chars.includes(k)?'':'locked'}">${ART[k]()}<figcaption>${CHARS[k].name}</figcaption></figure>`).join('')}</div></section>
+  <footer class="credits"><span class="cstamp">墨</span><div><b>made by auri</b><span>作者：朱彬　来自：404班</span></div></footer>
  </div>`;
  el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{if(b.dataset.mode!==curMode)askModeSwitch(b.dataset.mode)});
  $('#hGo').onclick=()=>startBattle(next.id,nextLv);$('#hStart').onclick=renderMap;$('#hShop').onclick=()=>{shopTab='chest';renderShop()};$('#hGear').onclick=renderGear;$('#hBook').onclick=renderBook;$('#hHow').onclick=showHowTo;
