@@ -2007,7 +2007,7 @@ function makePad(host,onSubmit){
  return api}
 
 /* ============ HOME ============ */
-const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，一半机会闪避或格挡；你的生命攻击减半，防御只挡一半；奖励×3，还有特别奖励',ehp:2,eatk:2,php:.5,patk:.5,coin:3}};
+const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，8个大招一次放4个，一半机会闪避或格挡；你的生命攻击减半，防御只挡一半；奖励×5，还有特别奖励',ehp:2,eatk:2,php:.5,patk:.5,coin:5}};
 function modeInfo(m){try{const r=localStorage.getItem(saveKey(m));if(!r)return null;const o=JSON.parse(r);return {parts:Object.values(o.prog||{}).filter(v=>v>=5).length,coins:o.coins||0}}catch(e){return null}}
 function askModeSwitch(m){const md=MODES[m],cur=MODES[curMode],info=modeInfo(m);const box=$('#modal');
  box.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="切换难度"><h3>切换到「${md.name}」模式？</h3>
@@ -2183,7 +2183,8 @@ function startBattle(ch,lv){
  const bh=BEHAV[e.art]||{blk:.2,ctr:.15,verb:'格挡'};e.blk=bh.blk;e.ctr=bh.ctr;e.verb=bh.verb;
  S.seen=S.seen||{};if(!S.seen[e.name]){S.seen[e.name]=true;save()}
  e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
- const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.1*wl));e.atk=Math.round(e.atk*(1+.05*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;e.burn=0;
+ const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.1*wl));e.atk=Math.round(e.atk*(1+.05*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;
+ if(S.mode==='hard'){e.sk2=MSKILL2[e.art]||null;const pool=[...Object.values(MSKILL),...Object.values(MSKILL2)].filter(x=>x!==e.sk&&x!==e.sk2);e.hardSk=[e.sk,e.sk2].filter(Boolean).concat(shuffle(pool.slice()).slice(0,8-[e.sk,e.sk2].filter(Boolean).length))}e.burn=0;
  const MD=MODES[S.mode||'normal'];e.max=Math.max(1,Math.round(e.max*MD.ehp));e.atk=Math.max(1,Math.round(e.atk*MD.eatk));if(S.mode==='hard'){e.blk=.5;e.ctr=Math.min(e.ctr,.3)}
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
@@ -2204,7 +2205,7 @@ function renderBattle(){
   <div class="fighter enemy" id="fEnemy"><div class="art-wrap">${groundInk(B.isBoss?RED:INK)}${enemyArt(e)}</div>
    <div class="hud"><div class="nm">${e.name}<small id="eAtk">攻击 ${e.atk}</small></div><div class="bar" id="hpEnemy"><i></i><span></span></div>
    <div class="bar shield" id="shEnemy" ${e.shieldMax?'':'hidden'}><i></i></div>
-   <div class="rage" title="${e.sk.desc}"><span>怒气</span><span class="pips" id="ragePips">${'<i></i>'.repeat(e.rageMax)}</span><span class="skname">大招「${e.sk.name}」${e.sk2?'「'+e.sk2.name+'」':''}</span></div>
+   <div class="rage" title="${e.sk.desc}"><span>怒气</span><span class="pips" id="ragePips">${'<i></i>'.repeat(e.rageMax)}</span><span class="skname">${e.hardSk?`8个大招 · 怒气满一次放4个`:`大招「${e.sk.name}」${e.sk2?'「'+e.sk2.name+'」':''}`}</span></div>
    <div class="powers">${e.powers.map(p=>`<span class="power">${POWER_TXT[p]}</span>`).join('')}${e.blk>=.3?'<span class="trait">爱格挡</span>':''}${e.ctr>=.25?'<span class="trait">爱反击</span>':''}</div></div></div>
  </div>
  <div class="desk" id="desk"><div class="timer" id="timer" ${e.powers.includes('timer')?'':'hidden'}><i></i></div>
@@ -2441,11 +2442,15 @@ function continueAfterReview(){if(!B||!B.review)return;B.review=false;$('#fb').h
  if(B.e.rage>=B.e.rageMax)monsterSpecial();else startDefense({mult:1})}
 
 /* monster special move */
-function monsterSpecial(){if(!B||B.over)return;const e=B.e,sk=e.sk2&&Math.random()<.5?e.sk2:e.sk;e.rage=0;updateHud();$('#fEnemy').classList.remove('windup');$('#fb').hidden=true;
- cutIn('enemy',enemyArt(e),sk.name,`${e.name}的大招：${sk.desc}`,()=>{if(!B||B.over)return;
-  if(sk.type==='shield'){const v=Math.round(e.max*.25);e.shieldMax=Math.max(e.shieldMax,v);e.shield=Math.min(e.shieldMax,e.shield+v);guardFx('#fEnemy');floatText('#fEnemy','护盾 +'+v,'blue');updateHud();setTimeout(()=>{if(B&&!B.over)nextQ()},1000);return}
-  if(sk.type==='buff'){e.atk=Math.round(e.atk*1.25);anim('#fEnemy','hurt');floatText('#fEnemy','攻击力 ↑','dmg');updateHud();setTimeout(()=>{if(B&&!B.over)nextQ()},1000);return}
-  if(sk.type==='heal'){const h=Math.round(e.max*.2);e.hp=Math.min(e.max,e.hp+h);floatText('#fEnemy','+'+h,'heal');updateHud();setTimeout(()=>{if(B&&!B.over)nextQ()},1000);return}
+function afterEnemy(ms){setTimeout(()=>{if(!B||B.over)return;if(B.skQ&&B.skQ.length)runSpecial(B.skQ.shift());else{B.skQ=null;nextQ()}},ms)}
+function monsterSpecial(){if(!B||B.over)return;const e=B.e;e.rage=0;updateHud();$('#fEnemy').classList.remove('windup');$('#fb').hidden=true;
+ if(e.hardSk){B.skQ=shuffle(e.hardSk.slice()).slice(0,4);floatText('#fEnemy','四连大招！','dmg','0%');runSpecial(B.skQ.shift(),true);return}
+ runSpecial(e.sk2&&Math.random()<.5?e.sk2:e.sk)}
+function runSpecial(sk,first){if(!B||B.over)return;const e=B.e;const n=B.skQ?4-B.skQ.length:0;
+ cutIn('enemy',enemyArt(e),sk.name,`${e.name}的大招${B.skQ?`（第${n}/4个）`:''}：${sk.desc}`,()=>{if(!B||B.over)return;
+  if(sk.type==='shield'){const v=Math.round(e.max*.25);e.shieldMax=Math.max(e.shieldMax,v);e.shield=Math.min(e.shieldMax,e.shield+v);guardFx('#fEnemy');floatText('#fEnemy','护盾 +'+v,'blue');updateHud();afterEnemy(1000);return}
+  if(sk.type==='buff'){e.atk=Math.round(e.atk*1.25);anim('#fEnemy','hurt');floatText('#fEnemy','攻击力 ↑','dmg');updateHud();afterEnemy(1000);return}
+  if(sk.type==='heal'){const h=Math.round(e.max*.2);e.hp=Math.min(e.max,e.hp+h);floatText('#fEnemy','+'+h,'heal');updateHud();afterEnemy(1000);return}
   startDefense({mult:sk.mult||1,special:sk})})}
 
 /* defence: monster attacks -> 10-second quick question; right = block */
@@ -2469,7 +2474,7 @@ function judgeQ(){const T=[
  ()=>pick([['射线只有一个端点',true,'射线有一个端点，可以向一端无限延长'],['线段可以无限延长',false,'线段有两个端点，不能延长'],['直线没有端点',true,'直线向两端无限延长，没有端点'],['1个周角等于4个直角',true,'360° = 4 × 90°'],['钝角比直角小',false,'钝角大于90°，比直角大'],['1个平角等于2个直角',true,'180° = 2 × 90°'],['在同一平面内，两条平行线永远不相交',true,'这就是平行线'],['10个一万是十万',true,'10个一万 = 100000'],['1亿里面有100个一千万',false,'1亿 = 10个一千万'],['最小的六位数是100000',true,'100000 是最小的六位数'],['最大的五位数是99999',true,'五个9'],['25 × 4 = 100',true,'25 × 4 = 100'],['125 × 8 = 100',false,'125 × 8 = 1000'],['a × b = b × a 是乘法交换律',true,'交换两个因数的位置，积不变'],['(a + b) + c = a + (b + c) 是加法交换律',false,'这是加法结合律'],['锐角一定小于90°',true,'锐角小于90°'],['两点之间线段最短',true,'两点之间，线段最短']])];
  const[t,ans,ex]=pick(T)();return{text:`<span class="judgeq">${t}</span>`,ans,explain:ex,unit:''}}
 function startDefense(opt){if(!B||B.over)return;const e=B.e;
- if(B.blocks>0){$('#fEnemy').classList.remove('windup');B.blocks--;anim('#fEnemy','lunge-l');setTimeout(()=>{guardFx('#fHero');floatText('#fHero','护体挡住了！','blue');updateHud()},220);setTimeout(()=>{if(B&&!B.over)nextQ()},1100);return}
+ if(B.blocks>0){$('#fEnemy').classList.remove('windup');B.blocks--;anim('#fEnemy','lunge-l');setTimeout(()=>{guardFx('#fHero');floatText('#fHero','护体挡住了！','blue');updateHud()},220);afterEnemy(1100);return}
  const judge=Math.random()<.5;opt.kind=judge?'judge':'num';B.def=opt;B.q=judge?judgeQ():quickQ();
  $('#desk').classList.add('defend');$('#fEnemy').classList.add('windup');
  const what=opt.special?`要放大招「${opt.special.name}」了`:'要攻击你了';
@@ -2488,9 +2493,9 @@ function defenseResolve(ok,timeout){stopTimer();const opt=B.def||{mult:1};const 
   const act=mode==='block'?`你用${item}挡住了${what}！`:`你闪身躲开了${what}！`;
   const hardNote=S.mode==='hard'?'<br><b style="color:var(--cinnabar)">困难模式：只挡住一半伤害！</b>':'';if(S.mode==='hard')opt.half=true;
   showFb('right',mode==='block'?'挡住了！':'躲开了！',(judge?`判断正确！这句话是「${q.ans?'对':'错'}」的。${act}`:`算对了！${act}`)+hardNote);
-  monsterShoot(opt,mode,()=>{if(B.hero.hp<=0)setTimeout(heroDown,500);else setTimeout(()=>{if(B&&!B.over)nextQ()},900)})}
+  monsterShoot(opt,mode,()=>{if(B.hero.hp<=0){B.skQ=null;setTimeout(heroDown,500)}else afterEnemy(900)})}
  else{showFb('wrong',timeout?'来不及了！':(judge?'判断错了！':'算错了！'),judge?`<b>这句话是「${q.ans?'对':'错'}」的。</b> ${q.explain}`:`<b>防御题答案：${N(q.ans)}${q.unit&&q.unit!=='个'?' '+q.unit:''}</b>`);
-  monsterShoot(opt,false,()=>{if(B.hero.hp<=0)setTimeout(heroDown,500);else setTimeout(()=>{if(B&&!B.over)nextQ()},1500)})}}
+  monsterShoot(opt,false,()=>{if(B.hero.hp<=0){B.skQ=null;setTimeout(heroDown,500)}else afterEnemy(1500)})}}
 function heroDodge(){const h=heroWrap();if(!h||!h.animate)return;h.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:'translate(-70px,-50px) rotate(-18deg)',opacity:.35,offset:.4},{transform:'translate(-50px,0) rotate(-6deg)',opacity:.6,offset:.7},{transform:'translate(0,0) rotate(0)',opacity:1}],{duration:700,easing:'ease-out'})}
 function heroBlockPose(){const h=heroWrap();if(h&&h.animate)h.animate([{transform:'translate(0,0)'},{transform:'translate(-16px,0) rotate(-5deg)',offset:.3},{transform:'translate(0,0)'}],{duration:420});
  const w=document.querySelector('#fHero .weapon');if(w&&w.animate)w.animate([{transform:'rotate(0)'},{transform:'rotate(-55deg)',offset:.3},{transform:'rotate(-55deg)',offset:.75},{transform:'rotate(0)'}],{duration:600})}
@@ -2641,7 +2646,7 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=nu
    <div class="partrow">${chestSVG(2)}<div>完成奖励：<b>金宝箱 ×1</b> + <b>50 金币</b><br><span class="muted">金宝箱已放进商店，答对一道题就能打开。</span></div></div>
    <div class="warnline">所有怪物都变强了！（怪物强化 Lv.${wl}：生命和攻击提高，还学会了第二个大招）</div>
    ${ns.length?`<div>${CHARS[S.cur].name} 学会了新技能：<b>${ns.map(x=>x.name).join('、')}</b>（${ns[0].desc}）</div>`:''}</div>`})():''}
-  ${bossR?`<div class="bossbox"><h3>${bossR.hard?'困难模式 · 首领奖励（奖励×3，装备品质+1）':'首领奖励'}</h3><div class="bossrow">
+  ${bossR?`<div class="bossbox"><h3>${bossR.hard?'困难模式 · 首领奖励（奖励×5，装备品质+1）':'首领奖励'}</h3><div class="bossrow">
     <div class="bri">${itemIcon(bossR.item)}<b style="color:${RAR[bossR.item.rar].c}">${bossR.item.name}</b><span>${RAR[bossR.item.rar].n}${bossR.item.type==='w'?'武器 · 攻击':'盔甲 · 生命'} +${bossR.item.val}</span><button class="chipbtn" type="button" id="rEquip">立即装备</button></div>
     <div class="bri">${bossR.pots.map(k=>potionIcon(k)).join('')}<b>药品 ×2</b><span>${bossR.pots.map(k=>POTIONS[k].name).join('、')}</span></div>
     <div class="bri"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 6 L34 6 L34 18 Q34 30 24 32 Q14 30 14 18Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><path d="M14 10 Q4 10 6 18 Q8 24 14 22 M34 10 Q44 10 42 18 Q40 24 34 22" fill="none" stroke="${INK}" stroke-width="2.5"/><rect x="20" y="32" width="8" height="6" fill="${GOLD}" stroke="${INK}" stroke-width="2"/><rect x="14" y="38" width="20" height="6" rx="2" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/></svg><b>${bossR.hard?'困难奖杯':'首领奖杯'}</b><span>${bossR.hard?'困难模式 · ':''}击败 ${b.e.name} 第 ${bossR.tro} 次</span></div>
