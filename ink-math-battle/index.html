@@ -2007,7 +2007,7 @@ function makePad(host,onSubmit){
  return api}
 
 /* ============ HOME ============ */
-const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，8个大招一次放4个，一半机会闪避或格挡；你的生命攻击减半，防御只挡一半；奖励×5，还有特别奖励',ehp:2,eatk:2,php:.5,patk:.5,coin:5}};
+const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，8个大招，怒气2格就满，一次放4个，一半机会闪避或格挡；你的生命攻击减半，防御只挡一半；奖励×5，还有特别奖励',ehp:2,eatk:2,php:.5,patk:.5,coin:5}};
 function modeInfo(m){try{const r=localStorage.getItem(saveKey(m));if(!r)return null;const o=JSON.parse(r);return {parts:Object.values(o.prog||{}).filter(v=>v>=5).length,coins:o.coins||0}}catch(e){return null}}
 function askModeSwitch(m){const md=MODES[m],cur=MODES[curMode],info=modeInfo(m);const box=$('#modal');
  box.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="切换难度"><h3>切换到「${md.name}」模式？</h3>
@@ -2184,7 +2184,7 @@ function startBattle(ch,lv){
  S.seen=S.seen||{};if(!S.seen[e.name]){S.seen[e.name]=true;save()}
  e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
  const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.1*wl));e.atk=Math.round(e.atk*(1+.05*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;
- if(S.mode==='hard'){e.sk2=MSKILL2[e.art]||null;const pool=[...Object.values(MSKILL),...Object.values(MSKILL2)].filter(x=>x!==e.sk&&x!==e.sk2);e.hardSk=[e.sk,e.sk2].filter(Boolean).concat(shuffle(pool.slice()).slice(0,8-[e.sk,e.sk2].filter(Boolean).length))}e.burn=0;
+ if(S.mode==='hard'){e.rageMax=2;e.sk2=MSKILL2[e.art]||null;const pool=[...Object.values(MSKILL),...Object.values(MSKILL2)].filter(x=>x!==e.sk&&x!==e.sk2);e.hardSk=[e.sk,e.sk2].filter(Boolean).concat(shuffle(pool.slice()).slice(0,8-[e.sk,e.sk2].filter(Boolean).length))}e.burn=0;
  const MD=MODES[S.mode||'normal'];e.max=Math.max(1,Math.round(e.max*MD.ehp));e.atk=Math.max(1,Math.round(e.atk*MD.eatk));if(S.mode==='hard'){e.blk=.5;e.ctr=Math.min(e.ctr,.3)}
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
