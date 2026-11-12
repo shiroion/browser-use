@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>墨侠算术</title>
+<title>math game.io</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Layout: one-screen ink-on-rice-paper game; header + swappable screens; battle = banner / arena / question desk */
@@ -83,6 +83,8 @@ svg.art{display:block;overflow:visible}
 .codemsg{min-height:1.4em;font-size:1.15rem;font-weight:700}
 .codemsg .good{color:var(--jade)}
 .codemsg .bad{color:var(--cinnabar)}
+.hb-text h1.gametitle{letter-spacing:.04em;font-size:clamp(2.4rem,6.5vw,4.6rem)}
+.brand{letter-spacing:.04em}
 .midcredit{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;font-family:var(--f-display);padding:4px 0}
 .midcredit b{font-size:1.5rem;letter-spacing:.1em}
 .midcredit span:not(.cstamp){font-size:1.35rem;color:var(--cinnabar);font-weight:700;letter-spacing:.06em}
@@ -502,7 +504,7 @@ svg.art{display:block;overflow:visible}
 
 <div id="app">
   <header class="topbar">
-    <button class="brand" id="brandBtn" type="button"><span class="stamp">墨</span>墨侠算术</button>
+    <button class="brand" id="brandBtn" type="button"><span class="stamp">墨</span>math game.io</button>
     <div class="topright">
       <button class="chipbtn homebtn" id="homeBtn" type="button">首页</button><button class="chipbtn" id="musicBtn" type="button">音乐：开</button><button class="chipbtn" id="soundBtn" type="button">音效：开</button>
       <div class="seal" title="金币"><span class="coin-ico" id="coinIco"></span><b id="coinNum">0</b><small>金币</small></div>
@@ -2036,7 +2038,7 @@ function renderHome(){
  el.innerHTML=`<div class="homepage">
   <section class="hero-banner"><div class="hb-bg">${BG[next.bg]()}</div>
    <div class="hb-art">${ART[S.cur]()}</div>
-   <div class="hb-text"><h1>墨侠算术</h1><p class="sub">北师大版四年级上册 · 数学闯塔大冒险</p>
+   <div class="hb-text"><h1 class="gametitle">math game.io</h1><p class="sub">北师大版四年级上册 · 数学闯塔大冒险</p>
     <div class="hb-hero"><b>${CHARS[S.cur].name}</b>　攻击 ${hs.atk} · 生命 ${hs.hp}${hs.w?' · '+hs.w.name:''}${hs.a?' · '+hs.a.name:''}</div>
     <div class="row"><button class="btn primary big" type="button" id="hGo">继续冒险：${next.name} ${nextLv===5?'首领关':'第'+nextLv+'关'}</button><button class="btn" type="button" id="hHow">玩法说明</button></div></div>
   </section>
