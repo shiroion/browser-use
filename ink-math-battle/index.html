@@ -555,76 +555,76 @@ function arcSpikes(cx,cy,r1,r2,a0,a1,n){const p=[];for(let i=0;i<=n;i++){const a
 const wrap=(inner,vb='0 0 200 240')=>`<svg class="art" viewBox="${vb}" aria-hidden="true"><g filter="url(#inkart)">${inner}</g></svg>`;
 
 const ART={
-brush:()=>{const limb=d=>`<path d="${d}" ${st(12)}/><path d="${d}" ${st(6.5,PAPER)}/>`;
-return wrap(`<ellipse cx="94" cy="226" rx="88" ry="7" fill="${INK}" opacity=".24"/>
-<path d="M8 232 L74 229 M110 233 L192 230 M44 238 L150 236 M150 224 L198 223" ${st(3)} opacity=".45"/>
-<g class="weapon" style="transform-origin:100px 80px">
-<path d="M22 100 C60 70 110 52 150 46 C170 44 186 40 198 30 C188 48 168 58 150 62 C112 70 70 84 30 106Z" fill="${INK}" opacity=".5"/>
-<path d="M40 98 C36 110 38 120 32 132 M70 86 C68 98 72 106 68 118 M104 74 C102 84 106 92 102 102" ${st(3)} opacity=".55"/>
-<circle cx="32" cy="134" r="3" fill="${INK}" opacity=".55"/><circle cx="68" cy="120" r="2.5" fill="${INK}" opacity=".55"/>
-<polygon points="${spikes(190,56,14,36,11)}" fill="${INK}"/><polygon points="${spikes(190,56,8,22,8)}" fill="${INK}" transform="rotate(20 190 56)"/>
-${[[208,24,4.5],[216,64,5],[202,88,3.5],[172,24,3],[160,12,2.5],[222,42,2.5],[180,92,2.5],[150,30,2],[214,82,2]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${INK}"/>`).join('')}
-<path d="M176 22 Q186 4 204 0 M208 92 Q220 106 214 122 M156 20 Q160 10 172 8 M222 30 Q232 34 230 46" ${st(4)}/>
-<line x1="6" y1="104" x2="166" y2="60" stroke="${INK}" stroke-width="12" stroke-linecap="round"/>
-<line x1="8" y1="103.5" x2="164" y2="60.5" stroke="#8a4f22" stroke-width="7" stroke-linecap="round"/>
-<path d="M24 98 L60 88 M80 83 L120 72 M130 69 L150 64" stroke="#c98a4a" stroke-width="1.6" opacity=".8"/>
-<polygon points="6,104 -6,110 8,110" fill="${INK}"/>
-<path d="M158 54 L176 50 L180 70 L162 74Z" fill="${GOLD}" stroke="${INK}" stroke-width="2"/><path d="M164 52 L168 72 M170 51 L174 71" stroke="#8a5a0a" stroke-width="1.5"/>
-<path d="M176 48 C192 42 206 46 212 58 C206 68 192 74 178 70Z" fill="#f8f4ea" stroke="${INK}" stroke-width="2.5"/>
-<path d="M200 50 C208 52 212 56 212 58 C206 64 202 66 198 66Z" fill="${INK}" opacity=".7"/>
-<path d="M182 54 L204 56 M182 60 L206 60 M182 66 L200 65" ${st(1)} opacity=".45"/>
+brush:()=>{const limb=d=>`<path d="${d}" ${st(11)}/><path d="${d}" ${st(6,PAPER)}/>`;
+const blobs=[[176,40,9],[196,30,6],[150,36,7],[124,44,6],[96,50,5],[204,72,5],[186,84,4],[62,64,4],[40,120,7],[30,134,5],[56,140,6],[44,104,4],[150,150,4],[20,150,3]];
+return wrap(`<ellipse cx="108" cy="222" rx="74" ry="8" fill="${INK}" opacity=".3"/>
+${[0,1,2,3,4].map(i=>`<path d="M${40+i*6} ${214+i*4} L${170-i*8} ${214+i*4}" ${st(3)} opacity="${.55-i*.08}"/>`).join('')}
+<path d="M32 108 C46 100 52 120 40 132 C30 144 44 150 34 160 C22 150 16 128 32 108Z" fill="${INK}" opacity=".85"/>
+<path d="M48 96 Q58 88 66 96 M24 120 Q14 112 18 100" ${st(3)}/>
+<g class="weapon" style="transform-origin:104px 80px">
+<path d="M104 60 C132 46 160 40 182 42 C194 44 204 50 208 58 C198 54 188 54 178 58 C154 58 128 62 104 66Z" fill="${INK}" opacity=".5"/><path d="M60 72 C80 66 92 64 104 62" ${st(3)} opacity=".4"/>
+<polygon points="${spikes(196,62,14,32,12)}" fill="${INK}"/>
+${blobs.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${INK}"/>`).join('')}
+<path d="M168 26 Q174 10 190 6 M212 46 Q222 52 220 64 M140 30 Q144 20 154 18 M210 82 Q216 92 210 100" ${st(3.5)}/>
+<line x1="4" y1="94" x2="180" y2="62" stroke="${INK}" stroke-width="13" stroke-linecap="round"/>
+<line x1="6" y1="93.5" x2="178" y2="62.5" stroke="#9a5626" stroke-width="8" stroke-linecap="round"/>
+<path d="M20 90 L70 81 M90 77 L140 69 M150 67 L170 64" stroke="#d08f4f" stroke-width="2" opacity=".85"/>
+<polygon points="4,94 -10,100 6,100" fill="${INK}"/>
+<path d="M172 56 L186 53 L190 72 L176 75Z" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>
+<path d="M186 50 C202 46 214 52 216 64 C212 74 200 78 188 74Z" fill="#f2efe6" stroke="${INK}" stroke-width="2.5"/>
+<path d="M190 56 L212 60 M190 62 L214 64 M190 68 L208 70" ${st(1.1)} opacity=".5"/><path d="M206 52 C212 56 216 60 216 64 C212 70 208 72 204 72Z" fill="#7a7468"/>
 </g>
-<path d="M100 72 Q97 90 100 106" ${st(1.5)}/>
-${limb('M98 168 L66 194 L24 214')}${limb('M104 168 L138 178 L134 216')}
-<path d="M70 196 L60 200 M40 208 L34 212" ${st(1.2)} opacity=".5"/>
-<path d="M12 210 L32 212 L30 220 L10 220Z" fill="${INK}"/><path d="M128 214 L146 214 L148 222 L126 222Z" fill="${INK}"/>
-<path d="M96 124 L104 168" ${st(22)}/><path d="M96 124 L104 168" ${st(14,PAPER)}/>
-<path d="M92 148 L112 146" ${st(3)}/><path d="M100 150 L94 162 M104 130 L100 140" ${st(1.2)} opacity=".5"/>
-${limb('M94 130 L80 106 L78 84')}${limb('M102 128 L118 102 L124 70')}
-<circle cx="78" cy="84" r="5.5" fill="${INK}"/><circle cx="124" cy="70" r="5.5" fill="${INK}"/>
-<circle cx="99" cy="112" r="12.5" fill="${INK}"/><circle cx="96" cy="98" r="4.5" fill="${INK}"/><path d="M92 96 L86 92" ${st(2)}/>`)},
+<path d="M106 80 L106 128" ${st(1.6)}/>
+${limb('M100 170 L66 176 L58 206')}${limb('M110 170 L142 168 L136 204')}
+<path d="M48 204 L66 206 L66 214 L46 214Z M128 202 L146 204 L148 212 L126 212Z" fill="${INK}"/>
+<path d="M98 148 C94 160 98 172 108 174 C118 172 118 156 112 146Z" fill="${INK}"/>
+${limb('M98 152 L80 172 L74 200')}<circle cx="74" cy="201" r="4.5" fill="${INK}"/>
+${limb('M112 150 L118 136 L108 124')}<circle cx="108" cy="123" r="4.5" fill="${INK}"/>
+<circle cx="106" cy="136" r="12" fill="${INK}"/><path d="M100 128 Q104 125 109 127" ${st(2,PAPER)} opacity=".8"/>`)},
 
-monk:()=>{const cloud=(x,y,s)=>`<path d="M${x} ${y} q${3*s} ${-7*s} ${9*s} ${-4*s} q${5*s} ${-7*s} ${11*s} ${-1*s} q${6*s} ${-4*s} ${9*s} ${3*s} q${2*s} ${4*s} ${-3*s} ${5*s}" ${st(1.8,RED)}/>`;
-const beads=[...Array(13)].map((_,i)=>{const t=i/12;const x=(1-t)*(1-t)*80+2*(1-t)*t*104+t*t*128;const y=(1-t)*(1-t)*140+2*(1-t)*t*196+t*t*140;return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2" fill="${RED}" stroke="${INK}" stroke-width="1.3"/><circle cx="${(x-1.3).toFixed(1)}" cy="${(y-1.3).toFixed(1)}" r="1.3" fill="#f2b6c8"/>`}).join('');
-const pat=[];for(let y=112;y<=196;y+=10)for(const x of [80,88,96,110,118,126]){pat.push(`<path d="M${x-3.5} ${y+3} L${x} ${y-3} L${x+3.5} ${y+3} M${x-2} ${y+6} L${x} ${y+2} L${x+2} ${y+6}" ${st(1.3,RED)}/>`)}
-const gaunt=(d)=>`<path d="${d}" ${st(13)}/><path d="${d}" ${st(7,RED)}/>`;
-return wrap(`<ellipse cx="106" cy="230" rx="64" ry="6" fill="${INK}" opacity=".2"/>
-<polyline points="${arcSpikes(112,72,60,86,150,400,36)}" fill="none" stroke="${RED}" stroke-width="3.5" filter="url(#flame)"/>
-<polyline points="${arcSpikes(112,72,52,72,156,394,30)}" fill="none" stroke="${RED}" stroke-width="2" opacity=".75"/>
-<polyline points="${arcSpikes(112,72,64,80,160,390,44)}" fill="none" stroke="#e0552a" stroke-width="1.5" opacity=".6" filter="url(#flame)"/>
-${cloud(8,56,1.5)}${cloud(150,20,1.3)}${cloud(4,138,1.2)}${cloud(162,150,1.4)}${cloud(28,196,1.1)}${cloud(152,206,1.1)}${cloud(180,92,1.1)}${cloud(40,18,1)}${cloud(60,226,.9)}
-<path d="M18 236 L80 233 M112 236 L188 232 M40 240 L120 238" ${st(3,RED)} opacity=".55"/>
-<path d="M94 196 L88 226 M110 196 L116 226" ${st(4)}/>
-<path d="M74 222 L92 222 L94 231 L68 231 Z" fill="${INK}"/><path d="M112 222 L128 222 L138 231 L112 231 Z" fill="${INK}"/>
-<path d="M78 96 L126 96 L132 150 L138 200 L184 190 L166 204 L192 206 L150 214 L118 210 L104 198 L88 210 L62 206 L72 150 Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
-${pat.join('')}
-<path d="M84 98 L76 206 M120 98 L128 204" ${st(3.5,RED)}/><path d="M80 98 L72 204 M124 98 L132 202" ${st(1.2)}/>
-<path d="M138 200 L184 190 L166 204 M150 214 L192 206" ${st(2.5,RED)}/>
-<path d="M98 96 L106 96 L108 200 L100 200 Z" fill="${INK}"/>
+monk:()=>{const cloud=(x,y,s)=>`<path d="M${x} ${y} q${3*s} ${-6*s} ${7*s} ${-1*s} q${3*s} ${-6*s} ${7*s} ${-1*s} q${3*s} ${-6*s} ${7*s} ${-1*s}" ${st(1.7,RED)}/>`;
+const hatch=[];for(let a=255;a<=425;a+=6){const r=a*Math.PI/180;hatch.push(`<line x1="${(118+58*Math.cos(r)).toFixed(1)}" y1="${(78+58*Math.sin(r)).toFixed(1)}" x2="${(118+(74+(a%4)*3)*Math.cos(r)).toFixed(1)}" y2="${(78+(74+(a%4)*3)*Math.sin(r)).toFixed(1)}" stroke="${RED}" stroke-width="1.1" opacity=".75"/>`)}
+const chev=(x0,x1,y0,y1)=>{let h='';for(let y=y0;y<=y1;y+=11)for(let x=x0;x<=x1;x+=8)h+=`<path d="M${x-3} ${y} L${x} ${y+5} L${x+3} ${y}" ${st(1.6,RED)}/>`;return h};
+const beads=[...Array(14)].map((_,i)=>{const t=i/13;const x=(1-t)*(1-t)*78+2*(1-t)*t*92+t*t*124;const y=(1-t)*(1-t)*96+2*(1-t)*t*176+t*t*132;return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${RED}" stroke="${INK}" stroke-width="1.1"/>`}).join('');
+const gaunt=d=>`<path d="${d}" ${st(12)}/><path d="${d}" ${st(7,RED)}/>`;
+return wrap(`<g filter="url(#flame)"><polyline points="${arcSpikes(118,78,62,84,255,425,40)}" fill="none" stroke="${RED}" stroke-width="3"/></g>${hatch.join('')}
+<polyline points="${arcSpikes(118,78,56,66,260,420,30)}" fill="none" stroke="${RED}" stroke-width="1.5" opacity=".7"/>
+${cloud(8,40,1.4)}${cloud(150,14,1.2)}${cloud(4,126,1.3)}${cloud(170,120,1.2)}${cloud(20,176,1.1)}${cloud(156,206,1.2)}${cloud(30,90,1)}${cloud(176,160,1)}${cloud(46,206,.9)}
+<path d="M10 226 L70 224 M120 228 L196 225 M30 234 L110 232 M140 236 L190 234" ${st(3,RED)} opacity=".6"/><path d="M60 228 L150 228" ${st(2)} opacity=".5"/>
+<path d="M98 196 L94 226 M110 196 L112 226" ${st(3.5)}/>
+<path d="M84 222 L96 222 L98 232 L80 232Z M106 222 L118 222 L122 232 L104 232Z" fill="${INK}"/>
+<path d="M80 80 L102 80 L100 200 L84 212 L72 200Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M104 80 L120 80 L128 160 L186 150 L160 168 L180 176 L146 182 L132 200 L116 208 L104 200Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>
+${chev(80,96,92,196)}${chev(108,124,92,196)}
+<path d="M136 166 L176 156 M138 176 L170 176" ${st(2.4,RED)}/>
+<path d="M86 84 L80 204 M116 84 L124 200" ${st(2.5,RED)}/>
+<path d="M100 80 L104 80 L104 204 L100 204Z" fill="${INK}"/>
+<path d="M118 76 C134 96 146 130 158 176 C150 164 142 150 134 136 C138 160 148 180 154 196 C140 176 130 150 122 124Z" fill="#e4e0d8" stroke="${INK}" stroke-width="1.5"/>
+<path d="M120 84 C132 110 142 140 150 176 M124 92 C132 120 138 146 146 186" ${st(1.2)} opacity=".7"/>
 ${beads}
-<path d="M92 66 Q64 92 64 152 Q72 132 78 122 Q74 152 84 170 Q88 122 96 96 Z" fill="${INK}"/><path d="M110 66 Q122 92 116 124 Q112 104 106 92Z" fill="${INK}"/>
-<path d="M64 104 L72 80 L80 90 L86 74 L98 92 L92 108 L62 118Z" fill="${RED}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M70 106 L80 92 M78 108 L88 92" ${st(1.3)}/>
-<path d="M140 104 L132 80 L124 90 L118 74 L106 92 L112 108 L142 118Z" fill="${RED}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M134 106 L124 92 M126 108 L116 92" ${st(1.3)}/>
-<circle cx="102" cy="72" r="16" fill="${INK}"/><path d="M88 64 L82 48 L94 58 L98 42 L104 58 L114 44 L116 62Z" fill="${INK}"/>
-<g class="weapon" style="transform-origin:126px 104px">${gaunt('M126 104 L142 90 L148 68')}<path d="M134 96 L142 100 M140 84 L148 86" ${st(1.5,PAPER)}/>
-<rect x="136" y="46" width="24" height="24" rx="6" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M141 52 L155 52 M141 58 L155 58 M141 64 L155 64" ${st(1.5)}/><path d="M160 50 L168 46 M160 58 L170 58" ${st(2.5)}/></g>
-${gaunt('M78 108 L68 132 L66 148')}<rect x="56" y="146" width="20" height="20" rx="5" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M60 152 L72 152 M60 158 L72 158" ${st(1.4)}/>`)},
+<path d="M70 86 L78 66 L84 76 L90 64 L100 80 L92 92 L68 96Z" fill="${RED}" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/><path d="M74 88 L82 74 M82 90 L90 74" ${st(1.2)}/>
+<path d="M128 86 L122 66 L114 76 L110 64 L102 80 L110 92 L132 98Z" fill="${RED}" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/><path d="M124 88 L116 74 M116 90 L110 76" ${st(1.2)}/>
+<circle cx="100" cy="54" r="15" fill="${INK}"/><path d="M90 46 L86 32 L96 42Z" fill="${INK}"/><path d="M108 44 Q120 52 122 68" ${st(3)}/>
+<g class="weapon" style="transform-origin:78px 86px">${gaunt('M78 86 L62 104 L54 74')}<path d="M58 96 L66 100 M54 86 L62 88" ${st(1.3,PAPER)}/>
+<path d="M44 48 L62 46 L66 70 L48 74Z" fill="${RED}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/><path d="M48 54 L62 52 M48 60 L63 58 M49 66 L64 64" ${st(1.4)}/><path d="M44 50 L38 44 M52 46 L50 38 M60 46 L62 38" ${st(2)}/></g>
+${gaunt('M122 88 L134 112 L130 134')}<path d="M122 132 L138 130 L140 148 L124 150Z" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M126 136 L136 135 M126 142 L137 141" ${st(1.3)}/>`)},
 
-hand:()=>{const G='#f2b62e',GD='#c4660a';
-const open=(x,y,r,s)=>`<g class="ammo" transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><path d="M-14 -2 Q-15 19 0 21 Q15 19 14 -2 Z" fill="${G}" stroke="${INK}" stroke-width="2"/><path d="M-9 6 Q0 12 9 4 M-6 13 Q2 16 8 11" ${st(1.3,GD)}/>${[-14,-7,0,7].map((fx,i)=>{const h=i===0||i===3?23:28;return `<rect x="${fx}" y="${-h+2}" width="6.6" height="${h}" rx="3.3" fill="${G}" stroke="${INK}" stroke-width="1.8"/><path d="M${fx+1} ${-h*.45} L${fx+5.6} ${-h*.45} M${fx+1} ${-h*.05} L${fx+5.6} ${-h*.05}" ${st(1,GD)}/><path d="M${fx+5.2} ${-h+5} L${fx+5.2} 0" ${st(1.4,GD)} opacity=".6"/>`}).join('')}<rect x="9" y="2" width="18" height="8" rx="4" fill="${G}" stroke="${INK}" stroke-width="1.8" transform="rotate(-40 9 2)"/></g>`;
-const fist=(x,y,r,s)=>`<g class="ammo" transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><rect x="-6" y="12" width="12" height="12" fill="${G}" stroke="${INK}" stroke-width="1.8"/><rect x="-15" y="-13" width="30" height="27" rx="9" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-10,-3.5,3.5,10].map(fx=>`<circle cx="${fx}" cy="-12" r="3.8" fill="${G}" stroke="${INK}" stroke-width="1.6"/><path d="M${fx} -8 L${fx} 0" ${st(1,GD)}/>`).join('')}<path d="M-13 1 Q-2 7 9 3" ${st(2,GD)}/><path d="M10 -6 L14 8" ${st(2.5,GD)} opacity=".6"/></g>`;
-const spark=(x,y,s)=>`<path d="M${x-s} ${y} L${x+s} ${y} M${x} ${y-s} L${x} ${y+s}" ${st(2.6,G)}/><path d="M${x-s*.4} ${y-s*.4} L${x+s*.4} ${y+s*.4} M${x-s*.4} ${y+s*.4} L${x+s*.4} ${y-s*.4}" ${st(1.4,G)}/>`;
-return wrap(`<ellipse cx="100" cy="230" rx="54" ry="6" fill="${INK}" opacity=".2"/>
-${[...Array(12)].map((_,i)=>{const a=i*30*Math.PI/180;return `<path d="M${100+20*Math.cos(a)} ${120+20*Math.sin(a)} L${100+96*Math.cos(a)} ${120+96*Math.sin(a)}" stroke="${G}" stroke-width="1.5" opacity=".28"/>`}).join('')}
-${spark(14,36,11)}${spark(186,94,10)}${spark(10,170,9)}${spark(190,212,11)}${spark(100,12,9)}${spark(64,106,6)}${spark(140,102,6)}${spark(36,94,5)}${spark(166,30,6)}
-${open(44,54,-30,1.5)}${open(158,52,32,1.5)}${fist(22,132,-80,1.3)}${open(180,128,80,1.35)}${fist(44,204,-140,1.15)}${open(162,202,140,1.25)}
-<path d="M94 104 L108 104 L118 150 L142 226 L118 214 L104 228 L88 216 L62 226 L86 150 Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
-<path d="M98 120 L92 210 M104 120 L112 214 M90 150 L76 216 M112 150 L128 218" ${st(1.2)} opacity=".45"/>
-<path d="M96 100 L106 100 L104 162 L98 162 Z" fill="${INK}"/>
-<path d="M99 160 L94 226 L86 228 M103 160 L112 192 L106 226 L114 228" ${st(4.5)}/>
-<path d="M97 108 L88 126 L92 142 M105 108 L114 122 L110 138" ${st(4)}/>
-<circle cx="101" cy="88" r="12" fill="${INK}"/>
-<path d="M93 80 L88 64 L98 77 Z M108 77 L115 63 L111 81 Z" fill="${INK}"/><circle cx="97" cy="88" r="1.6" fill="${G}"/><circle cx="105" cy="88" r="1.6" fill="${G}"/>`)},
+hand:()=>{const G='#f6b52c',GD='#d4600c';
+const finger=(x,y,len,ang)=>`<g transform="translate(${x} ${y}) rotate(${ang})"><path d="M-3.4 0 L-3 ${-len} Q0 ${-len-4} 3 ${-len} L3.4 0Z" fill="${G}" stroke="${INK}" stroke-width="1.8"/><path d="M-2.6 ${-len*.4} L2.6 ${-len*.4} M-2.4 ${-len*.72} L2.4 ${-len*.72}" ${st(1,GD)}/><path d="M2.2 -2 L2 ${-len+2}" ${st(1.5,GD)}/></g>`;
+const hand=(x,y,r,s,kind)=>{let f='';
+ if(kind==='fist')f=`<path d="M-15 -10 Q-16 12 0 14 Q16 12 15 -10 Q0 -18 -15 -10Z" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-10,-3.5,3.5,10].map(fx=>`<path d="M${fx-3.5} -12 Q${fx} -18 ${fx+3.5} -12" fill="${G}" stroke="${INK}" stroke-width="1.6"/><path d="M${fx} -10 L${fx} -2" ${st(1,GD)}/>`).join('')}<path d="M-14 0 Q-4 6 8 2" ${st(2.2,GD)}/><path d="M14 -8 L15 8" ${st(2.5,GD)} opacity=".7"/>`;
+ else if(kind==='point')f=`<path d="M-13 -6 Q-14 14 0 16 Q14 14 13 -6Z" fill="${G}" stroke="${INK}" stroke-width="2"/>${finger(-6,-6,34,0)}${[-1,5,10].map(fx=>`<path d="M${fx-3} -6 Q${fx} -12 ${fx+3} -6" fill="${G}" stroke="${INK}" stroke-width="1.5"/>`).join('')}<path d="M12 4 L22 -4" ${st(5,G)}/><path d="M12 4 L22 -4" ${st(1.4)}/>`;
+ else f=`<path d="M-13 -6 Q-15 16 0 18 Q15 16 13 -6Z" fill="${G}" stroke="${INK}" stroke-width="2"/><path d="M-8 4 Q0 10 8 2" ${st(1.4,GD)}/>${finger(-10,-6,26,-10)}${finger(-3.5,-6,32,-3)}${finger(3.5,-6,30,3)}${finger(10,-6,24,10)}${finger(14,6,18,60)}`;
+ return `<g class="ammo" transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><path d="M-9 16 L-11 46 L11 46 L9 16Z" fill="${G}" stroke="${INK}" stroke-width="2"/><path d="M-11 38 L11 38" ${st(2,GD)}/><path d="M6 18 L8 44" ${st(2,GD)} opacity=".7"/>${f}</g>`};
+const spark=(x,y,s)=>`<path d="M${x-s} ${y} L${x+s} ${y} M${x} ${y-s*1.4} L${x} ${y+s*1.4}" stroke="${G}" stroke-width="2.4" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="3" fill="#fff3c0"/>`;
+return wrap(`<ellipse cx="100" cy="230" rx="40" ry="5" fill="${INK}" opacity=".2"/>
+${spark(30,20,10)}${spark(150,14,8)}${spark(184,88,12)}${spark(12,104,9)}${spark(100,30,7)}${spark(188,176,10)}${spark(20,218,8)}${spark(118,218,9)}${spark(70,96,6)}${spark(136,96,6)}
+${hand(64,58,-6,1.05,'point')}${hand(142,54,24,1.05,'open')}${hand(30,124,-84,1,'fist')}${hand(174,118,72,1,'open')}${hand(52,186,-126,1,'fist')}${hand(160,190,124,1,'open')}
+<path d="M98 104 C86 132 72 172 52 216 L70 208 L74 222 L86 204 L96 216 C100 180 104 140 108 106 Z" fill="${PAPER}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M98 120 C88 150 78 180 64 210 M103 124 C98 160 92 188 88 206" ${st(1)} opacity=".5"/>
+<path d="M98 104 L108 104 L106 160 L100 160Z" fill="${INK}"/>
+<path d="M100 158 L92 192 L98 228 L90 230 M106 158 L114 194 L108 228 L116 230" ${st(4.5)}/>
+<path d="M99 112 L90 128 L104 124" ${st(3.5)}/><path d="M107 112 L114 130" ${st(3.5)}/>
+<circle cx="103" cy="94" r="10" fill="${INK}"/><path d="M96 86 L92 72 L100 84Z M106 84 L114 72 L110 88Z" fill="${INK}"/><path d="M92 74 L88 68 M114 72 L118 66" ${st(1.5,PAPER)}/>`)},
 
 panda:()=>wrap(`${shadow(102,64)}
 <g class="weapon" style="transform-origin:130px 128px"><line x1="26" y1="194" x2="188" y2="90" stroke="${INK}" stroke-width="10" stroke-linecap="round"/><line x1="27" y1="193.5" x2="187" y2="90.5" stroke="#6f9a3e" stroke-width="6" stroke-linecap="round"/>
@@ -907,24 +907,20 @@ knight:()=>wrap(`${shadow(100,66)}
 <path d="M120 118 L136 132" ${st(6,GOLD)}/>
 </g>`),
 
-reaper:()=>wrap(`<ellipse cx="100" cy="232" rx="58" ry="6" fill="${INK}" opacity=".2"/>
-<path d="M36 196 Q18 186 22 168 M154 200 Q176 190 170 172 M26 224 Q12 214 18 202 M176 224 Q190 214 184 200" ${st(3,'#1f2a24')} opacity=".5"/>
-<g class="weapon" style="transform-origin:108px 122px">
-<line x1="152" y1="232" x2="68" y2="14" stroke="${INK}" stroke-width="9" stroke-linecap="round"/><line x1="151" y1="230" x2="69" y2="16" stroke="#4a3a2a" stroke-width="5" stroke-linecap="round"/>
-<path d="M78 40 L84 38 M86 60 L92 58 M126 162 L132 160 M134 182 L140 180" ${st(3,'#7a6a52')}/>
-<path d="M66 16 C110 -10 178 0 206 48 C196 40 182 32 166 28 C130 20 100 22 72 34 Z" fill="#e2ddd1" stroke="${INK}" stroke-width="2.8" stroke-linejoin="round"/>
-<path d="M80 24 C120 8 170 14 198 42" ${st(1.4)} opacity=".45"/><path d="M84 30 C120 18 160 22 186 38" ${st(4,'#b8b2a4')} opacity=".6"/>
-<path d="M70 14 L60 6 M70 22 L58 26 M66 18 L54 16" ${st(3)}/>
+reaper:()=>wrap(`<ellipse cx="100" cy="232" rx="56" ry="5" fill="${INK}" opacity=".18"/>
+<g class="weapon" style="transform-origin:106px 128px">
+<line x1="56" y1="234" x2="158" y2="28" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><line x1="57" y1="232" x2="157" y2="30" stroke="#b9b2a2" stroke-width="4" stroke-linecap="round"/>
+<path d="M158 28 C126 2 64 4 22 30 C30 38 34 46 34 56 C64 30 112 22 150 42 Z" fill="#e6e0d2" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"/>
+<path d="M146 32 C112 14 64 16 30 38" ${st(4,'#a8a092')} opacity=".7"/><path d="M150 40 C112 24 70 28 36 50" ${st(1.4)} opacity=".6"/>
+<path d="M158 28 L170 20 L166 30 L176 28" ${st(3,'#b9b2a2')}/>
 </g>
-<path d="M100 58 C76 58 68 84 72 106 C62 150 54 186 38 222 L50 212 L54 230 L66 214 L76 234 L88 214 L100 236 L110 214 L122 232 L128 212 L142 226 L138 206 L150 222 C138 180 130 140 126 106 C130 80 122 58 100 58 Z" fill="#1f2a24" stroke="${INK}" stroke-width="2"/>
-<path d="M84 108 C78 150 70 184 58 216 M94 112 C92 150 88 190 84 220 M106 112 C106 150 108 190 112 222 M118 108 C120 150 126 186 134 216" ${st(2.2,'#3b5145')}/>
-<path d="M78 120 C70 150 64 170 56 196 M122 118 C128 150 134 170 142 196" ${st(1.4)} opacity=".6"/>
-<path d="M80 74 C84 60 116 60 120 74 C122 90 116 104 100 106 C84 104 78 90 80 74 Z" fill="#0a0d0b"/>
-<path d="M82 72 C86 62 114 62 118 72" ${st(2,'#3b5145')}/>
-<circle cx="105" cy="84" r="2.2" fill="#9fe0c0"/><circle cx="96" cy="84" r="2" fill="#9fe0c0"/><circle cx="105" cy="84" r="5" fill="#9fe0c0" opacity=".2"/><circle cx="96" cy="84" r="5" fill="#9fe0c0" opacity=".2"/>
-<path d="M124 108 C116 110 110 116 108 122" ${st(12,'#1f2a24')}/>
-<path d="M102 118 L116 112 M103 124 L117 118 M105 130 L117 124 M110 118 L111 132" ${st(2.5,'#e8e2d4')}/>
-<circle cx="78" cy="160" r="2.5" fill="#9fe0c0" opacity=".35"/><circle cx="124" cy="150" r="2" fill="#9fe0c0" opacity=".35"/>`),
+<path d="M118 44 C134 46 146 58 146 74 C146 88 140 98 134 106 C136 130 132 160 124 186 L118 228 L106 212 L98 232 L88 212 L78 230 L72 208 L58 218 L60 198 L36 204 L48 186 L18 186 L40 172 L12 160 L42 152 L24 134 L54 130 L60 104 C64 76 92 46 118 44Z" fill="#1c2620" stroke="${INK}" stroke-width="2"/>
+<path d="M118 60 C108 100 96 150 84 210 M130 70 C122 120 112 170 104 214 M100 70 C86 110 72 150 58 196 M84 84 C70 112 56 140 40 168" ${st(2,'#3f5a4a')}/>
+<path d="M60 150 C46 156 30 158 16 156 M54 176 C40 182 26 186 14 184 M66 196 C54 204 42 210 30 212" ${st(1.6,'#3f5a4a')} opacity=".8"/>
+<path d="M120 56 C136 62 142 76 138 92 C132 104 120 104 116 94 C112 82 112 66 120 56Z" fill="#050706"/>
+<circle cx="130" cy="78" r="2" fill="#9fe0c0"/><circle cx="130" cy="78" r="5" fill="#9fe0c0" opacity=".25"/>
+<path d="M132 120 C142 124 152 126 160 124" ${st(10,'#1c2620')}/><path d="M160 124 L172 116 M160 126 L174 124 M158 128 L170 134 M162 122 L168 112" ${st(2.2,'#e6e0d2')}/>
+<path d="M112 120 L104 126 M114 126 L104 132 M114 132 L106 138" ${st(2.4,'#e6e0d2')}/><path d="M122 116 C118 120 116 124 114 128" ${st(9,'#1c2620')}/>`),
 
 /* enemies (face left) */
 blob:(o={})=>wrap(`${shadow(100,64)}
