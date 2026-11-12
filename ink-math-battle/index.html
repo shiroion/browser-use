@@ -73,6 +73,8 @@ svg.art{display:block;overflow:visible}
 .picon{width:72px;height:72px}
 .shoph{font-size:1.5rem;margin:14px 0 8px}
 .card.locked{opacity:.6}
+.dropline{display:flex;align-items:center;gap:10px;font-size:1.1rem;font-weight:700}
+.dropline svg.chest{height:44px;width:auto}
 .codebox{background:var(--card);border:2.5px solid var(--ink);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;max-width:560px}
 .codebox h3{font-size:1.6rem}
 .codebox input{flex:1;min-width:0;font-size:1.4rem;padding:8px 12px;border:2.5px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink);text-transform:uppercase;letter-spacing:.08em}
@@ -859,7 +861,7 @@ demon:()=>wrap(`${shadow(100,70)}
 <path d="M66 116 L36 148 L26 138 M36 148 L24 156 M134 116 L164 148 L174 138 M164 148 L176 156" ${st(6)}/>`)
 };
 
-function chestSVG(tier,cls=''){const C=[{b:'#8a5a2b',band:'#4a2e12',t:'#d9a03a'},{b:'#a3abb4',band:'#4b525a',t:'#eef2f6'},{b:'#dcaa25',band:'#7a4a07',t:'#fff1b8'}][tier];
+function chestSVG(tier,cls=''){const C=[{b:'#8a5a2b',band:'#4a2e12',t:'#d9a03a'},{b:'#a3abb4',band:'#4b525a',t:'#eef2f6'},{b:'#dcaa25',band:'#7a4a07',t:'#fff1b8'},{b:'#7fd3e8',band:'#2c6f8a',t:'#ffffff'},{b:'#b5352b',band:'#5a1410',t:'#e8c23a'},{b:'#2f6fb0',band:'#173a5e',t:'#cfe3f1'},{b:'#4f8a4a',band:'#22401f',t:'#f3d9a0'},{b:'#6a3d8f',band:'#2e1640',t:'#e8c23a'}][tier]||{b:'#8a5a2b',band:'#4a2e12',t:'#d9a03a'};
 return `<svg class="chest ${cls}" viewBox="0 0 200 170" aria-hidden="true"><g filter="url(#rough)">
 <g class="rays"><polygon points="${spikes(100,70,20,90,12)}" fill="${GOLD}" opacity=".45"/></g>
 <ellipse cx="100" cy="158" rx="80" ry="7" fill="${INK}" opacity=".2"/>
@@ -998,7 +1000,18 @@ const GAUGE_MAX=5;
 function worldLv(){return [1,2,3,4,5,6,7,8].filter(c=>S.prog[c]>=5).length}
 const CHAR_ORDER=['brush','monk','hand','reaper'];
 const RAR=[{n:'普通',c:'#6d6a63'},{n:'稀有',c:'#2f6fb0'},{n:'史诗',c:'#7a3fa6'},{n:'传说',c:'#c98f17'}];
-const CHESTS=[{name:'木宝箱',price:30,w:[70,25,5,0]},{name:'银宝箱',price:80,w:[30,45,20,5]},{name:'金宝箱',price:180,w:[0,30,45,25]}];
+const CHESTS=[
+ {name:'木宝箱',price:30,d:1,kind:'item',w:[70,25,5,0]},
+ {name:'银宝箱',price:80,d:2,kind:'item',w:[30,45,20,5]},
+ {name:'金宝箱',price:180,d:3,kind:'item',w:[0,30,45,25]},
+ {name:'钻石宝箱',price:400,d:3,kind:'item',w:[0,0,40,60]},
+ {name:'武器宝箱',price:110,d:2,kind:'item',type:'w',w:[10,50,30,10]},
+ {name:'盔甲宝箱',price:110,d:2,kind:'item',type:'a',w:[10,50,30,10]},
+ {name:'药品宝箱',price:60,d:1,kind:'potion',odds:'3个随机药品'},
+ {name:'神秘宝箱',price:120,d:2,kind:'mystery',odds:'可能是装备、金币或药品'}];
+const SELL=[10,30,80,200];
+function sellPrice(it){return it.ck?Math.round((CLOUD_GEAR.find(g=>g.key===it.ck)||{price:0}).price/2):SELL[it.rar]}
+function sellItem(id){const i=S.inv.findIndex(x=>x.id===id);if(i<0)return 0;const it=S.inv[i];if(S.eq[it.type]===id)return 0;const v=sellPrice(it);S.inv.splice(i,1);S.coins+=v;return v}
 const RANGE={w:[[3,5],[7,10],[13,17],[22,28]],a:[[12,18],[25,35],[45,60],[75,95]]};
 const NAMES={
  w:[['竹枝笔','木剑','铁戒尺','小石锤'],['青铜剑','狼毫大笔','流星锤','银月刀'],['雷纹长枪','凤羽扇','寒冰弓','赤焰双刀'],['龙骨巨笔','星河剑','九天雷锤']],
@@ -1488,9 +1501,11 @@ function useSkill(i){if(!B||B.over||B.busy||B.review||B.def)return;const sk=B.sk
    default:heroHit(Math.round(e.max*.45),'shadow',true,done)}})}
 
 /* ============ RESULT ============ */
-function finishBattle(win){stopTimer();const b=B;let coins,partWin=false;
+function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=null;
  if(win){coins=b.isBoss?50+20*b.ch+(b.wrongs===0?30:0):20+5*b.ch+(b.wrongs===0?10:0);if(S.prog[b.ch]<b.lv)S.prog[b.ch]=b.lv;S.stats.wins++;SFX.win();
-  if(b.isBoss&&!S.partDone[b.ch]){S.partDone[b.ch]=true;S.chests.push(2);coins+=50;partWin=true}}
+  if(b.isBoss&&!S.partDone[b.ch]){S.partDone[b.ch]=true;S.chests.push(2);coins+=50;partWin=true}
+  if(b.isBoss){drop=b.ch>=6?3:1}else if(b.wrongs===0&&Math.random()<.3){drop=b.ch>=6?7:0}
+  if(drop!==null)S.chests.push(drop)}
  else{coins=5;SFX.lose()}
  S.coins+=coins;save();
  const el=$('#scr-result');const perfect=win&&b.wrongs===0;
@@ -1503,6 +1518,7 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false;
    <div class="partrow">${chestSVG(2)}<div>完成奖励：<b>金宝箱 ×1</b> + <b>50 金币</b><br><span class="muted">金宝箱已放进商店，答对一道题就能打开。</span></div></div>
    <div class="warnline">所有怪物都变强了！（怪物强化 Lv.${wl}：生命和攻击提高，还学会了第二个大招）</div>
    ${ns.length?`<div>${CHARS[S.cur].name} 学会了新技能：<b>${ns.map(x=>x.name).join('、')}</b>（${ns[0].desc}）</div>`:''}</div>`})():''}
+  ${drop!==null?`<div class="dropline">${chestSVG(drop)}<span>${b.isBoss?'首领掉落':'全对奖励'}：<b>${CHESTS[drop].name}</b> 已放进商店</span></div>`:''}
   <div class="earn">获得 <div class="seal"><span class="coin-ico"></span><b id="earnNum">+0</b><small>金币</small></div></div>
   <div class="row" style="justify-content:center">
    <button class="btn gold" type="button" id="rShop">${partWin?'去打开金宝箱':'去商店开宝箱'}</button>
@@ -1538,11 +1554,11 @@ function potionIcon(k){const c=POTIONS[k].c;return `<svg viewBox="0 0 48 48" ari
 let shopTab='chest',codeMsg='';
 function renderShop(){
  const el=$('#scr-shop');const t2=tower2Open();S.potions=S.potions||{};
- const tabs=`<div class="tabs"><button type="button" class="tab ${shopTab==='chest'?'on':''}" data-st="chest">宝箱${S.chests.length?`（${S.chests.length}个待开）`:''}</button><button type="button" class="tab ${shopTab==='cloud'?'on':''}" data-st="cloud">云霄商店</button><button type="button" class="tab ${shopTab==='code'?'on':''}" data-st="code">兑换码</button></div>`;
+ const tabs=`<div class="tabs"><button type="button" class="tab ${shopTab==='chest'?'on':''}" data-st="chest">宝箱${S.chests.length?`（${S.chests.length}个待开）`:''}</button><button type="button" class="tab ${shopTab==='cloud'?'on':''}" data-st="cloud">云霄商店</button><button type="button" class="tab ${shopTab==='sell'?'on':''}" data-st="sell">出售装备</button><button type="button" class="tab ${shopTab==='code'?'on':''}" data-st="code">兑换码</button></div>`;
  let body='';
- if(shopTab==='chest')body=`<p class="muted" style="margin:0 0 10px">用金币买宝箱，答对一道题就能打开，里面随机是武器或盔甲。</p>
+ if(shopTab==='chest')body=`<p class="muted" style="margin:0 0 10px">用金币买宝箱，答对一道题就能打开。打首领、全对过关也会掉宝箱。</p>
  <div class="grid3">${CHESTS.map((c,i)=>`<div class="card">${chestSVG(i)}<h3>${c.name}</h3>
-  <div class="odds">${c.w.map((w,r)=>w?`<span style="background:${RAR[r].c}">${RAR[r].n} ${w}%</span>`:'').join('')}</div>
+  <div class="odds">${c.w?(c.type?`<span style="background:var(--ink)">只出${c.type==='w'?'武器':'盔甲'}</span>`:'')+c.w.map((w,r)=>w?`<span style="background:${RAR[r].c}">${RAR[r].n} ${w}%</span>`:'').join(''):`<span style="background:var(--jade)">${c.odds}</span>`}</div>
   <div class="price"><span class="coin-ico"></span>${c.price}</div>
   <button class="btn ${S.coins>=c.price?'primary':''}" type="button" data-buy="${i}" ${S.coins>=c.price?'':'disabled'}>${S.coins>=c.price?'购买并开启':'金币不够'}</button></div>`).join('')}</div>
  <div class="pending"><h3>还没打开的宝箱</h3>${S.chests.length?`<div class="pending-list">${S.chests.map((t,i)=>`<div class="pchest">${chestSVG(t)}<b>${CHESTS[t].name}</b><button class="chipbtn" type="button" data-open="${i}">开启</button></div>`).join('')}</div>`:'<div class="empty">没有待开启的宝箱。打赢战斗赚金币，再来买吧！</div>'}</div>`;
@@ -1551,6 +1567,10 @@ function renderShop(){
   <div class="price"><span class="coin-ico"></span>${P.price}</div><button class="btn ${ok?'primary':''}" type="button" data-pot="${k}" ${ok?'':'disabled'}>${ok?'购买':'金币不够'}</button></div>`}).join('')}</div>
  <h3 class="shoph">云霄神兵</h3><div class="grid3">${CLOUD_GEAR.map(g=>{const lock=g.t2&&!t2,owned=S.inv.some(i=>i.ck===g.key),ok=S.coins>=g.price;return `<div class="card ${lock?'locked':''}">${itemIcon(g).replace('<svg','<svg class="picon"')}<span class="tag" style="background:${RAR[g.rar].c};color:${PAPER};border-radius:999px;padding:1px 10px;font-size:.85rem">${RAR[g.rar].n}${g.type==='w'?'武器':'盔甲'}</span><h3>${g.name}</h3><p style="margin:0">${g.type==='w'?'攻击':'生命'} +${g.val}</p>
   <div class="price"><span class="coin-ico"></span>${g.price}</div>${lock?'<button class="btn" type="button" disabled>打败墨魔王后上架</button>':owned?'<button class="btn" type="button" disabled>已拥有</button>':`<button class="btn ${ok?'primary':''}" type="button" data-gear="${g.key}" ${ok?'':'disabled'}>${ok?'购买':'金币不够'}</button>`}</div>`}).join('')}</div>`;
+ else if(shopTab==='sell'){const list=S.inv.slice().sort((a,b)=>a.rar-b.rar||a.val-b.val);const commons=list.filter(x=>x.rar===0&&S.eq[x.type]!==x.id);
+  body=`<p class="muted" style="margin:0 0 10px">不想要的武器和盔甲可以卖掉换金币。正在装备的不能卖。价格：普通 10 · 稀有 30 · 史诗 80 · 传说 200（云霄神兵按半价收）。</p>
+  ${commons.length?`<div class="row" style="margin-bottom:10px"><button class="btn gold" type="button" id="sellCommon">一键卖掉所有普通装备（${commons.length}件，+${commons.length*SELL[0]}金币）</button></div>`:''}
+  ${list.length?`<div class="inv">${list.map(it=>{const eq=S.eq[it.type]===it.id;return `<div class="item ${eq?'eq':''}">${itemIcon(it)}<span class="tag" style="background:${RAR[it.rar].c}">${RAR[it.rar].n}${it.type==='w'?'武器':'盔甲'}</span><span class="nm">${it.name}</span><span>${it.type==='w'?'攻击':'生命'} +${it.val}</span>${eq?'<button type="button" disabled>装备中</button>':`<button type="button" data-sell="${it.id}">卖 +${sellPrice(it)}金币</button>`}</div>`}).join('')}</div>`:'<div class="empty">背包是空的，没有可以卖的装备。</div>'}`}
  else body=`<div class="codebox"><h3>输入兑换码</h3><p class="muted" style="margin:0">老师会在课堂上给你兑换码。每个兑换码只能用一次。</p>
   <form id="codeForm" class="row"><input id="codeIn" type="text" autocomplete="off" maxlength="20" placeholder="例如：MOXIA100" aria-label="兑换码"><button class="btn primary" type="submit">兑换</button></form>
   <div class="codemsg" id="codeMsg">${codeMsg}</div></div>`;
@@ -1558,6 +1578,8 @@ function renderShop(){
  el.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{shopTab=b.dataset.st;codeMsg='';renderShop()});
  el.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const t=+b.dataset.buy;if(S.coins<CHESTS[t].price)return;S.coins-=CHESTS[t].price;S.chests.push(t);save();updateCoins(true);SFX.coin();openChest(S.chests.length-1)});
  el.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openChest(+b.dataset.open));
+ el.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>{const it=S.inv.find(x=>x.id===+b.dataset.sell);const v=sellItem(+b.dataset.sell);if(!v)return;save();updateCoins(true);SFX.coin();toast(`卖掉了 ${it.name}，得到 ${v} 金币`);renderShop()});
+ const sc2=$('#sellCommon');if(sc2)sc2.onclick=()=>{let t=0;S.inv.filter(x=>x.rar===0&&S.eq[x.type]!==x.id).map(x=>x.id).forEach(id=>t+=sellItem(id));save();updateCoins(true);SFX.coin();toast(`卖掉了普通装备，得到 ${t} 金币`);renderShop()};
  el.querySelectorAll('[data-pot]').forEach(b=>b.onclick=()=>{const k=b.dataset.pot,P=POTIONS[k];if(S.coins<P.price)return;S.coins-=P.price;S.potions[k]=(S.potions[k]||0)+1;save();updateCoins(true);SFX.coin();toast('买到了 '+P.name);renderShop()});
  el.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>{const g=CLOUD_GEAR.find(x=>x.key===b.dataset.gear);if(!g||S.coins<g.price)return;S.coins-=g.price;const it={id:S.nextId++,type:g.type,rar:g.rar,val:g.val,name:g.name,ck:g.key};S.inv.push(it);S.eq[g.type]=it.id;save();updateCoins(true);SFX.chest();toast('已装备 '+g.name);renderShop()});
  const f=$('#codeForm');if(f)f.onsubmit=ev=>{ev.preventDefault();const code=$('#codeIn').value.trim().toUpperCase().replace(/\s+/g,'');S.codes=S.codes||{};const C=CODES[code];
@@ -1568,7 +1590,7 @@ function renderShop(){
  const sc=el.scrollTop;show('shop');el.scrollTop=sc}
 
 function rollItem(tier){const w=CHESTS[tier].w;let r=Math.random()*100,rar=0;for(let i=0;i<4;i++){if(r<w[i]){rar=i;break}r-=w[i]}
- const type=Math.random()<.5?'w':'a';const[lo,hi]=RANGE[type][rar];return{id:S.nextId++,type,rar,val:ri(lo,hi),name:pick(NAMES[type][rar])}}
+ const type=CHESTS[tier].type||(Math.random()<.5?'w':'a');const[lo,hi]=RANGE[type][rar];return{id:S.nextId++,type,rar,val:ri(lo,hi),name:pick(NAMES[type][rar])}}
 
 let chestCtx=null;
 function closeModal(){$('#modal').hidden=true;$('#modal').innerHTML='';chestCtx=null;if(screen==='shop')renderShop()}
@@ -1579,7 +1601,7 @@ function openChest(idx){
   <div id="cBody"></div></div>`;
  m.hidden=false;$('#cClose').onclick=closeModal;
  chestCtx={idx,tier};askChest()}
-function askChest(){const ctx=chestCtx;if(!ctx)return;const topic=pick(['u1','u2','u3','u4']);const q=genQ(topic,ctx.tier+1);ctx.q=q;
+function askChest(){const ctx=chestCtx;if(!ctx)return;const topic=pick(['u1','u2','u3','u4']);const q=genQ(topic,(CHESTS[ctx.tier]||{d:2}).d);ctx.q=q;
  const body=$('#cBody');
  body.innerHTML=`<div class="qbox" style="margin-bottom:10px"><div class="qtext"><span class="qtag">开锁题 · ${TOPIC_NAME[topic]}</span><br>${q.text}</div>${q.fig?`<div class="qfig">${q.fig}</div>`:''}</div><div class="answer" id="cPad"></div>`;
  const p=makePad($('#cPad'),v=>{p.lock(true);if(Number(v)===q.ans)chestOpen();else chestWrong()});p.setUnit(q.unit);
@@ -1587,16 +1609,26 @@ function askChest(){const ctx=chestCtx;if(!ctx)return;const topic=pick(['u1','u2
 function chestWrong(){SFX.wrong();const q=chestCtx.q;const st=$('#cStage svg');st.classList.remove('shake');void st.getBoundingClientRect();st.classList.add('shake');
  $('#cBody').innerHTML=`<div class="feedback wrong" style="position:static"><span class="big">锁没打开</span><div class="exp"><b>正确答案：${N(q.ans)}${q.unit&&q.unit!=='位数'?' '+q.unit:''}</b><br>${q.explain}</div><button class="btn primary" type="button" id="cRetry">换一题再试</button></div>`;
  $('#cRetry').onclick=askChest;keyHandler=k=>{if(k==='Enter'){askChest();return true}return false}}
-function chestOpen(){const ctx=chestCtx;SFX.chest();S.chests.splice(ctx.idx,1);const it=rollItem(ctx.tier);S.inv.push(it);save();
- $('#cStage svg').classList.add('opened');$('#cClose').textContent='关闭';
+function chestOpen(){const ctx=chestCtx;SFX.chest();S.chests.splice(ctx.idx,1);const CH=CHESTS[ctx.tier]||CHESTS[0];S.potions=S.potions||{};
+ $('#cStage svg').classList.add('opened');$('#cClose').textContent='关闭';keyHandler=null;
+ let kind=CH.kind;if(kind==='mystery'){const r=Math.random();kind=r<.4?'item':r<.7?'coins':'potion'}
+ if(kind==='coins'){const n=ri(60,250);S.coins+=n;save();updateCoins(true);
+  $('#cBody').innerHTML=`<div class="loot"><div class="seal" style="font-size:1.4rem"><span class="coin-ico"></span><b>+${n}</b><small>金币</small></div><div class="nm" style="color:var(--gold)">金币大奖！</div><button class="btn primary" type="button" id="cKeep">收下</button></div>`;
+  $('#cKeep').onclick=closeModal;return}
+ if(kind==='potion'){const got={};for(let i=0;i<3;i++){const k=pick(Object.keys(POTIONS));got[k]=(got[k]||0)+1;S.potions[k]=(S.potions[k]||0)+1}save();
+  $('#cBody').innerHTML=`<div class="loot"><div class="row" style="justify-content:center">${Object.keys(got).map(k=>`<div style="text-align:center">${potionIcon(k)}<div><b>${POTIONS[k].name} ×${got[k]}</b></div></div>`).join('')}</div><div class="muted">药品可以在战斗中点一下使用。</div><button class="btn primary" type="button" id="cKeep">收下</button></div>`;
+  $('#cKeep').onclick=closeModal;return}
+ const it=rollItem(CH.kind==='mystery'?1:ctx.tier);if(CH.kind==='mystery'){const r=Math.random()*100;it.rar=r<10?0:r<50?1:r<85?2:3;const[lo,hi]=RANGE[it.type][it.rar];it.val=ri(lo,hi);it.name=pick(NAMES[it.type][it.rar])}
+ S.inv.push(it);save();
  const cur=it.type==='w'?S.inv.find(i=>i.id===S.eq.w):S.inv.find(i=>i.id===S.eq.a);
  const better=!cur||it.val>cur.val;
  $('#cBody').innerHTML=`<div class="loot">${itemIcon(it)}<span style="background:${RAR[it.rar].c};color:${PAPER};border-radius:999px;padding:1px 10px;font-size:.9rem">${RAR[it.rar].n}${it.type==='w'?'武器':'盔甲'}</span>
   <div class="nm" style="color:${RAR[it.rar].c}">${it.name}</div><div style="font-size:1.3rem;font-weight:700">${it.type==='w'?'攻击':'生命'} +${it.val}</div>
   <div class="muted">${cur?`现在装备的是 ${cur.name}（+${cur.val}）`:'你还没有装备这一类物品'}</div>
-  <div class="row" style="justify-content:center;margin-top:6px"><button class="btn ${better?'primary':''}" type="button" id="cEquip">立即装备</button><button class="btn" type="button" id="cKeep">放进背包</button></div></div>`;
+  <div class="row" style="justify-content:center;margin-top:6px"><button class="btn ${better?'primary':''}" type="button" id="cEquip">立即装备</button><button class="btn" type="button" id="cKeep">放进背包</button><button class="btn" type="button" id="cSell">卖掉 +${sellPrice(it)}金币</button></div></div>`;
  $('#cEquip').onclick=()=>{S.eq[it.type]=it.id;save();toast('已装备 '+it.name);closeModal()};
- $('#cKeep').onclick=closeModal;keyHandler=null}
+ $('#cSell').onclick=()=>{const v=sellItem(it.id);save();updateCoins(true);SFX.coin();toast(`卖掉了 ${it.name}，得到 ${v} 金币`);closeModal()};
+ $('#cKeep').onclick=closeModal}
 
 /* ============ GEAR ============ */
 let resetArmed=false;
@@ -1613,11 +1645,12 @@ function renderGear(){
  <div class="chars">${CHAR_ORDER.map(k=>{const C=CHARS[k],own=S.chars.includes(k),cur=S.cur===k;return `<div class="card charcard ${cur?'cur':''}">${ART[k]()}<h3>${C.name}</h3><p>生命 ${C.hp} · 攻击 ${C.atk} · 普攻「${HERO_ATK[k].name}」</p><p class="muted">技能：${SKILLS[k].map(x=>x.name).join('、')}</p>
   ${cur?'<button class="btn" type="button" disabled>使用中</button>':own?`<button class="btn primary" type="button" data-use="${k}">选择</button>`:`<button class="btn gold" type="button" data-hire="${k}" ${S.coins>=C.price?'':'disabled'}>招募 · ${C.price}金币</button>`}</div>`}).join('')}</div>
  <h3 style="font-size:1.5rem;margin-bottom:8px">背包（${S.inv.length}）</h3>
- ${inv.length?`<div class="inv">${inv.map(it=>{const eq=S.eq[it.type]===it.id;return `<div class="item ${eq?'eq':''}">${itemIcon(it)}<span class="tag" style="background:${RAR[it.rar].c}">${RAR[it.rar].n}${it.type==='w'?'武器':'盔甲'}</span><span class="nm">${it.name}</span><span>${it.type==='w'?'攻击':'生命'} +${it.val}</span>${eq?'<button type="button" disabled>已装备</button>':`<button type="button" data-eq="${it.id}">装备</button>`}</div>`}).join('')}</div>`:'<div class="empty">背包是空的。去宝箱铺开宝箱，就能得到武器和盔甲。</div>'}
+ ${inv.length?`<div class="inv">${inv.map(it=>{const eq=S.eq[it.type]===it.id;return `<div class="item ${eq?'eq':''}">${itemIcon(it)}<span class="tag" style="background:${RAR[it.rar].c}">${RAR[it.rar].n}${it.type==='w'?'武器':'盔甲'}</span><span class="nm">${it.name}</span><span>${it.type==='w'?'攻击':'生命'} +${it.val}</span>${eq?'<button type="button" disabled>已装备</button>':`<div class="row" style="gap:4px;justify-content:center"><button type="button" data-eq="${it.id}">装备</button><button type="button" data-gsell="${it.id}">卖 +${sellPrice(it)}</button></div>`}</div>`}).join('')}</div>`:'<div class="empty">背包是空的。去商店开宝箱，就能得到武器和盔甲。</div>'}
  <div class="danger"><span class="muted">金币和装备会一直保存在这台电脑的浏览器里。</span>${resetArmed?'<b style="color:var(--cinnabar)">确定要清除全部金币、角色和装备吗？</b><button class="solid" type="button" id="gResetYes">确定清除</button><button type="button" id="gResetNo">取消</button>':'<button type="button" id="gReset">清除存档</button>'}</div>`;
  $('#gBack').onclick=()=>{resetArmed=false;renderMap()};
  el.querySelectorAll('[data-use]').forEach(b=>b.onclick=()=>{S.cur=b.dataset.use;save();renderGear()});
  el.querySelectorAll('[data-hire]').forEach(b=>b.onclick=()=>{const k=b.dataset.hire;if(S.coins<CHARS[k].price)return;S.coins-=CHARS[k].price;S.chars.push(k);S.cur=k;save();updateCoins(true);SFX.chest();toast('招募成功：'+CHARS[k].name);renderGear()});
+ el.querySelectorAll('[data-gsell]').forEach(b=>b.onclick=()=>{const it=S.inv.find(x=>x.id===+b.dataset.gsell);const v=sellItem(+b.dataset.gsell);if(!v)return;save();updateCoins(true);SFX.coin();toast(`卖掉了 ${it.name}，得到 ${v} 金币`);renderGear()});
  el.querySelectorAll('[data-eq]').forEach(b=>b.onclick=()=>{const it=S.inv.find(i=>i.id===+b.dataset.eq);S.eq[it.type]=it.id;save();SFX.coin();renderGear()});
  if($('#gReset'))$('#gReset').onclick=()=>{resetArmed=true;renderGear()};
  if($('#gResetNo'))$('#gResetNo').onclick=()=>{resetArmed=false;renderGear()};
@@ -1625,7 +1658,7 @@ function renderGear(){
  const sc=el.scrollTop;show('gear');el.scrollTop=sc}
 
 /* ============ BOOT ============ */
-window.__moxia={genQ,toCN,BANK,ART,BG,updateHud,get B(){return B}};
+window.__moxia={genQ,toCN,BANK,ART,BG,updateHud,get B(){return B},get CC(){return chestCtx}};
 $('#soundBtn').textContent='音效：'+(S.sound?'开':'关');$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');
 updateCoins();renderHome();
 })();
