@@ -314,6 +314,7 @@ svg.art{display:block;overflow:visible}
 .modes>b{font-family:var(--f-display);font-size:1.4rem;align-self:center}
 .modebtn{flex:1 1 180px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:3px solid var(--ink);border-radius:12px;background:var(--card);padding:6px 14px;text-align:left;opacity:.75}
 .modebtn b{font-family:var(--f-display);font-size:1.4rem}
+.modebtn .modeprog{font-weight:700;color:var(--ink)}
 .modebtn span{font-size:.82rem;color:var(--ink-soft)}
 .modebtn.on{opacity:1;box-shadow:4px 4px 0 var(--ink)}
 .modebtn.m-easy.on{background:#d8eedf}.modebtn.m-hard.on{background:#f4d0c8}.modebtn.m-normal.on{background:#f3e3b8}
@@ -520,11 +521,13 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()
 const INK='#1d1b18',RED='#b5352b',GOLD='#d89b1d',PAPER='#f8f1e2',JADE='#2e6a58';
 
 /* ============ SAVE ============ */
-const SAVE_KEY='moxia-math-save-v1';
+const SAVE_KEY='moxia-math-save-v1',MODE_KEY='moxia-mode';
+let curMode=(()=>{try{return localStorage.getItem(MODE_KEY)||'normal'}catch(e){return 'normal'}})();
+function saveKey(m){m=m||curMode;return m==='normal'?SAVE_KEY:SAVE_KEY+'-'+m}
 const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0},seen:{},trophies:{},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{},potions:{},codes:{},t2open:false});
-function load(){try{const r=localStorage.getItem(SAVE_KEY);if(r){const o=JSON.parse(r);const d=defaultSave();return Object.assign(d,o,{prog:Object.assign(d.prog,o.prog||{}),eq:Object.assign(d.eq,o.eq||{}),stats:Object.assign(d.stats,o.stats||{})})}}catch(e){}return defaultSave()}
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
-let S=load();
+function load(){try{const r=localStorage.getItem(saveKey());if(r){const o=JSON.parse(r);const d=defaultSave();return Object.assign(d,o,{prog:Object.assign(d.prog,o.prog||{}),eq:Object.assign(d.eq,o.eq||{}),stats:Object.assign(d.stats,o.stats||{})})}}catch(e){}return defaultSave()}
+function save(){try{localStorage.setItem(saveKey(),JSON.stringify(S))}catch(e){}}
+let S=load();S.mode=curMode;
 
 /* ============ SOUND ============ */
 let AC=null;
@@ -2005,6 +2008,16 @@ function makePad(host,onSubmit){
 
 /* ============ HOME ============ */
 const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，一半机会闪避或格挡；你的生命攻击减半，防御只挡一半；奖励×3，还有特别奖励',ehp:2,eatk:2,php:.5,patk:.5,coin:3}};
+function modeInfo(m){try{const r=localStorage.getItem(saveKey(m));if(!r)return null;const o=JSON.parse(r);return {parts:Object.values(o.prog||{}).filter(v=>v>=5).length,coins:o.coins||0}}catch(e){return null}}
+function askModeSwitch(m){const md=MODES[m],cur=MODES[curMode],info=modeInfo(m);const box=$('#modal');
+ box.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="切换难度"><h3>切换到「${md.name}」模式？</h3>
+  <p style="font-size:1.1rem;line-height:1.6;margin:0">每个难度都有<b>自己的独立存档</b>。${info?`你在「${md.name}」模式已经完成 ${info.parts} 个部分，有 ${info.coins} 金币，切换后继续玩。`:`第一次进入「${md.name}」模式要<b style="color:var(--cinnabar)">从头开始</b>：关卡、金币、英雄、装备都重新开始（会送你 2000 金币）。`}</p>
+  <p class="muted" style="margin:0">你现在「${cur.name}」模式的进度会保存好，随时可以切换回来继续。</p>
+  <div class="row" style="justify-content:center"><button class="btn primary" type="button" id="msYes">确定切换</button><button class="btn" type="button" id="msNo">取消</button></div></div>`;
+ box.hidden=false;$('#msNo').onclick=()=>{box.hidden=true;box.innerHTML=''};
+ $('#msYes').onclick=()=>{save();const snd=S.sound,mus=S.music;curMode=m;try{localStorage.setItem(MODE_KEY,m)}catch(e){}
+  S=load();S.mode=m;S.sound=snd;S.music=mus;const fresh=!S.gift2000;if(fresh){S.gift2000=true;S.coins+=2000}save();
+  box.hidden=true;box.innerHTML='';updateCoins(true);SFX.chest();renderHome();toast(fresh?`进入「${md.name}」模式：从头开始，获得 2000 金币！`:`回到「${md.name}」模式的存档`)}}
 function monsterList(){const L=[];CHAPTERS.forEach(C=>{C.enemies.forEach(([n,a,o])=>L.push({key:n,name:n,art:a,opt:o,C,boss:false}));L.push({key:C.boss.name,name:C.boss.name,art:C.boss.art,opt:{},C,boss:true})});return L}
 function renderHome(){
  const el=$('#scr-home');const hs=heroStats(),parts=worldLv(),total=CHAPTERS.length,mons=monsterList();S.seen=S.seen||{};const seen=mons.filter(m=>S.seen[m.key]).length;
@@ -2017,7 +2030,7 @@ function renderHome(){
     <div class="hb-hero"><b>${CHARS[S.cur].name}</b>　攻击 ${hs.atk} · 生命 ${hs.hp}${hs.w?' · '+hs.w.name:''}${hs.a?' · '+hs.a.name:''}</div>
     <div class="row"><button class="btn primary big" type="button" id="hGo">继续冒险：${next.name} ${nextLv===5?'首领关':'第'+nextLv+'关'}</button><button class="btn" type="button" id="hHow">玩法说明</button></div></div>
   </section>
-  <section class="modes"><b>难度</b>${['easy','normal','hard'].map(m=>`<button type="button" class="modebtn m-${m} ${(S.mode||'normal')===m?'on':''}" data-mode="${m}"><b>${MODES[m].name}</b><span>${MODES[m].desc}</span></button>`).join('')}</section>
+  <section class="modes"><b>难度</b>${['easy','normal','hard'].map(m=>`<button type="button" class="modebtn m-${m} ${(S.mode||'normal')===m?'on':''}" data-mode="${m}"><b>${MODES[m].name}${(S.mode||'normal')===m?'（当前）':''}</b><span>${MODES[m].desc}</span><span class="modeprog">${(()=>{const i=(S.mode||'normal')===m?{parts:worldLv(),coins:S.coins}:modeInfo(m);return i?`独立存档 · 完成 ${i.parts}/${CHAPTERS.length} 部分 · ${i.coins} 金币`:'独立存档 · 还没开始（从头开始）'})()}</span></button>`).join('')}</section>
   <section class="stats6">
    <div class="stat"><b>${S.coins}</b><span>金币</span></div>
    <div class="stat"><b>${parts}/${total}</b><span>完成的部分</span></div>
@@ -2034,7 +2047,7 @@ function renderHome(){
   </section>
   <section><h3 class="shoph">英雄</h3><div class="lineup">${CHAR_ORDER.map(k=>`<figure class="${S.chars.includes(k)?'':'locked'}">${ART[k]()}<figcaption>${CHARS[k].name}</figcaption></figure>`).join('')}</div></section>
  </div>`;
- el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{S.mode=b.dataset.mode;save();SFX.coin();toast('难度：'+MODES[S.mode].name);renderHome()});
+ el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{if(b.dataset.mode!==curMode)askModeSwitch(b.dataset.mode)});
  $('#hGo').onclick=()=>startBattle(next.id,nextLv);$('#hStart').onclick=renderMap;$('#hShop').onclick=()=>{shopTab='chest';renderShop()};$('#hGear').onclick=renderGear;$('#hBook').onclick=renderBook;$('#hHow').onclick=showHowTo;
  show('home')}
 function showHowTo(){const m=$('#modal');m.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="玩法说明"><button class="closex" type="button" id="hwClose">关闭</button><h3>玩法说明</h3>
