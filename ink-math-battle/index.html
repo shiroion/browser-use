@@ -89,15 +89,24 @@ svg.art{display:block;overflow:visible}
 .banner .mission{font-family:var(--f-display);font-size:1.35rem;flex:1;min-width:0}
 .banner .retreat{background:transparent;border:1.5px solid var(--card);color:var(--card);border-radius:999px;padding:3px 12px;font-size:.9rem}
 .banner .retreat.armed{background:var(--cinnabar);border-color:var(--cinnabar)}
-.arena{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:8px;min-height:0;border-bottom:3px solid var(--ink);padding-bottom:4px;overflow:hidden}
-.arena .hills{position:absolute;inset:auto 0 0 0;height:70%;width:100%;pointer-events:none;opacity:.5}
+.arena{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:8px;min-height:0;border:2.5px solid var(--ink);border-radius:14px;padding:8px 10px;overflow:hidden;isolation:isolate}
+.bgscene{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}
+.fighter::before{content:"";position:absolute;left:50%;bottom:16%;width:90%;height:70%;transform:translateX(-50%);background:radial-gradient(ellipse at 50% 60%,rgba(248,241,226,.8),rgba(248,241,226,0) 68%);z-index:-1;pointer-events:none}
+.guardfx{position:absolute;top:18%;height:55%;width:auto;pointer-events:none;z-index:4;animation:guard .8s ease-out forwards}
+.enemy .guardfx{left:2%}
+.hero .guardfx{right:2%}
+@keyframes guard{0%{opacity:0;transform:scale(.6)}25%{opacity:1;transform:scale(1.1)}70%{opacity:1;transform:scale(1)}100%{opacity:0}}
+.scene{height:96px;border:2px solid var(--ink);border-radius:10px;overflow:hidden;position:relative;margin:-2px -2px 0}
+.scene .bgscene{z-index:0}
+.traits{display:flex;gap:6px;flex-wrap:wrap}
+.trait{font-size:.8rem;border:1.5px solid var(--ink);border-radius:999px;padding:1px 8px;background:var(--paper)}
 .fighter{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:0;height:100%;justify-content:flex-end;z-index:1}
 .fighter .art-wrap{flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:center;width:100%}
 .fighter svg.art{height:100%;max-height:min(34vh,330px);width:auto;max-width:100%}
 .fighter .art-wrap{animation:bob 2.6s ease-in-out infinite}
 .enemy .art-wrap{animation-delay:-1.3s}
 @keyframes bob{50%{transform:translateY(-5px)}}
-.hud{width:min(100%,320px);display:flex;flex-direction:column;gap:3px}
+.hud{width:min(100%,320px);display:flex;flex-direction:column;gap:3px;background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:5px 9px;box-sizing:border-box}
 .hud .nm{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-family:var(--f-display);font-size:1.35rem;font-weight:700}
 .hud .nm small{font-family:var(--f-body);font-size:.85rem;color:var(--ink-soft);font-weight:400}
 .bar{height:16px;border:2px solid var(--ink);border-radius:999px;background:var(--card);overflow:hidden;position:relative}
@@ -118,7 +127,8 @@ svg.art{display:block;overflow:visible}
 .buffs{font-size:.85rem;color:var(--cinnabar);font-weight:700;min-height:1.1em}
 .center{display:flex;flex-direction:column;align-items:center;gap:6px;align-self:center;z-index:1}
 .vs{font-family:var(--f-display);font-size:2.2rem;width:58px;height:58px;display:grid;place-items:center;background:var(--cinnabar);color:var(--card);border-radius:8px;transform:rotate(-5deg)}
-.combo{font-family:var(--f-display);font-size:1.4rem;color:var(--cinnabar);font-weight:700;min-height:1.6em;text-align:center}
+.combo{font-family:var(--f-display);font-size:1.4rem;color:var(--cinnabar);font-weight:700;min-height:1.6em;text-align:center;border-radius:999px;padding:0 10px}
+.combo:not(:empty){background:var(--card);border:2px solid var(--ink)}
 .combo.pop{animation:pop .4s}
 @keyframes pop{40%{transform:scale(1.5)}}
 .fighter.lunge-r .art-wrap{animation:lungeR .45s ease}
@@ -258,6 +268,11 @@ svg.art{display:block;overflow:visible}
       <feTurbulence type="turbulence" baseFrequency="0.06" numOctaves="2" seed="3" result="n"/>
       <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G"/>
     </filter>
+    <linearGradient id="g-palace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3e6c4"/><stop offset="1" stop-color="#e6d6ae"/></linearGradient>
+    <linearGradient id="g-valley" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dfe6d6"/><stop offset="1" stop-color="#eef0e2"/></linearGradient>
+    <linearGradient id="g-thunder" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a7090"/><stop offset="1" stop-color="#b3abbd"/></linearGradient>
+    <linearGradient id="g-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfdde0"/><stop offset="1" stop-color="#efe8d6"/></linearGradient>
+    <linearGradient id="g-demon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a2a24"/><stop offset="1" stop-color="#c0644a"/></linearGradient>
   </defs>
 </svg>
 
@@ -318,64 +333,86 @@ const SFX={
 const st=(w,c=INK)=>`fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
 const shadow=(cx=100,rx=62)=>`<ellipse cx="${cx}" cy="228" rx="${rx}" ry="6" fill="${INK}" opacity=".2"/>`;
 function spikes(cx,cy,r1,r2,n){const p=[];for(let i=0;i<n*2;i++){const a=Math.PI*i/n;const r=i%2?r2*(.85+((i*37)%10)/33):r1;p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1))}return p.join(' ')}
+function arcSpikes(cx,cy,r1,r2,a0,a1,n){const p=[];for(let i=0;i<=n;i++){const a=(a0+(a1-a0)*i/n)*Math.PI/180;const r=i%2?r2*(.85+((i*37)%10)/33):r1;p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1))}return p.join(' ')}
 const wrap=(inner,vb='0 0 200 240')=>`<svg class="art" viewBox="${vb}" aria-hidden="true"><g filter="url(#rough)">${inner}</g></svg>`;
 
 const ART={
-brush:()=>wrap(`${shadow(100,70)}
-<path d="M36 90 C58 102 74 100 88 101 C74 95 58 88 36 90Z" fill="${RED}"/>
-<path d="M93 156 L70 186 L76 221 L62 223" ${st(6)}/>
-<path d="M99 156 L131 180 L127 221 L141 223" ${st(6)}/>
-<path d="M90 106 Q95 132 97 158" ${st(11)}/>
-<circle cx="94" cy="94" r="14" fill="${INK}"/>
-<path d="M81 90 Q94 85 107 89" ${st(4,RED)}/>
-<line x1="40" y1="174" x2="166" y2="74" stroke="#5a3519" stroke-width="9" stroke-linecap="round"/>
-<line x1="43" y1="171" x2="163" y2="76" stroke="#a8692f" stroke-width="4" stroke-linecap="round"/>
-<line x1="157" y1="81" x2="170" y2="71" stroke="${GOLD}" stroke-width="12"/>
-<path d="M168 66 C182 56 192 48 199 40 C196 52 188 64 176 78 Z" fill="#f7f2e6" stroke="${INK}" stroke-width="2"/>
-<path d="M190 50 L199 40 L194 55 Z" fill="${INK}"/>
-<path d="M92 114 L83 126 L93 132" ${st(5)}/>
-<path d="M93 112 L108 121 L118 112" ${st(5)}/>
-<circle cx="180" cy="92" r="4.5" fill="${INK}"/><circle cx="192" cy="78" r="2.5" fill="${INK}"/><circle cx="162" cy="52" r="3" fill="${INK}"/>
-<path d="M146 40 Q170 28 194 34" ${st(3)} opacity=".5"/>
-<path d="M54 230 Q90 220 150 228" ${st(4)} opacity=".45"/>`),
+brush:()=>{const limb=d=>`<path d="${d}" ${st(11)}/><path d="${d}" ${st(6,PAPER)}/>`;
+return wrap(`<ellipse cx="96" cy="226" rx="78" ry="7" fill="${INK}" opacity=".22"/>
+<path d="M22 230 L70 228 M120 231 L178 229 M60 236 L140 235" ${st(3)} opacity=".45"/>
+<path d="M64 74 C96 60 128 54 156 52 C134 62 104 70 66 80 Z" fill="${INK}" opacity=".5"/>
+<polygon points="${spikes(186,60,12,30,9)}" fill="${INK}"/>
+<path d="M170 34 Q178 18 192 14 M196 92 Q206 104 200 118 M150 30 Q156 22 166 22" ${st(4)}/>
+<circle cx="200" cy="40" r="5" fill="${INK}"/><circle cx="160" cy="90" r="4" fill="${INK}"/><circle cx="172" cy="100" r="2.5" fill="${INK}"/><circle cx="140" cy="38" r="3" fill="${INK}"/><circle cx="206" cy="78" r="3" fill="${INK}"/><circle cx="128" cy="96" r="2" fill="${INK}"/>
+<line x1="12" y1="96" x2="160" y2="64" stroke="${INK}" stroke-width="11" stroke-linecap="round"/>
+<line x1="14" y1="95.5" x2="158" y2="64.5" stroke="#9a5a26" stroke-width="6" stroke-linecap="round"/>
+<line x1="34" y1="90" x2="150" y2="65" stroke="#d08f4f" stroke-width="1.6" opacity=".8"/>
+<polygon points="12,96 0,101 14,101" fill="${INK}"/>
+<path d="M155 57 L171 54 L174 71 L158 74 Z" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>
+<path d="M171 53 C186 49 199 53 204 63 C199 71 186 75 173 72 Z" fill="#f8f4ea" stroke="${INK}" stroke-width="2.5"/>
+<path d="M178 58 L198 61 M178 67 L197 66" ${st(1.2)} opacity=".5"/>
+<path d="M101 76 Q99 92 100 103" ${st(1.5)}/>
+${limb('M100 170 L72 196 L40 218')}
+${limb('M104 170 L136 180 L132 218')}
+<ellipse cx="38" cy="221" rx="9" ry="4" fill="${INK}"/><ellipse cx="136" cy="221" rx="9" ry="4" fill="${INK}"/>
+<path d="M98 126 L104 170" ${st(20)}/><path d="M98 126 L104 170" ${st(13,PAPER)}/>
+<path d="M95 152 L109 150" ${st(3)}/>
+${limb('M95 132 L82 108 L80 84')}
+${limb('M103 130 L118 104 L122 74')}
+<circle cx="80" cy="82" r="5" fill="${INK}"/><circle cx="122" cy="72" r="5" fill="${INK}"/>
+<circle cx="99" cy="114" r="12" fill="${INK}"/>`)},
 
-monk:()=>wrap(`${shadow(100,58)}
-<polygon points="${spikes(100,100,58,80,20)}" fill="${RED}" opacity=".14"/>
-<polygon points="${spikes(100,100,60,80,20)}" fill="none" stroke="${RED}" stroke-width="3" filter="url(#flame)"/>
-<circle cx="100" cy="100" r="60" fill="none" stroke="${RED}" stroke-width="2" stroke-dasharray="8 7"/>
-<path d="M96 168 L90 222 L80 224 M106 168 L114 222 L124 224" ${st(5)}/>
-<path d="M80 112 L120 112 L134 182 L68 182 Z" fill="${RED}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
-<path d="M84 130 L80 176 M92 130 L90 178 M110 130 L112 178 M118 130 L124 176" ${st(1.6)} opacity=".6"/>
-<path d="M94 108 L108 108 L106 170 L96 170 Z" fill="${INK}"/>
-<circle cx="101" cy="92" r="14" fill="${INK}"/>
-<path d="M118 116 L134 100 L132 80" ${st(6)}/>
-<circle cx="132" cy="74" r="9" fill="${RED}" stroke="${INK}" stroke-width="3"/>
-<path d="M84 116 L74 142 L82 160" ${st(6)}/>
-${[200,220,240,260,280,300,320,340].map(a=>{const r=a*Math.PI/180;return `<circle cx="${(101+20*Math.cos(r)).toFixed(1)}" cy="${(116-20*Math.sin(r)).toFixed(1)}" r="3.2" fill="${GOLD}" stroke="${INK}" stroke-width="1.2"/>`}).join('')}
-<path d="M150 40 Q160 30 156 18 M44 60 Q36 48 42 36 M160 150 Q172 144 170 132" ${st(3,RED)}/>`),
+monk:()=>{const cloud=(x,y,s)=>`<path d="M${x} ${y} q${3*s} ${-7*s} ${9*s} ${-4*s} q${5*s} ${-7*s} ${11*s} ${-1*s} q${6*s} ${-4*s} ${9*s} ${3*s}" ${st(2,RED)}/>`;
+const beads=[...Array(9)].map((_,i)=>{const t=i/8;const x=(1-t)*(1-t)*86+2*(1-t)*t*104+t*t*120;const y=(1-t)*(1-t)*150+2*(1-t)*t*190+t*t*150;return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${RED}" stroke="${INK}" stroke-width="1.2"/>`}).join('');
+const chev=[];for(let y=114;y<=196;y+=12)for(const x of [84,94,112,122])chev.push(`<path d="M${x-4} ${y+3} L${x} ${y-3} L${x+4} ${y+3}" ${st(2.2,RED)}/>`);
+return wrap(`<ellipse cx="104" cy="230" rx="56" ry="6" fill="${INK}" opacity=".2"/>
+<polyline points="${arcSpikes(110,78,54,72,150,390,26)}" fill="none" stroke="${RED}" stroke-width="3" filter="url(#flame)"/>
+<polyline points="${arcSpikes(110,78,50,62,160,380,22)}" fill="none" stroke="${RED}" stroke-width="2" opacity=".7"/>
+${cloud(20,60,1.4)}${cloud(150,30,1.2)}${cloud(16,140,1.1)}${cloud(158,150,1.3)}${cloud(40,200,1)}${cloud(150,206,1)}${cloud(176,96,1)}
+<path d="M30 234 L80 232 M112 235 L180 232" ${st(3,RED)} opacity=".55"/>
+<path d="M94 196 L88 226 M110 196 L116 226" ${st(4)}/>
+<path d="M78 222 L92 222 L94 231 L72 231 Z" fill="${INK}"/><path d="M112 222 L126 222 L134 231 L112 231 Z" fill="${INK}"/>
+<path d="M80 96 L124 96 L130 150 L136 200 L178 192 L150 210 L118 208 L104 198 L88 208 L66 204 L74 150 Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+${chev.join('')}
+<path d="M86 98 L78 204 M118 98 L126 204" ${st(3,RED)}/>
+<path d="M98 96 L106 96 L108 200 L100 200 Z" fill="${INK}"/>
+${beads}
+<path d="M90 70 Q72 92 70 140 M94 76 Q80 104 80 150" ${st(2.5)}/>
+<path d="M72 100 L80 84 L98 92 L92 106 L68 112 Z" fill="${RED}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+<path d="M132 100 L124 84 L106 92 L112 106 L136 112 Z" fill="${RED}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+<path d="M70 92 L64 84 L76 88 M134 92 L140 84 L128 88" ${st(2)}/>
+<circle cx="102" cy="74" r="15" fill="${INK}"/>
+<path d="M126 104 L140 90 L146 70" ${st(11)}/><path d="M126 104 L140 90 L146 70" ${st(5,RED)}/>
+<rect x="136" y="50" width="22" height="22" rx="6" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><path d="M141 56 L153 56 M141 62 L153 62" ${st(1.5)}/>
+<path d="M78 108 L68 132 L66 148" ${st(11)}/><path d="M78 108 L68 132 L66 148" ${st(5,RED)}/>
+<rect x="57" y="146" width="18" height="18" rx="5" fill="${RED}" stroke="${INK}" stroke-width="2.5"/>`)},
 
-hand:()=>{const hand=(x,y,r,s=1)=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><rect x="-11" y="-6" width="22" height="24" rx="7" fill="${GOLD}" stroke="#7a4a07" stroke-width="2"/>${[0,1,2,3].map(i=>`<rect x="${-11+i*5.7}" y="-24" width="5.2" height="${i===1||i===2?21:18}" rx="2.6" fill="${GOLD}" stroke="#7a4a07" stroke-width="1.6"/>`).join('')}<rect x="8" y="2" width="14" height="6" rx="3" fill="${GOLD}" stroke="#7a4a07" stroke-width="1.6" transform="rotate(-35 8 2)"/></g>`;
-const spark=(x,y,s)=>`<path d="M${x-s} ${y} L${x+s} ${y} M${x} ${y-s} L${x} ${y+s}" ${st(2.5,GOLD)}/>`;
-return wrap(`${shadow(100,56)}
-${spark(30,30,8)}${spark(176,96,7)}${spark(24,110,6)}${spark(170,190,8)}${spark(100,22,6)}
-${hand(48,58,-30,1.15)}${hand(156,52,30,1.15)}${hand(34,140,-75)}${hand(168,138,80)}${hand(150,200,120,.9)}
-<path d="M92 108 L110 108 L130 212 L106 198 L98 214 L70 206 Z" fill="${PAPER}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
-<path d="M97 106 L105 106 L105 162 L97 162 Z" fill="${INK}"/>
-<path d="M99 160 L92 222 L82 224 M104 160 L112 222 L122 224" ${st(6)}/>
-<path d="M96 114 L82 132 L92 140 M106 114 L120 126 L112 138" ${st(5)}/>
-<circle cx="101" cy="92" r="13" fill="${INK}"/>
-<path d="M92 84 L84 70 L97 80 M107 80 L118 68 L111 85" ${st(3)}/>`)},
+hand:()=>{const G='#f2b62e',GD='#c4660a';
+const open=(x,y,r,s)=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><path d="M-13 -2 Q-14 18 0 20 Q14 18 13 -2 Z" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-13,-6.5,0,6.5].map((fx,i)=>`<rect x="${fx}" y="${-26+(i===0||i===3?5:0)}" width="6.2" height="${i===0||i===3?22:26}" rx="3.1" fill="${G}" stroke="${INK}" stroke-width="1.8"/>`).join('')}<rect x="9" y="2" width="16" height="7" rx="3.5" fill="${G}" stroke="${INK}" stroke-width="1.8" transform="rotate(-40 9 2)"/><path d="M-8 6 Q0 12 8 6" ${st(1.5,GD)}/></g>`;
+const fist=(x,y,r,s)=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><rect x="-6" y="12" width="12" height="12" fill="${G}" stroke="${INK}" stroke-width="1.8"/><rect x="-14" y="-12" width="28" height="26" rx="9" fill="${G}" stroke="${INK}" stroke-width="2"/>${[-9,-3,3,9].map(fx=>`<circle cx="${fx}" cy="-12" r="3.6" fill="${G}" stroke="${INK}" stroke-width="1.6"/>`).join('')}<path d="M-12 0 Q-2 6 8 2" ${st(2,GD)}/></g>`;
+const spark=(x,y,s)=>`<path d="M${x-s} ${y} L${x+s} ${y} M${x} ${y-s} L${x} ${y+s}" ${st(2.5,G)}/>`;
+return wrap(`<ellipse cx="100" cy="230" rx="52" ry="6" fill="${INK}" opacity=".2"/>
+${spark(18,40,10)}${spark(184,96,9)}${spark(12,170,8)}${spark(188,210,10)}${spark(100,16,8)}${spark(64,108,6)}${spark(140,104,6)}${spark(36,96,5)}
+${open(46,56,-30,1.35)}${open(156,54,32,1.35)}${fist(24,132,-80,1.15)}${open(178,128,80,1.2)}${fist(44,202,-140,1.05)}${open(160,200,140,1.1)}
+<path d="M94 104 L108 104 L118 150 L138 224 L114 212 L100 226 L86 214 L66 224 L86 150 Z" fill="${PAPER}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M96 100 L106 100 L104 162 L98 162 Z" fill="${INK}"/>
+<path d="M99 160 L94 226 M103 160 L112 192 L106 226" ${st(4.5)}/>
+<path d="M97 108 L88 126 L92 142 M105 108 L114 122 L110 138" ${st(4)}/>
+<circle cx="101" cy="88" r="12" fill="${INK}"/>
+<path d="M93 80 L89 66 L98 78 Z M108 78 L114 66 L111 81 Z" fill="${INK}"/>`)},
 
-reaper:()=>wrap(`${shadow(100,60)}
-<line x1="74" y1="226" x2="98" y2="24" stroke="#5b4a36" stroke-width="6" stroke-linecap="round"/>
-<path d="M96 24 C132 6 182 16 198 52 C172 34 132 30 98 40 Z" fill="#dcd7cb" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
-<path d="M104 30 C140 20 176 28 192 46" ${st(1.5)} opacity=".5"/>
-<path d="M100 70 C80 70 76 92 78 110 C70 150 60 190 48 224 C70 214 80 222 96 214 C110 224 124 214 140 222 C132 180 126 140 122 108 C124 88 118 70 100 70Z" fill="#27302a" stroke="${INK}" stroke-width="2"/>
-<path d="M60 200 L52 216 M76 196 L72 214 M128 196 L134 214 M114 200 L116 216" ${st(2)}/>
-<ellipse cx="103" cy="92" rx="10" ry="12" fill="#0b0b0b"/>
-<circle cx="107" cy="90" r="1.8" fill="#9fe0c0"/><circle cx="100" cy="90" r="1.5" fill="#9fe0c0"/>
-<path d="M116 124 L88 132" ${st(7)}/>
-<path d="M30 150 Q20 140 28 128 M170 110 Q182 100 174 88" ${st(3,'#27302a')} opacity=".6"/>`),
+reaper:()=>wrap(`<ellipse cx="100" cy="232" rx="54" ry="6" fill="${INK}" opacity=".18"/>
+<line x1="150" y1="230" x2="68" y2="16" stroke="#3a2d20" stroke-width="6" stroke-linecap="round"/>
+<path d="M68 18 C110 -4 172 4 200 46 C172 24 116 22 72 32 Z" fill="#e2ddd1" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M80 22 C120 10 168 18 190 38" ${st(1.4)} opacity=".45"/>
+<path d="M64 14 L58 8 M66 22 L58 26" ${st(3)}/>
+<path d="M100 60 C78 60 70 84 74 106 C64 148 56 184 40 222 L52 214 L58 228 L70 212 L80 232 L92 214 L102 234 L112 214 L124 230 L130 210 L144 222 C134 180 128 140 124 106 C128 82 120 60 100 60 Z" fill="#1f2a24" stroke="${INK}" stroke-width="2"/>
+<path d="M86 110 C80 150 74 180 64 214 M100 112 C98 150 96 190 92 214 M114 110 C116 150 120 180 124 214" ${st(2,'#3b5145')}/>
+<ellipse cx="101" cy="86" rx="12" ry="15" fill="#070807"/>
+<circle cx="105" cy="84" r="1.8" fill="#9fe0c0"/><circle cx="97" cy="84" r="1.6" fill="#9fe0c0"/>
+<path d="M124 108 C116 110 110 116 108 122" ${st(11,'#1f2a24')}/>
+<path d="M104 120 L116 114 M105 125 L117 119 M107 130 L117 125" ${st(2.5,'#e8e2d4')}/>
+<path d="M40 190 Q24 182 28 168 M150 196 Q170 186 164 170 M30 222 Q20 214 24 204" ${st(3,'#1f2a24')} opacity=".5"/>`),
 
 /* enemies (face left) */
 blob:(o={})=>wrap(`${shadow(100,64)}
@@ -410,6 +447,116 @@ assassin:(o={})=>wrap(`${shadow(100,60)}
 <path d="M60 117 L62 113 M100 123 L102 119 M140 129 L142 125" ${st(3,INK)}/>
 <polygon points="22,114 2,108 18,122" fill="#cfd3d6" stroke="${INK}" stroke-width="2.5"/>
 <path d="M104 112 L84 120 M104 116 L120 130" ${st(5)}/>`),
+
+ghost:(o={})=>{const c=o.c||'#f6f3ec';return wrap(`<ellipse cx="100" cy="230" rx="40" ry="5" fill="${INK}" opacity=".14"/>
+<path d="M58 196 C48 140 58 66 100 60 C142 66 152 140 142 196 L132 186 L122 204 L110 188 L100 206 L90 188 L78 204 L68 186 Z" fill="${c}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+<path d="M62 128 Q40 116 26 132 M140 126 Q158 118 166 134" ${st(3)}/>
+<ellipse cx="82" cy="110" rx="9" ry="13" fill="${INK}"/><ellipse cx="112" cy="110" rx="8" ry="12" fill="${INK}"/>
+<circle cx="80" cy="106" r="2.5" fill="${PAPER}"/><circle cx="110" cy="106" r="2.2" fill="${PAPER}"/>
+<ellipse cx="94" cy="146" rx="10" ry="14" fill="${INK}"/>
+<path d="M70 80 Q80 70 92 74" ${st(2)} opacity=".4"/>`)},
+
+bat:(o={})=>{const c=o.c||INK;const wing=`<path d="M100 118 C82 80 44 66 8 84 C24 92 28 106 22 122 C38 112 50 118 56 134 C66 122 84 124 100 140 Z" fill="${c}"/><path d="M22 122 L46 96 M56 134 L70 100" ${st(1.5,PAPER)} opacity=".35"/>`;
+return wrap(`<ellipse cx="100" cy="230" rx="34" ry="5" fill="${INK}" opacity=".14"/>
+${wing}<g transform="translate(200 0) scale(-1 1)">${wing}</g>
+<ellipse cx="100" cy="134" rx="21" ry="30" fill="${c}"/>
+<path d="M84 112 L82 86 L96 106 Z M116 112 L118 86 L104 106 Z" fill="${c}"/>
+<circle cx="91" cy="126" r="4.5" fill="${RED}"/><circle cx="109" cy="126" r="4.5" fill="${RED}"/>
+<path d="M93 142 L95 152 L97 142 Z M103 142 L105 152 L107 142 Z" fill="${PAPER}"/>
+<path d="M92 162 L88 172 M108 162 L112 172" ${st(3,c)}/>`)},
+
+mushroom:(o={})=>wrap(`${shadow(100,56)}
+<path d="M78 132 L122 132 L132 210 Q100 222 68 210 Z" fill="#efe6cf" stroke="${INK}" stroke-width="3"/>
+<path d="M28 138 C28 66 172 66 172 138 Q100 124 28 138 Z" fill="${o.c||RED}" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
+<circle cx="64" cy="104" r="10" fill="${PAPER}"/><circle cx="104" cy="88" r="12" fill="${PAPER}"/><circle cx="140" cy="108" r="8" fill="${PAPER}"/><circle cx="90" cy="120" r="5" fill="${PAPER}"/>
+<circle cx="88" cy="162" r="6" fill="${INK}"/><circle cx="112" cy="162" r="5" fill="${INK}"/>
+<path d="M78 150 L94 156 M122 150 L106 156" ${st(3)}/>
+<path d="M88 184 Q100 176 112 184" ${st(3)}/>
+<path d="M84 214 L78 226 M116 214 L122 226" ${st(6)}/>
+<path d="M40 140 q-3 8 0 12 q4 -4 0 -12Z M160 140 q-3 8 0 12 q4 -4 0 -12Z" fill="#6a8a2a" stroke="${INK}" stroke-width="1"/>`),
+
+skeleton:(o={})=>{const BN='#f2ece0';const bone=d=>`<path d="${d}" ${st(8)}/><path d="${d}" ${st(4,BN)}/>`;
+return wrap(`${shadow(100,58)}
+<line x1="60" y1="118" x2="14" y2="94" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><line x1="60" y1="118" x2="14" y2="94" stroke="#a7acb0" stroke-width="4" stroke-linecap="round"/>
+<path d="M56 108 L66 128" ${st(5,'#6b4a2a')}/>
+${bone('M94 172 L88 222')}${bone('M110 172 L116 222')}
+<path d="M84 222 L96 222 M112 222 L124 222" ${st(6)}/>
+${bone('M102 92 L102 170')}
+${[104,118,132,146].map((y,i)=>bone(`M102 ${y} Q${82+i*2} ${y+2} ${84+i*2} ${y+12}`)+bone(`M102 ${y} Q${122-i*2} ${y+2} ${120-i*2} ${y+12}`)).join('')}
+<path d="M88 168 Q102 160 116 168 L112 178 L92 178 Z" fill="${BN}" stroke="${INK}" stroke-width="2.5"/>
+${bone('M92 102 L72 120 L60 118')}
+${bone('M112 102 L126 126')}
+<circle cx="130" cy="132" r="22" fill="${o.c||'#7a5a3a'}" stroke="${INK}" stroke-width="3"/><circle cx="130" cy="132" r="6" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>
+<path d="M80 60 C80 34 124 34 124 60 C124 74 118 80 114 82 L114 92 L90 92 L90 82 C84 80 80 74 80 60Z" fill="${BN}" stroke="${INK}" stroke-width="3"/>
+<circle cx="92" cy="62" r="7" fill="${INK}"/><circle cx="112" cy="62" r="6" fill="${INK}"/>
+${o.eye?`<circle cx="92" cy="62" r="2.5" fill="${o.eye}"/><circle cx="112" cy="62" r="2.2" fill="${o.eye}"/>`:''}
+<path d="M96 74 L102 70 L104 76 Z" fill="${INK}"/>
+<path d="M94 84 L94 92 M100 84 L100 92 M106 84 L106 92" ${st(1.5)}/>`)},
+
+wolf:(o={})=>{const c=o.c||INK;return wrap(`${shadow(104,70)}
+<path d="M160 128 C186 118 198 94 190 76 C182 100 172 112 156 118 Z" fill="${c}"/>
+<path d="M58 132 C78 112 140 110 162 126 C176 136 178 158 168 168 L162 168 L164 222 L150 222 L146 176 L100 178 L96 222 L82 222 L80 172 C70 166 58 152 58 132Z" fill="${c}"/>
+<path d="M70 150 L66 222 L54 222" ${st(9,c)}/>
+<path d="M72 118 L86 104 L92 116 L104 104 L110 116 L122 104 L128 116 L140 108 L144 120 Z" fill="${c}" stroke="${c}" stroke-width="2"/>
+<path d="M72 126 L36 130 L18 144 L42 152 L66 150 L84 132 Z" fill="${c}"/>
+<path d="M60 120 L64 94 L78 124 Z M72 118 L80 96 L88 122 Z" fill="${c}"/>
+<path d="M44 134 L56 132 L52 139 Z" fill="${RED}"/>
+<path d="M22 144 L26 150 L30 144 L34 150 L38 144" ${st(2,PAPER)}/>`)},
+
+snake:(o={})=>{const G=o.c||'#4f7a3a';return wrap(`${shadow(110,66)}
+<ellipse cx="110" cy="206" rx="58" ry="17" fill="${G}" stroke="${INK}" stroke-width="3"/>
+<ellipse cx="112" cy="190" rx="46" ry="14" fill="${G}" stroke="${INK}" stroke-width="3"/>
+<ellipse cx="114" cy="176" rx="34" ry="11" fill="${G}" stroke="${INK}" stroke-width="3"/>
+<ellipse cx="110" cy="206" rx="46" ry="10" fill="none" stroke="${INK}" stroke-width="3" stroke-dasharray="6 10" opacity=".55"/>
+<path d="M124 176 C134 140 112 108 82 100" ${st(26)}/><path d="M124 176 C134 140 112 108 82 100" ${st(19,G)}/>
+<path d="M120 160 C126 136 110 116 90 108" ${st(5,'#c9d88a')} opacity=".7"/>
+<path d="M88 90 C72 80 44 86 34 100 C44 112 70 114 90 108 Z" fill="${G}" stroke="${INK}" stroke-width="3"/>
+<ellipse cx="62" cy="96" rx="5" ry="4" fill="${GOLD}" stroke="${INK}" stroke-width="1.5"/><path d="M62 92 L62 100" ${st(1.8)}/>
+<path d="M34 102 L18 104 L10 98 M18 104 L10 110" ${st(2,RED)}/>`)},
+
+crow:(o={})=>{const c=o.c||INK;return wrap(`${shadow(104,58)}
+<path d="M48 118 C58 88 110 78 140 108 C160 128 170 168 150 188 L178 210 L140 200 L120 206 C90 200 64 168 58 138 Z" fill="${c}"/>
+<path d="M108 108 C128 66 170 46 198 56 C182 66 188 76 172 80 C184 88 178 96 162 98 C170 106 158 114 140 116 Z" fill="${c}"/>
+<path d="M130 92 L176 64 M138 102 L180 82" ${st(1.4,PAPER)} opacity=".3"/>
+<circle cx="64" cy="114" r="22" fill="${c}"/>
+<path d="M46 108 L12 118 L46 126 Z" fill="#d9a521" stroke="${INK}" stroke-width="2"/>
+<circle cx="58" cy="106" r="4.5" fill="${RED}"/>
+<path d="M104 200 L100 224 L88 226 M120 200 L122 224 L134 226" ${st(4,'#d9a521')}/>`)},
+
+treant:(o={})=>{const W='#6b4a2a',L=o.c||'#4f7a3a';const branch=d=>`<path d="${d}" ${st(11)}/><path d="${d}" ${st(6,W)}/>`;const leaf=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${L}" stroke="${INK}" stroke-width="2"/>`;
+return wrap(`${shadow(100,66)}
+${branch('M66 112 C42 102 26 82 22 60 M34 88 L14 88')}${branch('M134 108 C152 96 166 80 172 60')}
+${leaf(22,56,14)}${leaf(12,84,10)}${leaf(172,54,14)}${leaf(186,70,9)}
+<path d="M70 224 C76 180 70 120 64 80 C90 70 120 70 138 80 C130 120 126 180 132 224 L118 214 L108 228 L96 214 L84 228 Z" fill="${W}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+<path d="M78 96 Q84 140 80 200 M122 100 Q116 150 124 206 M100 176 Q104 196 100 214" ${st(2)} opacity=".5"/>
+${leaf(70,70,18)}${leaf(100,56,22)}${leaf(132,68,18)}${leaf(86,48,14)}${leaf(118,46,14)}
+<ellipse cx="88" cy="120" rx="7" ry="5" fill="${GOLD}" stroke="${INK}" stroke-width="2"/><ellipse cx="114" cy="120" rx="6" ry="5" fill="${GOLD}" stroke="${INK}" stroke-width="2"/>
+<path d="M84 146 L92 140 L100 148 L108 140 L116 146 L110 160 L90 160 Z" fill="${INK}"/>`)},
+
+crab:(o={})=>{const c=o.c||RED;return wrap(`${shadow(104,70)}
+${[0,1,2].map(i=>`<path d="M${70+i*8} 176 L${50+i*6} 200 L${44+i*6} 224" ${st(5)}/><path d="M${132-i*8} 176 L${152-i*6} 200 L${158-i*6} 224" ${st(5)}/>`).join('')}
+<path d="M66 156 L40 130" ${st(10)}/><path d="M66 156 L40 130" ${st(5,c)}/>
+<path d="M40 132 C12 124 6 92 26 82 L36 104 L46 90 C56 104 54 124 40 132Z" fill="${c}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+<path d="M142 156 L162 140" ${st(9)}/><path d="M142 156 L162 140" ${st(4,c)}/>
+<path d="M162 142 C180 138 186 116 174 108 L168 122 L160 114 C154 124 154 136 162 142Z" fill="${c}" stroke="${INK}" stroke-width="3"/>
+<ellipse cx="104" cy="162" rx="56" ry="32" fill="${c}" stroke="${INK}" stroke-width="3.5"/>
+<path d="M74 152 Q104 138 134 152" ${st(2)} opacity=".4"/>
+<path d="M90 134 L86 108 M116 134 L118 108" ${st(4)}/>
+<circle cx="86" cy="104" r="8" fill="${PAPER}" stroke="${INK}" stroke-width="2.5"/><circle cx="118" cy="104" r="7" fill="${PAPER}" stroke="${INK}" stroke-width="2.5"/>
+<circle cx="83" cy="105" r="3.5" fill="${INK}"/><circle cx="115" cy="105" r="3" fill="${INK}"/>
+<path d="M92 174 Q104 168 116 174" ${st(3)}/>
+<circle cx="70" cy="120" r="4" ${st(1.5)}/><circle cx="62" cy="108" r="3" ${st(1.5)}/>`)},
+
+scorpion:(o={})=>{const c=o.c||'#9a6a32';return wrap(`${shadow(104,72)}
+${[0,1,2,3].map(i=>`<path d="M${84+i*12} 196 L${74+i*12} 212 L${68+i*12} 226" ${st(4)}/>`).join('')}
+<path d="M140 190 C182 172 184 110 162 84 C150 68 128 64 116 76" ${st(22)}/><path d="M140 190 C182 172 184 110 162 84 C150 68 128 64 116 76" ${st(15,c)} stroke-dasharray="14 3"/>
+<path d="M118 70 L94 82 L114 88 Z" fill="${RED}" stroke="${INK}" stroke-width="2.5"/>
+<ellipse cx="104" cy="190" rx="46" ry="19" fill="${c}" stroke="${INK}" stroke-width="3"/>
+<path d="M80 186 L80 196 M96 182 L96 200 M112 182 L112 200 M128 186 L128 196" ${st(2)} opacity=".5"/>
+<path d="M64 184 L40 170" ${st(8)}/><path d="M66 196 L44 208" ${st(8)}/>
+<path d="M40 172 C22 172 14 156 24 148 L30 160 L36 152 C44 158 46 168 40 172Z" fill="${c}" stroke="${INK}" stroke-width="2.5"/>
+<path d="M44 206 C26 212 16 200 22 190 L30 200 L34 190 C44 192 48 202 44 206Z" fill="${c}" stroke="${INK}" stroke-width="2.5"/>
+<circle cx="66" cy="184" r="3" fill="${RED}"/><circle cx="72" cy="180" r="2.5" fill="${RED}"/>`)},
 
 golem:()=>wrap(`${shadow(100,76)}
 <rect x="66" y="168" width="28" height="54" rx="6" fill="#8b8478" stroke="${INK}" stroke-width="3.5"/>
@@ -482,7 +629,76 @@ function itemIcon(it){const c=RAR[it.rar].c;
  return it.type==='w'
  ?`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 36 L34 12 L42 6 L37 15 L15 39 Z" fill="${c}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/><path d="M8 30 L18 40" stroke="${INK}" stroke-width="4" stroke-linecap="round"/><path d="M12 38 L6 44" stroke="#6b4a2a" stroke-width="5" stroke-linecap="round"/></svg>`
  :`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 L41 11 Q41 32 24 43 Q7 32 7 11 Z" fill="${c}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/><path d="M24 11 L24 37 M13 18 L35 18" stroke="${PAPER}" stroke-width="2.5" opacity=".7"/></svg>`}
-const hills=`<svg class="hills" viewBox="0 0 800 200" preserveAspectRatio="none" aria-hidden="true"><path d="M0 200 L0 120 Q80 60 160 110 Q230 40 320 100 Q400 50 470 105 Q560 30 650 95 Q720 60 800 100 L800 200Z" fill="#cbbd9d" opacity=".55"/><path d="M0 200 L0 160 Q120 110 240 150 Q360 120 470 155 Q600 115 800 150 L800 200Z" fill="#b5a682" opacity=".5"/></svg>`;
+const BGV='0 0 1200 400';
+const bgWrap=inner=>`<svg class="bgscene" viewBox="${BGV}" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${inner}</svg>`;
+function waves(y,amp,len,col,op=1){let d=`M0 ${y}`;for(let x=0;x<1200;x+=len)d+=` q${len/4} ${-amp} ${len/2} 0 t${len/2} 0`;return `<path d="${d} L1200 400 L0 400Z" fill="${col}" opacity="${op}"/>`}
+function pagoda(x,b,s,col='#2e2924'){let g='',y=b;const w=[62,50,38];for(let i=0;i<3;i++){const ww=w[i]*s,h=24*s;g+=`<rect x="${x-ww*.32}" y="${y-h}" width="${ww*.64}" height="${h}" fill="${col}" opacity=".85"/>`;y-=h;g+=`<path d="M${x-ww*.78} ${y-2*s} Q${x-ww*.35} ${y+2*s} ${x} ${y-14*s} Q${x+ww*.35} ${y+2*s} ${x+ww*.78} ${y-2*s} L${x+ww*.6} ${y+5*s} L${x-ww*.6} ${y+5*s}Z" fill="${col}"/>`;y-=10*s}return g+`<line x1="${x}" y1="${y}" x2="${x}" y2="${y-24*s}" stroke="${col}" stroke-width="${3*s}"/>`}
+function pine(x,y,s,col=INK){return `<path d="M${x} ${y-60*s} L${x-14*s} ${y-30*s} L${x-6*s} ${y-30*s} L${x-20*s} ${y-6*s} L${x+20*s} ${y-6*s} L${x+6*s} ${y-30*s} L${x+14*s} ${y-30*s}Z M${x-2*s} ${y-6*s} L${x+2*s} ${y-6*s} L${x+2*s} ${y} L${x-2*s} ${y}Z" fill="${col}"/>`}
+const inkCloud=(x,y,s,c=INK,o=.35)=>`<path d="M${x} ${y} q${10*s} ${-16*s} ${26*s} ${-8*s} q${12*s} ${-16*s} ${30*s} ${-4*s} q${16*s} ${-6*s} ${22*s} ${8*s} q${-30*s} ${6*s} ${-78*s} ${4*s}Z" fill="none" stroke="${c}" stroke-width="${2*s}" opacity="${o}"/>`;
+const BG={
+palace:()=>{let m='';for(let x=0;x<1200;x+=40)m+=`<rect x="${x}" y="250" width="24" height="14" fill="#9b8c74"/>`;
+ return bgWrap(`<rect width="1200" height="400" fill="url(#g-palace)"/>
+ <circle cx="980" cy="92" r="52" fill="${GOLD}" opacity=".35"/>${inkCloud(140,90,1.6)}${inkCloud(760,70,1.3)}${inkCloud(420,120,1)}
+ <path d="M0 250 Q150 200 300 232 Q460 180 640 226 Q820 186 1000 222 Q1100 206 1200 232 L1200 400 L0 400Z" fill="#cdbf9e" opacity=".6"/>
+ ${pagoda(150,264,1.4)}${pagoda(1050,264,1.6)}${pagoda(600,252,1)}
+ ${m}<rect x="0" y="262" width="1200" height="72" fill="#9b8c74"/>
+ <path d="M0 284 H1200 M0 306 H1200" stroke="#7f715c" stroke-width="2"/>
+ <path d="M556 334 L556 296 Q600 262 644 296 L644 334Z" fill="#3a332b"/>
+ <line x1="400" y1="334" x2="400" y2="196" stroke="${INK}" stroke-width="4"/><rect x="402" y="198" width="38" height="62" fill="${RED}"/><text x="421" y="240" font-size="30" text-anchor="middle" fill="${PAPER}" font-family="STKaiti,KaiTi,serif" font-weight="700">万</text>
+ <line x1="800" y1="334" x2="800" y2="196" stroke="${INK}" stroke-width="4"/><rect x="760" y="198" width="38" height="62" fill="${RED}"/><text x="779" y="240" font-size="30" text-anchor="middle" fill="${PAPER}" font-family="STKaiti,KaiTi,serif" font-weight="700">亿</text>
+ <rect x="0" y="334" width="1200" height="66" fill="#dccfae"/>
+ <path d="M0 354 H1200 M0 378 H1200" stroke="#bfae88" stroke-width="2"/>
+ ${[...Array(15)].map((_,i)=>`<path d="M${i*80+(i%2?40:0)} 334 v20 M${i*80+20} 354 v24" stroke="#bfae88" stroke-width="2"/>`).join('')}`)},
+valley:()=>{let ticks='';for(let a=0;a<=180;a+=10){const r1=a%30?82:72;const [x1,y1]=pt(930,262,r1,a),[x2,y2]=pt(930,262,90,a);ticks+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#b0803a" stroke-width="2"/>`}
+ return bgWrap(`<rect width="1200" height="400" fill="url(#g-valley)"/>
+ <path d="M840 262 A90 90 0 0 1 1020 262 Z" fill="#f1d9a0" opacity=".85"/>${ticks}
+ <polygon points="0,262 90,150 170,230 260,118 360,240 450,140 560,250 650,160 760,240 860,128 980,250 1080,150 1200,240 1200,400 0,400" fill="#b3bca7" opacity=".85"/>
+ <ellipse cx="300" cy="250" rx="260" ry="18" fill="#fff" opacity=".35"/><ellipse cx="900" cy="268" rx="300" ry="16" fill="#fff" opacity=".35"/>
+ <polygon points="0,304 120,192 220,292 330,206 440,302 560,182 700,302 820,212 940,302 1060,192 1200,302 1200,400 0,400" fill="#7f8f79"/>
+ <path d="M120 192 L150 220 M560 182 L590 214 M1060 192 L1086 220" stroke="${PAPER}" stroke-width="3" opacity=".6"/>
+ ${pine(60,330,1.1)}${pine(96,336,.8)}${pine(1110,330,1.2)}${pine(1150,338,.8)}${pine(640,322,.7,'#3d4a3c')}
+ <path d="M300 92 q8 -8 16 0 q8 -8 16 0 M360 70 q6 -6 12 0 q6 -6 12 0 M260 60 q5 -5 10 0 q5 -5 10 0" fill="none" stroke="${INK}" stroke-width="2.5"/>
+ <path d="M0 330 Q300 316 600 330 Q900 344 1200 326 L1200 400 L0 400Z" fill="#cfcca9"/>
+ ${[...Array(24)].map((_,i)=>`<path d="M${i*52+10} 360 l4 -12 M${i*52+18} 362 l-3 -10" stroke="#7f8f79" stroke-width="2"/>`).join('')}`)},
+thunder:()=>{let rain='';for(let i=0;i<70;i++){const x=(i*173)%1200,y=(i*97)%300;rain+=`<line x1="${x}" y1="${y}" x2="${x-10}" y2="${y+26}" stroke="#e6e0f0" stroke-width="1.5" opacity=".35"/>`}
+ const tower=(x,w,h)=>`<rect x="${x}" y="${334-h}" width="${w}" height="${h}" fill="#3d3746"/><path d="M${x-12} ${334-h} L${x+w/2} ${334-h-34} L${x+w+12} ${334-h}Z" fill="#2a2532"/><rect x="${x+w/2-6}" y="${334-h+24}" width="12" height="18" fill="${GOLD}" opacity=".7"/><circle cx="${x+w/2}" cy="${334-h-44}" r="13" fill="${RED}" stroke="${INK}" stroke-width="3"/>`;
+ const bolt=pts=>`<polyline points="${pts}" fill="none" stroke="${GOLD}" stroke-width="12" opacity=".25"/><polyline points="${pts}" fill="none" stroke="#ffe58a" stroke-width="4"/>`;
+ return bgWrap(`<rect width="1200" height="400" fill="url(#g-thunder)"/>
+ <ellipse cx="200" cy="30" rx="260" ry="60" fill="#4f4759" opacity=".8"/><ellipse cx="640" cy="20" rx="320" ry="56" fill="#4f4759" opacity=".8"/><ellipse cx="1060" cy="40" rx="260" ry="62" fill="#4f4759" opacity=".8"/>
+ ${bolt('760,40 730,110 760,116 716,206')}${bolt('300,50 284,100 304,104 276,170')}
+ <path d="M0 300 L1200 300 L1200 334 L0 334Z" fill="#4a4354"/>
+ ${[...Array(30)].map((_,i)=>`<rect x="${i*40}" y="290" width="24" height="12" fill="#4a4354"/>`).join('')}
+ ${tower(60,90,170)}${tower(220,70,120)}${tower(930,80,130)}${tower(1060,100,190)}
+ ${rain}
+ <rect x="0" y="334" width="1200" height="66" fill="#9a92a4"/>
+ <ellipse cx="300" cy="370" rx="80" ry="8" fill="#c4bccf" opacity=".7"/><ellipse cx="900" cy="378" rx="110" ry="9" fill="#c4bccf" opacity=".7"/>`)},
+sea:()=>{const curls=[...Array(12)].map((_,i)=>{const x=(i*103)%1200+20,y=286+(i%3)*18;return `<path d="M${x} ${y} q8 -10 18 -4 q-6 2 -4 8" fill="none" stroke="${PAPER}" stroke-width="2.5" opacity=".8"/>`}).join('');
+ return bgWrap(`<rect width="1200" height="400" fill="url(#g-sea)"/>
+ <circle cx="900" cy="110" r="70" fill="#f6efd9" stroke="#d8cfb5" stroke-width="3"/>${inkCloud(780,140,1.4,INK,.25)}${inkCloud(120,70,1.2,INK,.25)}
+ <path d="M120 262 Q220 200 330 236 Q380 248 420 262Z" fill="#7d8f8c"/>${pagoda(270,236,.55,'#3c4a4a')}
+ ${waves(258,5,80,'#a9c0c4')}${waves(282,9,120,'#7a9aa3')}${curls}${waves(316,12,160,'#4f7684')}
+ <path d="M0 340 Q200 326 420 340 L520 346 Q800 330 1200 342 L1200 400 L0 400Z" fill="#c2b597"/>
+ <path d="M60 346 Q90 322 130 344Z M980 344 Q1020 316 1070 342Z M520 350 Q540 336 566 350Z" fill="#5e574b"/>`)},
+demon:()=>{let fl='';for(let x=0;x<1200;x+=30){const h=18+((x*7)%23);fl+=`<path d="M${x} 336 Q${x+8} ${336-h} ${x+15} ${336-h-8} Q${x+20} ${336-h+6} ${x+30} 336Z" fill="${RED}" opacity=".75"/><path d="M${x+8} 336 Q${x+13} ${336-h/2} ${x+16} ${336-h/2-6} Q${x+19} ${336-h/2} ${x+22} 336Z" fill="${GOLD}" opacity=".8"/>`}
+ const emb=[...Array(26)].map((_,i)=>`<circle cx="${(i*137)%1200}" cy="${60+(i*53)%240}" r="${1.5+(i%3)}" fill="${GOLD}" opacity=".7"/>`).join('');
+ return bgWrap(`<rect width="1200" height="400" fill="url(#g-demon)"/>
+ <circle cx="280" cy="104" r="64" fill="#e8714f" opacity=".9"/><path d="M250 80 L276 104 L262 130 M300 70 L290 100" stroke="${INK}" stroke-width="2.5" fill="none" opacity=".6"/>
+ <path d="M640 334 L640 190 L700 190 L700 150 L760 120 L820 150 L820 190 L880 190 L880 334Z" fill="#1a0f0e"/>
+ <path d="M620 196 Q660 186 700 196 L690 176 Z M840 196 Q860 186 900 196 L850 176Z" fill="#1a0f0e"/>
+ <path d="M740 128 L716 84 L752 118 Z M780 128 L804 84 L768 118Z" fill="#1a0f0e"/>
+ <path d="M520 334 L540 220 L560 334Z M960 334 L984 200 L1008 334Z M1080 334 L1100 240 L1120 334Z M420 334 L436 250 L452 334Z" fill="#1a0f0e"/>
+ <rect x="748" y="220" width="24" height="40" rx="12" fill="${RED}"/><rect x="664" y="228" width="16" height="22" fill="${RED}" opacity=".8"/><rect x="840" y="228" width="16" height="22" fill="${RED}" opacity=".8"/>
+ ${emb}${fl}
+ <rect x="0" y="336" width="1200" height="64" fill="#6a4038"/>
+ <path d="M80 360 L140 372 L200 362 M600 366 L660 378 L720 368 L760 380 M980 358 L1050 370" stroke="${RED}" stroke-width="2.5" fill="none"/>`)}
+};
+const BEHAV={
+ blob:{blk:.15,ctr:.12,verb:'缩成一团格挡'},lantern:{blk:.15,ctr:.15,verb:'转身格挡'},assassin:{blk:.15,ctr:.25,verb:'用竹枪格挡'},
+ skeleton:{blk:.35,ctr:.1,verb:'举起骨盾格挡'},bat:{blk:.15,ctr:.25,verb:'拍着翅膀躲开'},wolf:{blk:.1,ctr:.3,verb:'跳开躲闪'},
+ treant:{blk:.3,ctr:.1,verb:'用树皮硬挡'},crow:{blk:.2,ctr:.2,verb:'飞起来躲开'},mushroom:{blk:.15,ctr:.2,verb:'缩进菌盖'},
+ ghost:{blk:.3,ctr:.1,verb:'飘走闪避'},scorpion:{blk:.25,ctr:.25,verb:'用硬壳格挡'},crab:{blk:.35,ctr:.15,verb:'用大钳子格挡'},
+ snake:{blk:.15,ctr:.3,verb:'盘起身子格挡'},golem:{blk:.3,ctr:.1,verb:'用石臂格挡'},fox:{blk:.25,ctr:.2,verb:'化作幻影闪避'},
+ drum:{blk:.2,ctr:.25,verb:'用战鼓格挡'},dragon:{blk:.25,ctr:.2,verb:'用龙鳞格挡'},demon:{blk:.25,ctr:.25,verb:'用魔气格挡'}};
 
 /* ============ DATA ============ */
 const CHARS={
@@ -501,15 +717,15 @@ const NAMES={
 };
 const POWER_TXT={shield:'护盾',heal:'答错回血',timer:'限时60秒'};
 const CHAPTERS=[
- {id:1,name:'大数王国',unit:'第一单元 · 认识更大的数',topics:['u1'],enemies:[['墨团小兵','blob',{}],['数字灯笼妖','lantern',{}],['竹影刺客','assassin',{}],['万斤大墨团','blob',{crown:1}]],
+ {id:1,name:'大数王国',bg:'palace',unit:'第一单元 · 认识更大的数',topics:['u1'],enemies:[['墨团小兵','blob',{}],['数字灯笼妖','lantern',{}],['骷髅守卫','skeleton',{}],['竹影刺客','assassin',{}]],
   boss:{name:'亿万石像',art:'golem',powers:['shield'],desc:'开场带着护盾，生命降到一半时护盾会重生一次。'}},
- {id:2,name:'线角山谷',unit:'第二单元 · 线与角',topics:['u2'],enemies:[['射线墨团','blob',{c:'#2e4a6b'}],['直角灯笼妖','lantern',{c:'#2f6fb0'}],['平行刺客','assassin',{c:'#2f6fb0'}],['钝角大墨团','blob',{c:'#2e4a6b',crown:1}]],
+ {id:2,name:'线角山谷',bg:'valley',unit:'第二单元 · 线与角',topics:['u2'],enemies:[['山谷墨蝠','bat',{}],['尖嘴乌鸦','crow',{}],['墨狼','wolf',{}],['老树妖','treant',{}]],
   boss:{name:'九尾墨狐',art:'fox',powers:['heal'],desc:'你每答错一题，它就恢复15%的生命。'}},
- {id:3,name:'乘法雷城',unit:'第三单元 · 乘法',topics:['u3'],enemies:[['乘号墨团','blob',{c:'#5a3a6e'}],['雷火灯笼妖','lantern',{c:'#c98f17'}],['竖式刺客','assassin',{c:GOLD}],['积木大墨团','blob',{c:'#5a3a6e',crown:1}]],
+ {id:3,name:'乘法雷城',bg:'thunder',unit:'第三单元 · 乘法',topics:['u3'],enemies:[['毒菇怪','mushroom',{}],['雷城幽灵','ghost',{}],['铁甲沙蝎','scorpion',{}],['雷火灯笼妖','lantern',{c:'#c98f17'}]],
   boss:{name:'雷鼓将军',art:'drum',powers:['timer'],desc:'每道题只有60秒，超时它就会出手。'}},
- {id:4,name:'运算墨海',unit:'第四单元 · 运算律',topics:['u4'],enemies:[['括号墨团','blob',{c:'#2e6a58'}],['顺序灯笼妖','lantern',{c:'#2e6a58'}],['交换刺客','assassin',{c:JADE}],['分配大墨团','blob',{c:'#2e6a58',crown:1}]],
+ {id:4,name:'运算墨海',bg:'sea',unit:'第四单元 · 运算律',topics:['u4'],enemies:[['大钳墨蟹','crab',{}],['竹叶青蛇','snake',{}],['海雾幽灵','ghost',{c:'#d9e8ec'}],['海草树妖','treant',{c:'#3f7a6a'}]],
   boss:{name:'墨龙王',art:'dragon',powers:['shield','timer'],desc:'带着护盾，而且每道题只有60秒。'}},
- {id:5,name:'墨魔王宫',unit:'综合复习 · 第一至四单元',topics:['u1','u2','u3','u4'],enemies:[['魔宫墨团','blob',{c:'#4a1d1a'}],['魔宫灯笼妖','lantern',{c:'#4a1d1a'}],['魔宫刺客','assassin',{c:'#4a1d1a'}],['魔宫大墨团','blob',{c:'#4a1d1a',crown:1}]],
+ {id:5,name:'墨魔王宫',bg:'demon',unit:'综合复习 · 第一至四单元',topics:['u1','u2','u3','u4'],enemies:[['魔宫骷髅','skeleton',{c:'#4a1d1a',eye:'#b5352b'}],['血翼魔蝠','bat',{c:'#4a1d1a'}],['赤眼魔狼','wolf',{c:'#3a1512'}],['魔宫刺客','assassin',{c:'#4a1d1a'}]],
   boss:{name:'墨魔王',art:'demon',powers:['shield','heal','timer'],desc:'护盾、答错回血、每题限时60秒，三种能力都有！'}}
 ];
 const TOPIC_NAME={u1:'认识更大的数',u2:'线与角',u3:'乘法',u4:'运算律'};
@@ -680,7 +896,7 @@ function renderMap(){
  el.innerHTML=`<div class="map-head"><h2>选择关卡</h2>
  <div class="curhero">${ART[S.cur]()}<div><b>${CHARS[S.cur].name}</b><div class="muted" style="font-size:.85rem">攻击 ${hs.atk} · 生命 ${hs.hp}</div></div><button class="chipbtn" id="mGear" type="button">换角色/装备</button></div></div>
  <div class="chapters">${CHAPTERS.map(C=>{const locked=C.id===5&&!ch5Open();const p=S.prog[C.id];
-  return `<div class="chapter ${locked?'locked':''}"><div><h3>${C.name}</h3><div class="unit">${C.unit}</div></div>
+  return `<div class="chapter ${locked?'locked':''}"><div class="scene">${BG[C.bg]()}</div><div><h3>${C.name}</h3><div class="unit">${C.unit}</div></div>
   <div class="nodes">${[1,2,3,4,5].map(l=>{const done=p>=l,open=!locked&&l<=p+1;return `${l>1?'<span class="link"></span>':''}<button type="button" class="node ${l===5?'boss':''} ${done?'done':''} ${open&&!done?'next':''}" data-ch="${C.id}" data-lv="${l}" ${open?'':'disabled'} title="${l===5?C.boss.name:C.enemies[l-1][0]}">${l===5?'首领':l}</button>`}).join('')}</div>
   <div class="bossline"><b>首领：${C.boss.name}</b> <span class="muted">— ${C.boss.desc}</span></div>
   ${locked?'<div class="lockmsg">打败前四个单元中任意三个首领后开启</div>':''}</div>`}).join('')}</div>`;
@@ -694,6 +910,7 @@ function startBattle(ch,lv){
  const C=CHAPTERS[ch-1],isBoss=lv===5,m=1+.25*(ch-1);let e;
  if(isBoss)e={name:C.boss.name,art:C.boss.art,opt:{},max:Math.round(100*m),atk:12+2*ch,powers:C.boss.powers.slice()};
  else{const[n,a,o]=C.enemies[lv-1];e={name:n,art:a,opt:o,max:Math.round((36+lv*6)*m),atk:6+ch+lv,powers:[]}}
+ const bh=BEHAV[e.art]||{blk:.2,ctr:.15,verb:'格挡'};e.blk=bh.blk;e.ctr=bh.ctr;e.verb=bh.verb;
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
  let d;if(ch===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
@@ -703,7 +920,7 @@ function startBattle(ch,lv){
 function renderBattle(){
  const el=$('#scr-battle'),C=B.C,e=B.e,ch=CHARS[S.cur];
  el.innerHTML=`<div class="banner"><span class="lvl">${C.name} · ${B.isBoss?'首领关':'第'+B.lv+'关'}</span><span class="mission">任务：答对题目，击败 ${e.name}！</span><button class="retreat" type="button" id="bRetreat">撤退</button></div>
- <div class="arena">${hills}
+ <div class="arena">${BG[C.bg]()}
   <div class="fighter hero" id="fHero"><div class="art-wrap">${ART[S.cur]()}</div>
    <div class="hud"><div class="nm">${ch.name}<small>攻击 ${B.hero.atk}</small></div><div class="bar hero" id="hpHero"><i></i><span></span></div>
    <div class="row" style="gap:8px"><button class="skillbtn" id="bSkill" type="button" title="${ch.desc}">${ch.skill}<span class="pips"><i></i><i></i><i></i></span></button><span class="buffs" id="buffs"></span></div></div></div>
@@ -711,7 +928,7 @@ function renderBattle(){
   <div class="fighter enemy" id="fEnemy"><div class="art-wrap">${enemyArt(e)}</div>
    <div class="hud"><div class="nm">${e.name}<small>攻击 ${e.atk}</small></div><div class="bar" id="hpEnemy"><i></i><span></span></div>
    ${e.shieldMax?'<div class="bar shield" id="shEnemy"><i></i></div>':''}
-   ${e.powers.length?`<div class="powers">${e.powers.map(p=>`<span class="power">${POWER_TXT[p]}</span>`).join('')}</div>`:''}</div></div>
+   <div class="powers">${e.powers.map(p=>`<span class="power">${POWER_TXT[p]}</span>`).join('')}${e.blk>=.3?'<span class="trait">爱格挡</span>':''}${e.ctr>=.25?'<span class="trait">爱反击</span>':''}</div></div></div>
  </div>
  <div class="desk" id="desk"><div class="timer" id="timer" ${e.powers.includes('timer')?'':'hidden'}><i></i></div>
   <div class="qbox"><div class="qtext" id="qText"></div><div class="qfig" id="qFig"></div></div>
@@ -728,7 +945,7 @@ function updateHud(){
  setBar($('#hpHero'),B.hero.hp,B.hero.max);setBar($('#hpEnemy'),B.e.hp,B.e.max);if(B.e.shieldMax)setBar($('#shEnemy'),B.e.shield,B.e.shieldMax,false);
  const sk=$('#bSkill');sk.querySelectorAll('.pips i').forEach((p,i)=>p.classList.toggle('on',i<B.gauge));sk.classList.toggle('ready',B.gauge>=3);sk.disabled=B.gauge<3;
  const bf=[];if(B.mult>1)bf.push('下一击×'+B.mult);if(B.blocks>0)bf.push('护体×'+B.blocks);$('#buffs').textContent=bf.join(' ')}
-function floatText(fid,txt,cls){const f=$(fid);if(!f)return;const s=document.createElement('div');s.className='float '+cls;s.textContent=txt;f.appendChild(s);setTimeout(()=>s.remove(),1200)}
+function floatText(fid,txt,cls,top){const f=$(fid);if(!f)return;const s=document.createElement('div');s.className='float '+cls;s.textContent=txt;if(top)s.style.top=top;f.appendChild(s);setTimeout(()=>s.remove(),1200)}
 function anim(fid,cls){const f=$(fid);if(!f)return;f.classList.remove(cls);void f.offsetWidth;f.classList.add(cls);setTimeout(()=>f.classList.remove(cls),500)}
 function slash(fid,color){const f=$(fid);if(!f)return;const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 200 200');s.setAttribute('class','slash');s.setAttribute('preserveAspectRatio','none');
  s.innerHTML=`<path d="M20 30 Q100 90 180 170" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round" filter="url(#rough)"/><path d="M180 40 Q110 100 30 160" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" opacity=".7" filter="url(#rough)"/>`;f.appendChild(s);setTimeout(()=>s.remove(),600)}
@@ -754,13 +971,31 @@ function dealDamage(dmg,ignoreShield){const e=B.e;let absorbed=0;
  if(dmg>0)setTimeout(()=>floatText('#fEnemy','−'+dmg,'dmg'),absorbed?250:0);
  if(e.powers.includes('shield')&&!B.regenUsed&&e.hp>0&&e.hp<=e.max/2){B.regenUsed=true;e.shield=e.shieldMax;setTimeout(()=>{floatText('#fEnemy','护盾重生！','blue');updateHud()},700)}}
 
+function guardFx(fid){const f=$(fid);if(!f)return;const g=document.createElementNS('http://www.w3.org/2000/svg','svg');g.setAttribute('viewBox','0 0 60 120');g.setAttribute('class','guardfx');
+ const hero=fid==='#fHero';g.innerHTML=`<g filter="url(#rough)" ${hero?'transform="translate(60 0) scale(-1 1)"':''}><path d="M48 6 C8 30 8 90 48 114" fill="none" stroke="${INK}" stroke-width="14" stroke-linecap="round"/><path d="M48 6 C8 30 8 90 48 114" fill="none" stroke="#2f6fb0" stroke-width="8" stroke-linecap="round"/></g>`;f.appendChild(g);setTimeout(()=>g.remove(),850)}
+function enemyAct(){const e=B.e,r=Math.random();if(r<e.blk)return'block';if(r<e.blk+e.ctr)return'counter';return'none'}
+function enemyStrike(mult,canGuard,cb){anim('#fEnemy','lunge-l');setTimeout(()=>{if(!B)return;SFX.hit();const e=B.e;
+  if(B.blocks>0){B.blocks--;guardFx('#fHero');floatText('#fHero','挡住了！','blue')}
+  else{let dmg=Math.max(1,Math.round((e.atk+ri(-2,2))*mult));
+   if(canGuard&&Math.random()<.15){dmg=Math.ceil(dmg/2);guardFx('#fHero');floatText('#fHero','格挡！','blue','6%')}
+   B.hero.hp=Math.max(0,B.hero.hp-dmg);slash('#fHero',RED);anim('#fHero','hurt');floatText('#fHero','−'+dmg,'dmg')}
+  updateHud();cb&&cb()},220)}
+function heroDown(){B.over=true;stopTimer();keyHandler=null;$('#fHero').classList.add('dead');setTimeout(()=>finishBattle(false),1100)}
+
 function onRight(){SFX.right();B.rights++;S.stats.right++;B.combo++;B.gauge=Math.min(3,B.gauge+1);
- const bonus=1+.1*Math.min(B.combo-1,5);const dmg=Math.round(B.hero.atk*bonus*B.mult);const big=B.mult>1;B.mult=1;
- const fb=$('#fb');fb.className='feedback right';fb.innerHTML=`<span class="big">答对了！</span><span class="exp">${B.combo>1?`连击 ×${B.combo}，伤害加成 ${Math.round((bonus-1)*100)}%`:'出招！'}</span>`;fb.hidden=false;
+ const e=B.e;const bonus=1+.1*Math.min(B.combo-1,5);let dmg=Math.round(B.hero.atk*bonus*B.mult);const big=B.mult>1;B.mult=1;
+ const act=enemyAct();if(act==='block')dmg=Math.ceil(dmg/2);
+ const comboTxt=B.combo>1?`连击 ×${B.combo}，伤害 +${Math.round((bonus-1)*100)}%`:'出招！';
+ const note=act==='block'?`可是 ${e.name} ${e.verb}，伤害减半！`:act==='counter'?`${comboTxt}　小心，${e.name} 要反击了！`:comboTxt;
+ const fb=$('#fb');fb.className='feedback right';fb.innerHTML=`<span class="big">答对了！</span><span class="exp">${note}</span>`;fb.hidden=false;
  const cb=$('#combo');cb.textContent=B.combo>1?`连击 ×${B.combo}`:'';cb.classList.remove('pop');void cb.offsetWidth;cb.classList.add('pop');
  anim('#fHero','lunge-r');
- setTimeout(()=>{if(!B||B.over)return;SFX.hit();slash('#fEnemy',big?GOLD:INK);anim('#fEnemy','hurt');dealDamage(dmg,false);updateHud();
-  if(B.e.hp<=0)enemyDown();else setTimeout(()=>{if(B&&!B.over)nextQ()},1080)},220)}
+ setTimeout(()=>{if(!B||B.over)return;SFX.hit();
+  if(act==='block'){guardFx('#fEnemy');floatText('#fEnemy','格挡！','blue','6%')}
+  slash('#fEnemy',big?GOLD:INK);anim('#fEnemy','hurt');dealDamage(dmg,false);updateHud();
+  if(B.e.hp<=0){enemyDown();return}
+  if(act==='counter'){setTimeout(()=>{if(!B||B.over)return;floatText('#fEnemy','反击！','dmg','6%');enemyStrike(.6,false,()=>{if(B.hero.hp<=0)heroDown();else setTimeout(()=>{if(B&&!B.over)nextQ()},900)})},600)}
+  else setTimeout(()=>{if(B&&!B.over)nextQ()},1080)},220)}
 
 function enemyDown(){B.over=true;stopTimer();keyHandler=null;setTimeout(()=>{$('#fEnemy').classList.add('dead')},300);setTimeout(()=>finishBattle(true),1400)}
 
@@ -769,13 +1004,8 @@ function onWrong(timeout){SFX.wrong();B.wrongs++;S.stats.wrong++;B.combo=0;$('#c
  const fb=$('#fb');fb.className='feedback wrong';
  fb.innerHTML=`<span class="big">${timeout?'时间到！':'答错了'}</span><div class="exp"><b>正确答案：${N(q.ans)}${q.unit&&q.unit!=='位数'?' '+q.unit:''}</b><br>${q.explain}</div><button class="btn primary" type="button" id="fbGo">继续 ▶</button>`;fb.hidden=false;
  $('#fbGo').onclick=continueAfterReview;B.review=true;
- setTimeout(()=>{anim('#fEnemy','lunge-l');
-  setTimeout(()=>{SFX.hit();
-   if(B.blocks>0){B.blocks--;floatText('#fHero','挡住了！','blue')}
-   else{const dmg=Math.max(1,e.atk+ri(-2,2));B.hero.hp=Math.max(0,B.hero.hp-dmg);slash('#fHero',RED);anim('#fHero','hurt');floatText('#fHero','−'+dmg,'dmg')}
-   if(e.powers.includes('heal')&&e.hp>0){const h=Math.round(e.max*.15);e.hp=Math.min(e.max,e.hp+h);setTimeout(()=>floatText('#fEnemy','+'+h,'heal'),300)}
-   updateHud()},220)},250)}
-function continueAfterReview(){if(!B||!B.review)return;B.review=false;$('#fb').hidden=true;if(B.hero.hp<=0){B.over=true;$('#fHero').classList.add('dead');setTimeout(()=>finishBattle(false),900)}else nextQ()}
+ setTimeout(()=>{if(!B)return;enemyStrike(1,true,()=>{if(e.powers.includes('heal')&&e.hp>0){const h=Math.round(e.max*.15);e.hp=Math.min(e.max,e.hp+h);setTimeout(()=>{floatText('#fEnemy','+'+h,'heal');updateHud()},300)}})},250)}
+function continueAfterReview(){if(!B||!B.review)return;B.review=false;$('#fb').hidden=true;if(B.hero.hp<=0)heroDown();else nextQ()}
 
 function useSkill(){if(!B||B.over||B.gauge<3||B.review)return;B.gauge=0;SFX.skill();const k=S.cur;
  if(k==='brush'){B.mult=3;floatText('#fHero','泼墨狂书！','dmg')}
@@ -881,7 +1111,7 @@ function renderGear(){
  const sc=el.scrollTop;show('gear');el.scrollTop=sc}
 
 /* ============ BOOT ============ */
-window.__moxia={genQ,toCN,BANK};
+window.__moxia={genQ,toCN,BANK,ART,BG,get B(){return B}};
 $('#soundBtn').textContent='音效：'+(S.sound?'开':'关');
 updateCoins();renderHome();
 })();
