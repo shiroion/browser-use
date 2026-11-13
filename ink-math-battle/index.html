@@ -192,6 +192,14 @@ svg.art{display:block;overflow:visible}
 .fighter .art-wrap{animation:bob 2.6s ease-in-out infinite}
 .enemy .art-wrap{animation-delay:-1.3s}
 @keyframes bob{50%{transform:translateY(-5px)}}
+/* monster moves around while the player is answering (lower specificity than hurt/lunge/windup, so those still win) */
+.prowl1 .art-wrap{animation:prowl1 5s ease-in-out infinite}
+.prowl2 .art-wrap{animation:prowl2 3.6s ease-in-out infinite}
+.prowl3 .art-wrap{animation:prowl3 4.4s ease-in-out infinite}
+@keyframes prowl1{0%,100%{transform:translateX(0)}18%{transform:translateX(-28px) rotate(-3deg)}26%{transform:translateX(-28px) translateY(-6px) rotate(-1deg)}34%{transform:translateX(-28px)}58%{transform:translateX(22px) rotate(3deg)}72%{transform:translateX(22px) translateY(-4px)}86%{transform:translateX(6px)}}
+@keyframes prowl2{0%,100%{transform:translateY(0)}12%{transform:translateY(0) scaleY(.92)}24%{transform:translateY(-26px) scaleY(1.05)}36%{transform:translateY(0) scaleY(.94)}48%{transform:translateY(0)}60%{transform:translateX(-14px) translateY(-14px)}72%{transform:translateX(-14px) translateY(0) scaleY(.95)}86%{transform:translateX(0)}}
+@keyframes prowl3{0%,100%{transform:rotate(0)}15%{transform:rotate(-7deg) translateX(-8px)}30%{transform:rotate(6deg) translateX(8px)}45%{transform:rotate(-4deg)}60%{transform:translateX(-34px) rotate(-5deg) translateY(-8px)}70%{transform:translateX(-34px) rotate(0)}85%{transform:translateX(0) rotate(3deg)}}
+@media (prefers-reduced-motion:reduce){.prowl1 .art-wrap,.prowl2 .art-wrap,.prowl3 .art-wrap{animation:bob 2.6s ease-in-out infinite}}
 .hud{width:min(100%,320px);display:flex;flex-direction:column;gap:3px;background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:5px 9px;box-sizing:border-box}
 .hud .nm{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-family:var(--f-display);font-size:1.35rem;font-weight:700}
 .hud .nm small{font-family:var(--f-body);font-size:.85rem;color:var(--ink-soft);font-weight:400}
@@ -2758,12 +2766,12 @@ function nextQ(){if(!B||B.over)return;B.def=null;
  if(B.poison>0){B.poison--;const d=3+B.ch;B.hero.hp=Math.max(0,B.hero.hp-d);floatText('#fHero','中毒 −'+d,'poison');anim('#fHero','hurt');updateHud();if(B.hero.hp<=0){heroDown();return}}
  if(B.e.burn>0){B.e.burn--;const d=4+B.ch;B.e.hp=Math.max(0,B.e.hp-d);floatText('#fEnemy','燃烧 −'+d,'dmg');anim('#fEnemy','hurt');updateHud();if(B.e.hp<=0){enemyDown();return}}
  const topic=pick(B.C.topics);B.q=genQ(topic,B.d);
- $('#desk').classList.remove('defend');$('#fEnemy').classList.remove('windup');
+ $('#desk').classList.remove('defend');$('#fEnemy').classList.remove('windup');setProwl(true);
  $('#qText').innerHTML=`<span class="qtag">${TOPIC_NAME[topic]}</span><br>${B.q.text}`;
  const fig=$('#qFig');fig.innerHTML=B.q.fig||'';fig.hidden=!B.q.fig;
  $('#fb').hidden=true;$('#judge').hidden=true;$('#padHost').hidden=false;pad.clear();pad.setUnit(B.q.unit);pad.lock(false);B.busy=false;keyHandler=battleKey;updateHud();
  const timed=B.e.powers.includes('timer');$('#timer').hidden=!timed;
- if(timed)startTimer(60,()=>{B.busy=true;pad.lock(true);onWrong(true)})}
+ if(timed)startTimer(60,()=>{B.busy=true;setProwl(false);pad.lock(true);onWrong(true)})}
 function battleKey(k){if(!B||screen!=='battle')return false;if(B.def&&B.def.kind==='judge'&&!B.busy){if(['y','Y','1','ArrowLeft'].includes(k)){submitJudge(true);return true}if(['n','N','2','0','ArrowRight'].includes(k)){submitJudge(false);return true}return false}if(B.walk){if(['ArrowRight','d','D','Enter',' '].includes(k)){walkStep(.05);return true}return false}if(B.review){if(k==='Enter'||k===' '){continueAfterReview();return true}return false}if(B.busy)return false;return pad.press(k)}
 function startTimer(sec,onTimeout){stopTimer();B.tLeft=sec*10;B.tTotal=sec*10;const bar=$('#timer i');bar.style.width='100%';
  timerId=setInterval(()=>{if(!B||B.busy||B.over){return}B.tLeft--;bar.style.width=(B.tLeft/B.tTotal*100)+'%';
@@ -2771,7 +2779,8 @@ function startTimer(sec,onTimeout){stopTimer();B.tLeft=sec*10;B.tTotal=sec*10;co
   if(B.tLeft<=0){stopTimer();onTimeout()}},100)}
 function stopTimer(){if(timerId){clearInterval(timerId);timerId=null}}
 
-function submitAnswer(v){if(!B||B.busy||B.over)return;B.busy=true;pad.lock(true);stopTimer();
+function setProwl(on){const f=$('#fEnemy');if(!f)return;f.classList.remove('prowl1','prowl2','prowl3');if(on)f.classList.add('prowl'+ri(1,3))}
+function submitAnswer(v){if(!B||B.busy||B.over)return;B.busy=true;setProwl(false);pad.lock(true);stopTimer();
  if(B.def){defenseResolve(Number(v)===B.q.ans,false);return}
  B.e.rage=Math.min(B.e.rageMax,B.e.rage+1);
  if(Number(v)===B.q.ans)onRight();else onWrong(false)}
