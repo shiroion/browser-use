@@ -266,6 +266,21 @@ svg.art{display:block;overflow:visible}
 .pvp-res{font-size:1.8rem;font-weight:900}.pvp-res.win{color:var(--cinnabar)}
 .pvpmini{display:flex;align-items:flex-end;gap:0}.pvpmini svg{width:44px;height:56px}.pvpmini .mirror{width:auto;height:auto}
 @media (max-width:700px){.pvp-cards{grid-template-columns:1fr}.pplate{min-width:0}}
+#scr-wrong{overflow:auto}
+.wb{display:flex;flex-direction:column;gap:12px;max-width:1000px;margin:0 auto;width:100%}
+.wb-list{display:flex;flex-direction:column;gap:12px}
+.wb-item{background:var(--card);border:2.5px solid var(--ink);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:3px 3px 0 var(--ink)}
+.wb-item.done{border-color:#3f8a5a;opacity:.7}
+.wb-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.9rem}
+.wb-q{font-size:clamp(1.1rem,2vw,1.45rem);line-height:1.55;overflow-wrap:anywhere}
+.wb-fig svg{max-width:100%;height:auto;max-height:220px}
+.wb-ans{display:flex;gap:18px;flex-wrap:wrap;font-weight:700;font-size:1.1rem}
+.wb-ans .bad,.wb-msg.bad{color:var(--cinnabar)}.wb-ans .good,.wb-msg.good{color:#2e7a4a}
+.wb-exp{background:var(--paper-2);border-radius:8px;padding:8px 10px;line-height:1.6}
+.wb-try{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.wb-form input{font-size:1.2rem;padding:6px 10px;border:2px solid var(--ink);border-radius:8px;background:var(--paper);width:9em;min-width:0}
+.wb-del{margin-left:auto}.wb-msg{font-weight:700;flex-basis:100%}
+.wb-empty{text-align:center;font-size:1.3rem;padding:30px;background:var(--card);border:2px dashed var(--ink);border-radius:14px}
 .wl{background:var(--cinnabar);color:var(--card);border-radius:999px;padding:2px 12px;font-weight:700;font-size:.9rem;white-space:nowrap}
 .partbox{border:3px solid var(--gold);background:var(--card);border-radius:14px;padding:12px 18px;display:flex;flex-direction:column;gap:6px;max-width:640px;text-align:left;font-size:1.05rem}
 .partbox h3{font-size:1.8rem;color:var(--cinnabar);text-align:center}
@@ -577,6 +592,7 @@ svg.art{display:block;overflow:visible}
     <section id="scr-gear" class="screen" hidden></section>
     <section id="scr-book" class="screen" hidden></section>
     <section id="scr-pvp" class="screen" hidden></section>
+    <section id="scr-wrong" class="screen" hidden></section>
   </main>
   <div id="modal" class="modal" hidden></div>
   <div id="toast" class="toast" hidden></div>
@@ -2434,13 +2450,14 @@ function renderHome(){
    ${card('hShop','',chestSVG(2),'商店',S.chests.length?`有${S.chests.length}个宝箱待开`:'宝箱、药品、神兵、兑换码')}
    ${card('hGear','',ART[S.cur](),'英雄与装备',`${S.chars.length}位英雄 · 背包${S.inv.length}件`)}
    ${card('hBook','',ART.dragon(),'怪物图鉴',`已遇到 ${seen} 种怪物`)}
+   ${card('hWrong','',`<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="5" width="30" height="38" rx="3" fill="#f6efd0" stroke="${INK}" stroke-width="2.5"/><path d="M15 15 L33 15 M15 22 L33 22 M15 29 L27 29" stroke="${INK}" stroke-width="2"/><path d="M27 31 L37 41 M37 31 L27 41" stroke="${RED}" stroke-width="3.5" stroke-linecap="round"/></svg>`,'错题本',(S.wrongBook||[]).length?`有 ${(S.wrongBook||[]).length} 道错题，回去看看`:'答错的题会记在这里')}
    ${card('hPvp','pvpcard',`<span class="pvpmini">${ART[S.cur]()}<span class="mirror">${ART.sword()}</span></span>`,'双人对战','和同学开房间抢答，赢了得 100 金币')}
   </section>
   <section><h3 class="shoph">英雄</h3><div class="lineup">${CHAR_ORDER.map(k=>`<figure class="${S.chars.includes(k)?'':'locked'}">${ART[k]()}<figcaption>${CHARS[k].name}</figcaption></figure>`).join('')}</div></section>
   <footer class="credits"><span class="cstamp">墨</span><div><b>made by auri</b><span>作者：朱彬　来自：404班</span></div></footer>
  </div>`;
  el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{if(b.dataset.mode!==curMode)askModeSwitch(b.dataset.mode)});
- $('#hGo').onclick=()=>startBattle(next.id,nextLv);$('#hStart').onclick=renderMap;$('#hShop').onclick=()=>{shopTab='chest';renderShop()};$('#hGear').onclick=renderGear;$('#hBook').onclick=renderBook;$('#hPvp').onclick=()=>renderPvpLobby();$('#hHow').onclick=showHowTo;
+ $('#hGo').onclick=()=>startBattle(next.id,nextLv);$('#hStart').onclick=renderMap;$('#hShop').onclick=()=>{shopTab='chest';renderShop()};$('#hGear').onclick=renderGear;$('#hBook').onclick=renderBook;$('#hPvp').onclick=()=>renderPvpLobby();$('#hWrong').onclick=()=>renderWrongBook(null);$('#hHow').onclick=showHowTo;
  show('home')}
 function showHowTo(){const m=$('#modal');m.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="玩法说明"><button class="closex" type="button" id="hwClose">关闭</button><h3>玩法说明</h3>
  <ol class="howlist"><li><b>选关卡：</b>在冒险地图选一座塔和一关，先走过场景捡金币。</li><li><b>答题出招：</b>答对题目，英雄就会出招打怪；答对还能攒能量（最多5点）。</li><li><b>放技能：</b>能量够了就点技能按钮，每位英雄有4个技能，完成更多部分会解锁更强的技能。</li><li><b>防御：</b>怪物攻击时有10秒防御题，可能是对错判断题，也可能是计算题。答对就能挡住或躲开！</li><li><b>怪物大招：</b>怪物的怒气满了会放大招，同样可以用防御题挡住。</li><li><b>赢金币：</b>打赢得金币，打首领还会掉宝箱；完成一个部分奖励金宝箱和50金币。</li><li><b>变强：</b>在商店买宝箱、药品和神兵，招募新英雄，打败四座塔的所有首领！</li></ol></div>`;
@@ -2778,7 +2795,7 @@ function heroHit(dmg,kind,ignoreShield,cb){heroAttackSeq(1,dmg,kind,ignoreShield
 function nextQ(){if(!B||B.over)return;B.def=null;
  if(B.poison>0){B.poison--;const d=3+B.ch;B.hero.hp=Math.max(0,B.hero.hp-d);floatText('#fHero','中毒 −'+d,'poison');anim('#fHero','hurt');updateHud();if(B.hero.hp<=0){heroDown();return}}
  if(B.e.burn>0){B.e.burn--;const d=4+B.ch;B.e.hp=Math.max(0,B.e.hp-d);floatText('#fEnemy','燃烧 −'+d,'dmg');anim('#fEnemy','hurt');updateHud();if(B.e.hp<=0){enemyDown();return}}
- const topic=pick(B.C.topics);B.q=genQ(topic,B.d);
+ const topic=pick(B.C.topics);B.q=genQ(topic,B.d);B.given=null;
  $('#desk').classList.remove('defend');$('#fEnemy').classList.remove('windup');setProwl(true);
  $('#qText').innerHTML=`<span class="qtag">${TOPIC_NAME[topic]}</span><br>${B.q.text}`;
  const fig=$('#qFig');fig.innerHTML=B.q.fig||'';fig.hidden=!B.q.fig;
@@ -2800,7 +2817,7 @@ const MOVE_KIND={ghost:'ghost',wraith:'ghost',hairghost:'ghost',wisp:'ghost',lan
  rabbit:'hop',jiangshi:'hop',blob:'hop',chaosslime:'hop',imp:'hop',toad:'hop',mushroom:'hop',gourd:'hop'};
 const MV_CLASSES=['prowl1','prowl2','prowl3','mv-ghost','mv-fly','mv-crawl','mv-slither','mv-swim','mv-hop'];
 function setProwl(on){const f=$('#fEnemy');if(!f)return;f.classList.remove(...MV_CLASSES);if(!on||!B)return;const k=MOVE_KIND[B.e.art];f.classList.add(k?'mv-'+k:'prowl'+ri(1,3))}
-function submitAnswer(v){if(!B||B.busy||B.over)return;B.busy=true;setProwl(false);pad.lock(true);stopTimer();
+function submitAnswer(v){if(!B||B.busy||B.over)return;B.busy=true;setProwl(false);pad.lock(true);stopTimer();B.given=v;
  if(B.def){defenseResolve(Number(v)===B.q.ans,false);return}
  B.e.rage=Math.min(B.e.rageMax,B.e.rage+1);
  if(Number(v)===B.q.ans)onRight();else onWrong(false)}
@@ -2834,7 +2851,7 @@ function onRight(){SFX.right();B.rights++;S.stats.right++;B.combo++;B.gauge=Math
   else if(act==='counter')setTimeout(()=>{if(!B||B.over)return;floatText('#fEnemy','反击！','dmg','6%');startDefense({mult:.6})},650);
   else setTimeout(()=>{if(B&&!B.over)nextQ()},900)})}
 
-function onWrong(timeout){SFX.wrong();B.wrongs++;S.stats.wrong++;B.combo=0;$('#combo').textContent='';
+function onWrong(timeout){recordWrong(B.q,timeout?null:B.given,'num');SFX.wrong();B.wrongs++;S.stats.wrong++;B.combo=0;$('#combo').textContent='';
  const e=B.e,q=B.q;const rageFull=e.rage>=e.rageMax;
  const fb=$('#fb');fb.className='feedback wrong';
  fb.innerHTML=`<span class="big">${timeout?'时间到！':'答错了'}</span><div class="exp"><b>正确答案：${N(q.ans)}${q.unit&&q.unit!=='位数'?' '+q.unit:''}</b><br>${q.explain}${rageFull?`<br><b style="color:var(--cinnabar)">${e.name} 怒气满了，要放大招了！</b>`:''}</div><button class="btn primary" type="button" id="fbGo">准备防御 ▶</button>`;fb.hidden=false;
@@ -2885,7 +2902,7 @@ T.push(
  const[t,ans,ex]=pick(T)();return{text:`<span class="judgeq">${t}</span>`,ans,explain:ex,unit:''}}
 function startDefense(opt){if(!B||B.over)return;const e=B.e;
  if(B.blocks>0){$('#fEnemy').classList.remove('windup');B.blocks--;anim('#fEnemy','lunge-l');setTimeout(()=>{guardFx('#fHero');floatText('#fHero','护体挡住了！','blue');updateHud()},220);afterEnemy(1100);return}
- const judge=Math.random()<.5;opt.kind=judge?'judge':'num';B.def=opt;B.q=judge?judgeQ():quickQ();
+ const judge=Math.random()<.5;opt.kind=judge?'judge':'num';B.def=opt;B.q=judge?judgeQ():quickQ();B.given=null;
  $('#desk').classList.add('defend');$('#fEnemy').classList.add('windup');
  const what=opt.special?`要放大招「${opt.special.name}」了`:'要攻击你了';
  $('#qText').innerHTML=judge?`<span class="qtag danger-tag">防御判断题</span> <span class="tcount" id="tcount">10</span><br><b class="warn">${e.name} ${what}！10秒内判断对错：判断正确就能挡住或躲开！</b><br>${B.q.text}`
@@ -2894,8 +2911,8 @@ function startDefense(opt){if(!B||B.over)return;const e=B.e;
  $('#fb').hidden=true;$('#padHost').hidden=judge;$('#judge').hidden=!judge;if(judge)pad.lock(true);else{pad.clear();pad.setUnit(B.q.unit);pad.lock(false)}B.busy=false;keyHandler=battleKey;
  $('#timer').hidden=false;SFX.wrong();updateHud();
  startTimer(10,()=>{B.busy=true;defenseResolve(false,true)})}
-function submitJudge(v){if(!B||!B.def||B.busy||B.over)return;B.busy=true;stopTimer();defenseResolve(v===B.q.ans,false)}
-function defenseResolve(ok,timeout){stopTimer();const opt=B.def||{mult:1};const q=B.q,e=B.e;B.def=null;B.busy=true;pad.lock(true);
+function submitJudge(v){if(!B||!B.def||B.busy||B.over)return;B.busy=true;stopTimer();B.given=v;defenseResolve(v===B.q.ans,false)}
+function defenseResolve(ok,timeout){stopTimer();const opt=B.def||{mult:1};if(!ok&&B.q)recordWrong(B.q,timeout?null:B.given,opt.kind==='judge'?'judge':'num',true);const q=B.q,e=B.e;B.def=null;B.busy=true;pad.lock(true);
  $('#fEnemy').classList.remove('windup');$('#judge').hidden=true;
  const what=opt.special?`大招「${opt.special.name}」`:`${e.name} 的攻击`;const item=BLOCK_ITEM[S.cur]||'武器';
  const judge=opt.kind==='judge';
@@ -3302,6 +3319,42 @@ function pvpOppLeft(){if(!PV)return;clearTimeout(PV.rt);if(PV.pad)PV.pad.lock(tr
  else{pvpLeave();renderPvpLobby('房主离开了，房间关闭了。')}}
 function pvpLeave(){if(!PV)return;const p=PV;PV=null;clearTimeout(p.rt);p.unsub.forEach(u=>{try{u()}catch(e){}});try{p.room.leave()}catch(e){}}
 
+
+/* ============ 错题本: every wrong answer is kept so players can look back and try again ============ */
+const WRONG_MAX=100;
+function recordWrong(q,given,kind,def){if(!q)return;S.wrongBook=S.wrongBook||[];const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+ S.wrongBook.unshift({id,text:q.text,fig:q.fig||'',ans:q.ans,unit:q.unit||'',explain:q.explain||'',topic:q.topic||'',kind,given:given===undefined?null:given,def:!!def,place:B&&B.C?B.C.name+(B.isBoss?' · 首领':` · 第${B.lv}关`):'',t:Date.now()});
+ if(S.wrongBook.length>WRONG_MAX)S.wrongBook.length=WRONG_MAX;if(B){B.wrongIds=B.wrongIds||[];B.wrongIds.push(id)}save()}
+function showAns(w,v){if(w.kind==='judge')return v===true?'对':v===false?'错':'—';return v===null||v===undefined||v===''?'—':escT(String(v))+(w.unit&&w.unit!=='位数'?' '+escT(w.unit):'')}
+let wrongCtx=null;
+function renderWrongBook(onlyIds,fromBattle){if(onlyIds!==undefined)wrongCtx={ids:onlyIds,from:fromBattle||null};const ctx=wrongCtx||{ids:null};
+ S.wrongBook=S.wrongBook||[];const all=S.wrongBook;const list=ctx.ids?all.filter(w=>ctx.ids.includes(w.id)):all;const el=$('#scr-wrong');
+ const fmt=t=>{const d=new Date(t);return `${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+ el.innerHTML=`<div class="wb"><div class="map-head"><div class="row"><h2>${ctx.ids?'本场错题':'错题本'}</h2><span class="wl">${list.length} 道</span></div>
+  <div class="row">${ctx.ids?'<button class="btn" type="button" id="wbAll">看全部错题</button>':''}${!ctx.ids&&all.length?'<button class="btn" type="button" id="wbClear">清空错题本</button>':''}<button class="btn primary" type="button" id="wbBack">${ctx.from?'返回结果':'返回首页'}</button></div></div>
+  <p class="muted" style="margin:0">看看哪里错了，再做一次。<b>做对了</b>，这道题就会从错题本里拿掉。（最多保存最近 ${WRONG_MAX} 道）</p>
+  ${list.length?'':`<div class="wb-empty">${ctx.ids?'这一场的错题都已经做对了！':'还没有错题，继续加油！'}</div>`}
+  <div class="wb-list">${list.map((w,i)=>`<article class="wb-item" data-id="${w.id}">
+   <div class="wb-meta"><span class="qtag">${escT(TOPIC_NAME[w.topic]||(w.def?'防御题':'题目'))}</span><span class="muted">${escT(w.place)} · ${fmt(w.t)}</span></div>
+   <div class="wb-q">${w.text}</div>${w.fig?`<div class="wb-fig">${w.fig}</div>`:''}
+   <div class="wb-ans"><span class="bad">你的答案：${showAns(w,w.given)}</span><span class="good">正确答案：${showAns(w,w.ans)}</span></div>
+   ${w.explain?`<div class="wb-exp">${w.explain}</div>`:''}
+   <div class="wb-try">${w.kind==='judge'?`<span>再做一次：</span><button class="btn" type="button" data-try="true">对</button><button class="btn" type="button" data-try="false">错</button>`
+    :`<form class="wb-form row" style="flex-wrap:nowrap"><input inputmode="numeric" autocomplete="off" placeholder="再做一次" aria-label="再做一次"><button class="btn primary" type="submit">确定</button></form>`}
+    <button class="btn wb-del" type="button" data-del="1">删除</button><span class="wb-msg" role="status"></span></div></article>`).join('')}</div></div>`;
+ show('wrong');
+ $('#wbBack').onclick=()=>{if(ctx.from){show('result')}else renderHome()};
+ if($('#wbAll'))$('#wbAll').onclick=()=>{wrongCtx={ids:null,from:ctx.from};renderWrongBook()};
+ if($('#wbClear'))$('#wbClear').onclick=()=>{if(!confirm('确定要清空错题本吗？'))return;S.wrongBook=[];save();renderWrongBook()};
+ el.querySelectorAll('.wb-item').forEach(it=>{const w=all.find(x=>x.id===it.dataset.id);if(!w)return;const msg=it.querySelector('.wb-msg');
+  const check=v=>{const ok=w.kind==='judge'?v===w.ans:Number(String(v).replace('−','-'))===w.ans;
+   if(ok){SFX.right();msg.textContent='答对了！这道题已经掌握，从错题本拿掉。';msg.className='wb-msg good';it.classList.add('done');
+    setTimeout(()=>{S.wrongBook=S.wrongBook.filter(x=>x.id!==w.id);save();renderWrongBook()},1100)}
+   else{SFX.wrong();msg.textContent='还是不对，看看上面的讲解再试一次。';msg.className='wb-msg bad'}};
+  it.querySelectorAll('[data-try]').forEach(b=>b.onclick=()=>check(b.dataset.try==='true'));
+  const f=it.querySelector('.wb-form');if(f)f.onsubmit=ev=>{ev.preventDefault();const v=f.querySelector('input').value.trim();if(!v){msg.textContent='请先写答案。';return}check(v)};
+  it.querySelector('[data-del]').onclick=()=>{S.wrongBook=S.wrongBook.filter(x=>x.id!==w.id);save();renderWrongBook()}})}
+
 /* ============ RESULT ============ */
 function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=null,bossR=null;
  if(win){coins=b.isBoss?80+30*(b.sc||b.ch)+(b.wrongs===0?40:0):20+5*(b.sc||b.ch)+(b.wrongs===0?10:0);if(S.prog[b.ch]<b.lv)S.prog[b.ch]=b.lv;S.stats.wins++;SFX.win();
@@ -3338,6 +3391,7 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=nu
    <button class="btn gold" type="button" id="rShop">${partWin?'去打开金宝箱':'去商店开宝箱'}</button>
    ${win&&b.lv<5?'<button class="btn primary" type="button" id="rNext">下一关</button>':''}
    ${!win?'<button class="btn primary" type="button" id="rAgain">再战一次</button>':''}
+   ${(b.wrongIds||[]).length?`<button class="btn" type="button" id="rWrong">查看本场错题（${b.wrongIds.length}）</button>`:''}
    <button class="btn" type="button" id="rMap">返回地图</button>
   </div></div></div>`;
  show('result');
@@ -3346,6 +3400,7 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=nu
  if($('#rEquip'))$('#rEquip').onclick=()=>{S.eq[bossR.item.type]=bossR.item.id;save();toast('已装备 '+bossR.item.name);$('#rEquip').disabled=true;$('#rEquip').textContent='已装备'};
  if($('#rNext'))$('#rNext').onclick=()=>startBattle(b.ch,b.lv+1);
  if($('#rAgain'))$('#rAgain').onclick=()=>startBattle(b.ch,b.lv);
+ if($('#rWrong'))$('#rWrong').onclick=()=>renderWrongBook(b.wrongIds.slice(),b);
  B=null}
 
 /* ============ SHOP & CHESTS ============ */
