@@ -217,6 +217,7 @@ svg.art{display:block;overflow:visible}
 .hlv.on{background:var(--cinnabar);color:var(--card);border-color:var(--cinnabar)}.hlv.on small{color:var(--card)}
 @media (max-width:640px){.hlvrow{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .potlim{display:block;font-size:.72rem;color:var(--cinnabar);font-weight:700}
+.chipbtn.playerbtn{background:var(--paper);border-color:var(--cinnabar);color:var(--cinnabar);font-weight:700;max-width:12em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wl{background:var(--cinnabar);color:var(--card);border-radius:999px;padding:2px 12px;font-weight:700;font-size:.9rem;white-space:nowrap}
 .partbox{border:3px solid var(--gold);background:var(--card);border-radius:14px;padding:12px 18px;display:flex;flex-direction:column;gap:6px;max-width:640px;text-align:left;font-size:1.05rem}
 .partbox h3{font-size:1.8rem;color:var(--cinnabar);text-align:center}
@@ -515,7 +516,7 @@ svg.art{display:block;overflow:visible}
   <header class="topbar">
     <button class="brand" id="brandBtn" type="button"><span class="stamp">墨</span>math game.io</button>
     <div class="topright">
-      <button class="chipbtn homebtn" id="homeBtn" type="button">首页</button><button class="chipbtn" id="musicBtn" type="button">音乐：开</button><button class="chipbtn" id="soundBtn" type="button">音效：开</button>
+      <button class="chipbtn playerbtn" id="playerBtn" type="button" title="签名 / 换玩家">未签名</button><button class="chipbtn homebtn" id="homeBtn" type="button">首页</button><button class="chipbtn" id="musicBtn" type="button">音乐：开</button><button class="chipbtn" id="soundBtn" type="button">音效：开</button>
       <div class="seal" title="金币"><span class="coin-ico" id="coinIco"></span><b id="coinNum">0</b><small>金币</small></div>
     </div>
   </header>
@@ -547,8 +548,19 @@ let curMode=(()=>{try{return localStorage.getItem(MODE_KEY)||'normal'}catch(e){r
 const HLV_KEY='moxia-hardlv';
 let curHardLv=(()=>{try{return Math.min(5,Math.max(1,+localStorage.getItem(HLV_KEY)||1))}catch(e){return 1}})();
 /* every mode has its own save, and in hard mode every monster strength has its own save too */
-function saveKey(m,lv){m=m||curMode;if(m==='normal')return SAVE_KEY;if(m==='hard'){lv=lv||curHardLv;return SAVE_KEY+'-hard'+(lv>1?'-L'+lv:'')}return SAVE_KEY+'-'+m}
+const PLAYER_KEY='moxia-player',CLAIM_KEY='moxia-claims';
+let curPlayer=(()=>{try{return localStorage.getItem(PLAYER_KEY)||''}catch(e){return ''}})();
+/* each signed name has its own saves; each mode, and each hard-mode strength, is a separate save inside that name */
+function saveKey(m,lv){m=m||curMode;const base=SAVE_KEY+(curPlayer?'@'+curPlayer:'');if(m==='normal')return base;if(m==='hard'){lv=lv||curHardLv;return base+'-hard'+(lv>1?'-L'+lv:'')}return base+'-'+m}
+/* the starting coins and every redeem code can be taken only once per name, across all modes and strengths */
+function claims(){try{return JSON.parse(localStorage.getItem(CLAIM_KEY)||'{}')||{}}catch(e){return {}}}
+function myClaim(){const c=claims()[curPlayer];return Object.assign({gift:0,codes:{}},c||{})}
+function setClaim(f){const c=claims(),m=Object.assign({gift:0,codes:{}},c[curPlayer]||{});f(m);c[curPlayer]=m;try{localStorage.setItem(CLAIM_KEY,JSON.stringify(c))}catch(e){}}
 function startGift(){return curMode==='hard'&&curHardLv===5?3000:2000}
+function grantStartGift(){if(!curPlayer||S.gift2000)return 0;S.gift2000=true;let g=0;if(!myClaim().gift){g=startGift();S.coins+=g;setClaim(m=>{m.gift=g})}save();return g}
+function migrateLegacy(name){try{if(localStorage.getItem('moxia-migrated'))return;localStorage.setItem('moxia-migrated','1');const c=claims(),m=Object.assign({gift:0,codes:{}},c[name]||{});
+ Object.keys(localStorage).filter(k=>k===SAVE_KEY||k.startsWith(SAVE_KEY+'-')).forEach(k=>{const v=localStorage.getItem(k),nk=SAVE_KEY+'@'+name+k.slice(SAVE_KEY.length);if(!localStorage.getItem(nk))localStorage.setItem(nk,v);localStorage.removeItem(k);
+  try{const o=JSON.parse(v);if(o.gift2000)m.gift=m.gift||2000;Object.keys(o.codes||{}).forEach(x=>{m.codes[x]=true})}catch(e){}});c[name]=m;localStorage.setItem(CLAIM_KEY,JSON.stringify(c))}catch(e){}}
 const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0},seen:{},trophies:{},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{},potions:{},codes:{},t2open:false});
 function load(){try{const r=localStorage.getItem(saveKey());if(r){const o=JSON.parse(r);const d=defaultSave();return Object.assign(d,o,{prog:Object.assign(d.prog,o.prog||{}),eq:Object.assign(d.eq,o.eq||{}),stats:Object.assign(d.stats,o.stats||{})})}}catch(e){}return defaultSave()}
 function save(){try{localStorage.setItem(saveKey(),JSON.stringify(S))}catch(e){}}
@@ -2292,6 +2304,7 @@ let homeArmed=null;
 $('#homeBtn').onclick=()=>{const b=$('#homeBtn');
  if(screen==='battle'&&B&&!B.over){if(!homeArmed){b.textContent='再点一次回首页';b.classList.add('armed');homeArmed=setTimeout(()=>{homeArmed=null;b.textContent='首页';b.classList.remove('armed')},3000);return}clearTimeout(homeArmed);homeArmed=null;b.textContent='首页';b.classList.remove('armed');stopTimer();B.over=true}
  closeModal();renderHome()};
+$('#playerBtn').onclick=()=>askName(()=>renderHome());
 $('#musicBtn').onclick=()=>{S.music=!S.music;save();$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');if(S.music){if(screen==='battle'&&B)musicStart(B.isBoss?'boss':(B.C.tower===5?'horror':(B.C.tower||1)>=2?'tower':'battle'))}else musicStop()};
 $('#soundBtn').onclick=()=>{S.sound=!S.sound;save();$('#soundBtn').textContent='音效：'+(S.sound?'开':'关');if(S.sound)SFX.coin()};
 
@@ -2314,24 +2327,37 @@ function hardLv(){return S.mode==='hard'?HARD_LV[curHardLv-1]:null}
 function hlvInfo(lv){try{const r=localStorage.getItem(saveKey('hard',lv));if(!r)return null;const o=JSON.parse(r);return {parts:Object.values(o.prog||{}).filter(v=>v>=5).length,coins:o.coins||0}}catch(e){return null}}
 function askHardLv(lv){if(lv===curHardLv)return;const h=HARD_LV[lv-1],info=hlvInfo(lv),box=$('#modal');
  box.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="切换怪物强度"><h3>切换到怪物强度「${h.n} · ${h.tag}」？</h3>
-  <p style="font-size:1.1rem;line-height:1.6;margin:0">每个怪物强度都有<b>自己的独立存档</b>，金币、英雄、装备<b>不能带到别的强度或别的模式</b>。${info?`你在「${h.n}」已经完成 ${info.parts} 个部分，有 ${info.coins} 金币，切换后继续玩。`:`第一次进入「${h.n}」要<b style="color:var(--cinnabar)">从头开始</b>（送你 ${lv===5?3000:2000} 金币）。`}</p>
+  <p style="font-size:1.1rem;line-height:1.6;margin:0">每个怪物强度都有<b>自己的独立存档</b>，金币、英雄、装备<b>不能带到别的强度或别的模式</b>。${info?`你在「${h.n}」已经完成 ${info.parts} 个部分，有 ${info.coins} 金币，切换后继续玩。`:`第一次进入「${h.n}」要<b style="color:var(--cinnabar)">从头开始</b>${myClaim().gift?'（开局金币每个名字只能领一次，你已经领过了）':`（送你 ${lv===5?3000:2000} 金币）`}。`}</p>
   <p class="muted" style="margin:0">现在「${HARD_LV[curHardLv-1].n}」的进度会保存好，随时可以切换回来。</p>
   <div class="row" style="justify-content:center"><button class="btn primary" type="button" id="hlYes">确定切换</button><button class="btn" type="button" id="hlNo">取消</button></div></div>`;
  box.hidden=false;$('#hlNo').onclick=()=>{box.hidden=true;box.innerHTML=''};
  $('#hlYes').onclick=()=>{save();const snd=S.sound,mus=S.music;curHardLv=lv;try{localStorage.setItem(HLV_KEY,String(lv))}catch(e){}
-  S=load();S.mode='hard';S.sound=snd;S.music=mus;const g=startGift(),fresh=!S.gift2000;if(fresh){S.gift2000=true;S.coins+=g}save();
-  box.hidden=true;box.innerHTML='';updateCoins(true);SFX.chest();renderMap();toast(fresh?`进入怪物强度「${h.n}」：从头开始，获得 ${g} 金币！`:`回到怪物强度「${h.n}」的存档`)}}
+  S=load();S.mode='hard';S.sound=snd;S.music=mus;const fresh=!S.gift2000,g=grantStartGift();save();
+  box.hidden=true;box.innerHTML='';updateCoins(true);SFX.chest();renderMap();toast(fresh?(g?`进入怪物强度「${h.n}」：从头开始，获得 ${g} 金币！`:`进入怪物强度「${h.n}」：从头开始（开局金币每个名字只能领一次，你已经领过了）`):`回到怪物强度「${h.n}」的存档`)}}
 const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，8个大招，怒气2格就满，一次放4个，一半机会闪避或格挡；你的生命攻击减半，防御只挡一半；奖励×5，还有特别奖励',ehp:2,eatk:2,php:.5,patk:.5,coin:5}};
 function modeInfo(m){try{const r=localStorage.getItem(saveKey(m));if(!r)return null;const o=JSON.parse(r);return {parts:Object.values(o.prog||{}).filter(v=>v>=5).length,coins:o.coins||0}}catch(e){return null}}
+function cleanName(n){return n.replace(/[<>&"'`\\/@]/g,'').replace(/\s+/g,' ').trim().slice(0,12)}
+function renderPlayerChip(){const b=$('#playerBtn');if(b)b.textContent=curPlayer?'玩家：'+curPlayer:'未签名'}
+function askName(after){const box=$('#modal');
+ box.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="签名"><h3>${curPlayer?'换一个玩家':'开始战斗前，请先签名'}</h3>
+  <p style="font-size:1.05rem;line-height:1.6;margin:0">每个名字有<b>自己的存档</b>。开局金币和兑换码，<b>每个名字只能领一次</b>。</p>
+  <form id="nameForm" class="row" style="justify-content:center;flex-wrap:nowrap"><input id="nameIn" maxlength="12" placeholder="写上你的名字" autocomplete="off" aria-label="你的名字" style="font-size:1.3rem;padding:8px 12px;border:2px solid var(--ink);border-radius:8px;min-width:0;flex:1;background:var(--paper)"><button class="btn primary" type="submit">签名</button></form>
+  <div id="nameMsg" class="muted" style="min-height:1.2em"></div>${curPlayer?'<div class="row" style="justify-content:center"><button class="btn" type="button" id="nameNo">取消</button></div>':''}</div>`;
+ box.hidden=false;const inp=$('#nameIn');setTimeout(()=>inp&&inp.focus(),60);
+ $('#nameForm').onsubmit=ev=>{ev.preventDefault();const n=cleanName(inp.value);if(!n){$('#nameMsg').textContent='请先写上你的名字。';return}box.hidden=true;box.innerHTML='';signIn(n);after&&after()};
+ if($('#nameNo'))$('#nameNo').onclick=()=>{box.hidden=true;box.innerHTML=''}}
+function signIn(n){if(curPlayer)save();const snd=S.sound,mus=S.music,same=n===curPlayer;migrateLegacy(n);curPlayer=n;try{localStorage.setItem(PLAYER_KEY,n)}catch(e){}
+ S=load();S.mode=curMode;S.sound=snd;S.music=mus;const fresh=!S.gift2000,g=grantStartGift();save();updateCoins(true);renderPlayerChip();
+ toast(g?`欢迎 ${n}！获得开局金币 ${g}`:fresh?`欢迎 ${n}！（开局金币每个名字只能领一次，你已经领过了）`:same?`你好，${n}`:`欢迎回来，${n}！`)}
 function askModeSwitch(m){const md=MODES[m],cur=MODES[curMode],info=modeInfo(m);const box=$('#modal');
  box.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="切换难度"><h3>切换到「${md.name}」模式？</h3>
-  <p style="font-size:1.1rem;line-height:1.6;margin:0">每个难度都有<b>自己的独立存档</b>。${info?`你在「${md.name}」模式已经完成 ${info.parts} 个部分，有 ${info.coins} 金币，切换后继续玩。`:`第一次进入「${md.name}」模式要<b style="color:var(--cinnabar)">从头开始</b>：关卡、金币、英雄、装备都重新开始（会送你 2000 金币）。`}</p>
+  <p style="font-size:1.1rem;line-height:1.6;margin:0">每个难度都有<b>自己的独立存档</b>。${info?`你在「${md.name}」模式已经完成 ${info.parts} 个部分，有 ${info.coins} 金币，切换后继续玩。`:`第一次进入「${md.name}」模式要<b style="color:var(--cinnabar)">从头开始</b>：关卡、金币、英雄、装备都重新开始${myClaim().gift||!curPlayer?'（开局金币每个名字只能领一次）':`（会送你 ${m==='hard'&&curHardLv===5?3000:2000} 金币）`}。`}</p>
   <p class="muted" style="margin:0">你现在「${cur.name}」模式的进度会保存好，随时可以切换回来继续。</p>
   <div class="row" style="justify-content:center"><button class="btn primary" type="button" id="msYes">确定切换</button><button class="btn" type="button" id="msNo">取消</button></div></div>`;
  box.hidden=false;$('#msNo').onclick=()=>{box.hidden=true;box.innerHTML=''};
  $('#msYes').onclick=()=>{save();const snd=S.sound,mus=S.music;curMode=m;try{localStorage.setItem(MODE_KEY,m)}catch(e){}
-  S=load();S.mode=m;S.sound=snd;S.music=mus;const g=startGift(),fresh=!S.gift2000;if(fresh){S.gift2000=true;S.coins+=g}save();
-  box.hidden=true;box.innerHTML='';updateCoins(true);SFX.chest();renderHome();toast(fresh?`进入「${md.name}」模式：从头开始，获得 ${g} 金币！`:`回到「${md.name}」模式的存档`)}}
+  S=load();S.mode=m;S.sound=snd;S.music=mus;const fresh=!S.gift2000,g=grantStartGift();save();
+  box.hidden=true;box.innerHTML='';updateCoins(true);SFX.chest();renderHome();toast(fresh?(g?`进入「${md.name}」模式：从头开始，获得 ${g} 金币！`:`进入「${md.name}」模式：从头开始（开局金币每个名字只能领一次，你已经领过了）`):`回到「${md.name}」模式的存档`)}}
 function monsterList(){const L=[];CHAPTERS.forEach(C=>{C.enemies.forEach(([n,a,o])=>L.push({key:n,name:n,art:a,opt:o,C,boss:false}));L.push({key:C.boss.name,name:C.boss.name,art:C.boss.art,opt:{},C,boss:true})});return L}
 function renderHome(){
  const el=$('#scr-home');const hs=heroStats(),parts=worldLv(),total=CHAPTERS.length,mons=monsterList();S.seen=S.seen||{};const seen=mons.filter(m=>S.seen[m.key]).length;
@@ -2384,7 +2410,7 @@ function tower5Open(){return S.prog[12]>=5||!!S.t5open}
 const TOWERS=[{id:1,name:'第一塔 · 墨之塔',open:()=>true,lock:''},{id:2,name:'第二塔 · 云霄塔',open:()=>tower2Open(),lock:'打败墨魔王后开启'},{id:3,name:'第三塔 · 龙宫',open:()=>tower3Open(),lock:'打败天狗后开启'},{id:4,name:'第四塔 · 炎月塔',open:()=>tower4Open(),lock:'打败东海龙王后开启'},{id:5,name:'第五塔 · 幽冥塔',open:()=>tower5Open(),lock:'打败三足金蟾后开启'}];
 function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Open();if(C.id===9)return !tower3Open();if(C.id===11)return !tower4Open();if(C.id===13)return !tower5Open();if(C.id===15)return !tower6Open();if(C.id===17)return false;if(C.id>=7)return S.prog[C.id-1]<5;return false}
 function ch5Open(){return [1,2,3,4].filter(c=>S.prog[c]>=5).length>=3}
-function renderMap(){
+function renderMap(){if(!curPlayer){askName(renderMap);return}
  const el=$('#scr-map');const hs=heroStats();
  el.innerHTML=`<div class="map-head"><div class="row"><h2>选择关卡</h2>${worldLv()?`<span class="wl">怪物强化 Lv.${worldLv()}</span>`:''}</div>${S.mode==='hard'?`<div class="hlvbox"><b>选择怪物强度：</b><div class="hlvrow">${HARD_LV.map((h,i)=>`<button type="button" class="hlv ${curHardLv===i+1?'on':''}" data-hlv="${i+1}"><b>${h.n} · ${h.tag}</b><small>生命×${h.hp} 攻击×${h.atk}</small><small class="rw">金币×${h.coin}${h.chest?` · 神话宝箱`:''}</small>${i===4?'<small class="rw">开局金币 3000</small>':''}${(()=>{const f=hlvInfo(i+1);return f&&curHardLv!==i+1?`<small>存档：${f.coins} 金币</small>`:''})()}</button>`).join('')}</div><span class="muted" style="font-size:.85rem">怪物越强，奖励越多！（在困难模式原有奖励上再乘）每个强度都是<b>独立存档</b>，金币不能带到别的强度或模式。</span></div>`:''}
  <div class="curhero">${ART[S.cur]()}<div><b>${CHARS[S.cur].name}</b><div class="muted" style="font-size:.85rem">攻击 ${hs.atk} · 生命 ${hs.hp}</div></div><button class="chipbtn" id="mGear" type="button">换角色/装备</button></div></div>
@@ -2492,7 +2518,7 @@ const MSKILL2={
  clam:{name:'珍珠疗伤',type:'heal',fx:'snow',desc:'珍珠发光，恢复20%生命'},eel:{name:'电流连击',type:'double',mult:.9,fx:'thunder',desc:'连放两次电'},
  angler:{name:'深海迷光',type:'weaken',mult:1,fx:'gold',desc:'闪光晃眼，让你攻击力下降2回合'},jiangshi:{name:'尸气护体',type:'shield',fx:'shadow',desc:'尸气环绕，给自己加护盾'},paperman:{name:'纸人分身',type:'heal',fx:'ink',desc:'剪出新纸人，恢复20%生命'},hairghost:{name:'鬼哭',type:'weaken',mult:1,fx:'ice',desc:'凄厉的哭声，让你攻击力下降'},eyeball:{name:'血丝毒光',type:'poison',mult:1,fx:'poison',desc:'射出毒光，让你中毒3回合'},spiderqueen:{name:'蛛丝茧',type:'shield',fx:'snow',desc:'用蛛丝包住自己，加护盾'},oxhead:{name:'牛魔怒吼',type:'buff',fx:'stone',desc:'怒吼一声，攻击力提高25%'},horseface:{name:'锁链连击',type:'double',mult:1,fx:'shadow',desc:'锁链连甩两下'},wraith:{name:'暗影复生',type:'heal',fx:'shadow',desc:'黑雾聚合，恢复20%生命'},bonehound:{name:'骨甲',type:'shield',fx:'stone',desc:'骨头拼成护甲，加护盾'},ghostemperor:{name:'鬼帝之怒',type:'buff',fx:'shadow',desc:'鬼气冲天，攻击力提高25%'},lavaman:{name:'岩浆护甲',type:'shield',fx:'fire',desc:'岩浆凝成护甲，给自己加护盾'},salamander:{name:'尾巴横扫',type:'big',mult:1.6,fx:'fire',desc:'火尾巴横扫，伤害×1.6'},wisp:{name:'火灵分身',type:'heal',fx:'fire',desc:'分出火苗，恢复20%生命'},imp:{name:'恶作剧',type:'charm',mult:1,fx:'fire',desc:'捣乱偷走你的技能能量'},flamelord:{name:'魔君之怒',type:'buff',fx:'fire',desc:'怒火冲天，攻击力提高25%'},rabbit:{name:'捣药回春',type:'heal',fx:'stone',desc:'捣出仙药，恢复20%生命'},moth:{name:'鳞粉毒雾',type:'poison',mult:.9,fx:'poison',desc:'毒雾弥漫，让你中毒3回合'},jadeguard:{name:'玉石护体',type:'shield',fx:'stone',desc:'玉石护甲，给自己加护盾'},starspirit:{name:'星光治愈',type:'heal',fx:'star',desc:'星光照耀，恢复20%生命'},toad:{name:'金钱护体',type:'shield',fx:'gold',desc:'金钱环绕，给自己加护盾'},
  dragonking:{name:'龙王召雨',type:'heal',fx:'ice',desc:'召来大雨，恢复20%生命'}};
-function startBattle(ch,lv){
+function startBattle(ch,lv){if(!curPlayer){askName(()=>startBattle(ch,lv));return}
  mapTab=CHAPTERS[ch-1].tower||1;
  const C=CHAPTERS[ch-1],isBoss=lv===5,sc=C.tower===7?C.id-15:ch,m=C.tower===7?1.3+.35*(sc-2):ch>=15?4.6+.3*(ch-15):ch>=13?3.8+.25*(ch-13):ch>=11?3.2+.25*(ch-11):ch>=9?2.6+.25*(ch-9):ch>=6?2+.2*(ch-6):1+.25*(ch-1);let e;
  if(isBoss)e={name:C.boss.name,art:C.boss.art,opt:{},max:Math.round(100*m),atk:Math.round(12+1.5*sc),powers:C.boss.powers.slice()};
@@ -3182,8 +3208,8 @@ function renderShop(){
  el.querySelectorAll('[data-pot]').forEach(b=>b.onclick=()=>{const k=b.dataset.pot,P=POTIONS[k];if(S.coins<P.price)return;S.coins-=P.price;S.potions[k]=(S.potions[k]||0)+1;save();updateCoins(true);SFX.coin();toast('买到了 '+P.name);renderShop()});
  el.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>{const g=CLOUD_GEAR.find(x=>x.key===b.dataset.gear);if(!g||S.coins<g.price)return;S.coins-=g.price;const it={id:S.nextId++,type:g.type,rar:g.rar,val:g.val,name:g.name,ck:g.key};S.inv.push(it);S.eq[g.type]=it.id;save();updateCoins(true);SFX.chest();toast('已装备 '+g.name);renderShop()});
  const f=$('#codeForm');if(f)f.onsubmit=ev=>{ev.preventDefault();const code=$('#codeIn').value.trim().toUpperCase().replace(/\s+/g,'');S.codes=S.codes||{};const C=CODES[code];
-  if(!code)codeMsg='请先输入兑换码。';else if(!C)codeMsg=`<span class="bad">兑换码“${code.replace(/[<>&"]/g,'')}”不对，请检查后再试。</span>`;else if(S.codes[code])codeMsg='<span class="bad">这个兑换码已经用过了。</span>';
-  else{C.f();S.codes[code]=true;save();updateCoins(true);SFX.chest();codeMsg=`<span class="good">兑换成功：${C.txt}！</span>`}
+  if(!code)codeMsg='请先输入兑换码。';else if(!C)codeMsg=`<span class="bad">兑换码“${code.replace(/[<>&"]/g,'')}”不对，请检查后再试。</span>`;else if(!curPlayer)codeMsg='<span class="bad">请先签名，再用兑换码。</span>';else if(S.codes[code]||myClaim().codes[code])codeMsg='<span class="bad">这个兑换码你已经用过了（每个名字只能用一次）。</span>';
+  else{C.f();S.codes[code]=true;setClaim(m=>{m.codes[code]=true});save();updateCoins(true);SFX.chest();codeMsg=`<span class="good">兑换成功：${C.txt}！</span>`}
   renderShop();const i=$('#codeIn');if(i)i.focus()};
  $('#sBack').onclick=renderMap;
  const sc=el.scrollTop;show('shop');el.scrollTop=sc}
@@ -3259,7 +3285,7 @@ function renderGear(){
 /* ============ BOOT ============ */
 window.__moxia={genQ,judgeQ,toCN,BANK,ART,BG,updateHud,itemIcon,NAMES,get B(){return B},get CC(){return chestCtx}};
 $('#soundBtn').textContent='音效：'+(S.sound?'开':'关');$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');
-if(!S.gift2000){const g=startGift();S.gift2000=true;S.coins+=g;save();setTimeout(()=>{toast('礼物：获得 '+g+' 金币！');SFX.coin()},400)}
+renderPlayerChip();if(curPlayer&&!S.gift2000){const g=grantStartGift();if(g)setTimeout(()=>{toast('礼物：获得 '+g+' 金币！');SFX.coin()},400)}
 updateCoins();renderHome();
 })();
 </script>
