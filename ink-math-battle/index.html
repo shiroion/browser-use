@@ -210,6 +210,12 @@ svg.art{display:block;overflow:visible}
 .energy .pips{display:flex;gap:3px}
 .energy .pips i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);background:var(--card)}
 .energy .pips i.on{background:var(--gold)}
+.hlvbox{flex-basis:100%;display:flex;flex-direction:column;gap:6px;background:var(--card);border:2px solid var(--cinnabar);border-radius:12px;padding:10px 12px}
+.hlvrow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.hlv{display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid var(--ink);border-radius:10px;background:var(--paper);padding:8px 4px;font-size:1rem}
+.hlv small{font-size:.78rem;color:var(--muted,#6d6a63)}.hlv small.rw{color:var(--cinnabar);font-weight:700}
+.hlv.on{background:var(--cinnabar);color:var(--card);border-color:var(--cinnabar)}.hlv.on small{color:var(--card)}
+@media (max-width:640px){.hlvrow{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .wl{background:var(--cinnabar);color:var(--card);border-radius:999px;padding:2px 12px;font-weight:700;font-size:.9rem;white-space:nowrap}
 .partbox{border:3px solid var(--gold);background:var(--card);border-radius:14px;padding:12px 18px;display:flex;flex-direction:column;gap:6px;max-width:640px;text-align:left;font-size:1.05rem}
 .partbox h3{font-size:1.8rem;color:var(--cinnabar);text-align:center}
@@ -2298,6 +2304,8 @@ function makePad(host,onSubmit){
  return api}
 
 /* ============ HOME ============ */
+const HARD_LV=[{n:'1级',hp:1,atk:1,coin:1,tag:'标准'},{n:'2级',hp:1.5,atk:1.3,coin:2,tag:'较强'},{n:'3级',hp:2,atk:1.6,coin:3,tag:'很强'},{n:'4级',hp:3,atk:2,coin:5,tag:'超强',chest:1},{n:'5级',hp:5,atk:3,coin:10,tag:'地狱',chest:2}];
+function hardLv(){return S.mode==='hard'?HARD_LV[Math.min(4,Math.max(0,(S.hardLv||1)-1))]:null}
 const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，8个大招，怒气2格就满，一次放4个，一半机会闪避或格挡；你的生命攻击减半，防御只挡一半；奖励×5，还有特别奖励',ehp:2,eatk:2,php:.5,patk:.5,coin:5}};
 function modeInfo(m){try{const r=localStorage.getItem(saveKey(m));if(!r)return null;const o=JSON.parse(r);return {parts:Object.values(o.prog||{}).filter(v=>v>=5).length,coins:o.coins||0}}catch(e){return null}}
 function askModeSwitch(m){const md=MODES[m],cur=MODES[curMode],info=modeInfo(m);const box=$('#modal');
@@ -2363,7 +2371,7 @@ function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Ope
 function ch5Open(){return [1,2,3,4].filter(c=>S.prog[c]>=5).length>=3}
 function renderMap(){
  const el=$('#scr-map');const hs=heroStats();
- el.innerHTML=`<div class="map-head"><div class="row"><h2>选择关卡</h2>${worldLv()?`<span class="wl">怪物强化 Lv.${worldLv()}</span>`:''}</div>
+ el.innerHTML=`<div class="map-head"><div class="row"><h2>选择关卡</h2>${worldLv()?`<span class="wl">怪物强化 Lv.${worldLv()}</span>`:''}</div>${S.mode==='hard'?`<div class="hlvbox"><b>选择怪物强度：</b><div class="hlvrow">${HARD_LV.map((h,i)=>`<button type="button" class="hlv ${(S.hardLv||1)===i+1?'on':''}" data-hlv="${i+1}"><b>${h.n} · ${h.tag}</b><small>生命×${h.hp} 攻击×${h.atk}</small><small class="rw">金币×${h.coin}${h.chest?` · 神话宝箱`:''}</small></button>`).join('')}</div><span class="muted" style="font-size:.85rem">怪物越强，奖励越多！（在困难模式原有奖励上再乘）</span></div>`:''}
  <div class="curhero">${ART[S.cur]()}<div><b>${CHARS[S.cur].name}</b><div class="muted" style="font-size:.85rem">攻击 ${hs.atk} · 生命 ${hs.hp}</div></div><button class="chipbtn" id="mGear" type="button">换角色/装备</button></div></div>
  <div class="tabs">${TOWERS.map(t=>`<button type="button" class="tab ${mapTab===t.id?'on':''}" data-tab="${t.id}">${t.name}${t.open()?'':'（'+t.lock+'）'}</button>`).join('')}</div>
  <div class="chapters">${CHAPTERS.filter(C=>(C.tower||1)===mapTab).map(C=>{const locked=chLocked(C);const p=S.prog[C.id];
@@ -2372,6 +2380,7 @@ function renderMap(){
   <div class="bossline"><b>首领：${C.boss.name}</b> <span class="muted">— ${C.boss.desc}</span></div>
   ${locked?`<div class="lockmsg">${C.id===5?'打败前四个单元中任意三个首领后开启':C.id===6?'打败第一塔的墨魔王后开启':C.id===9?'打败第二塔的天狗后开启':C.id===11?'打败第三塔的东海龙王后开启':C.id===13?'打败第四塔的三足金蟾后开启':C.id===15?'打败第五塔的幽冥鬼帝后开启':'打败上一层的首领后开启'}</div>`:''}</div>`}).join('')}</div>`;
  el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{mapTab=+b.dataset.tab;renderMap()});
+ el.querySelectorAll('[data-hlv]').forEach(b=>b.onclick=()=>{S.hardLv=+b.dataset.hlv;save();SFX.key&&SFX.key();renderMap()});
  el.querySelectorAll('.node').forEach(b=>b.onclick=()=>startBattle(+b.dataset.ch,+b.dataset.lv));
  $('#mGear').onclick=renderGear;
  show('map')}
@@ -2478,7 +2487,7 @@ function startBattle(ch,lv){
  e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
  const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.1*wl));e.atk=Math.round(e.atk*(1+.05*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;
  if(S.mode==='hard'){e.rageMax=2;e.sk2=MSKILL2[e.art]||null;const pool=[...Object.values(MSKILL),...Object.values(MSKILL2)].filter(x=>x!==e.sk&&x!==e.sk2);e.hardSk=[e.sk,e.sk2].filter(Boolean).concat(shuffle(pool.slice()).slice(0,8-[e.sk,e.sk2].filter(Boolean).length))}e.burn=0;
- const MD=MODES[S.mode||'normal'];e.max=Math.max(1,Math.round(e.max*MD.ehp));e.atk=Math.max(1,Math.round(e.atk*MD.eatk));if(S.mode==='hard'){e.blk=.5;e.ctr=Math.min(e.ctr,.3)}
+ const MD=MODES[S.mode||'normal'];e.max=Math.max(1,Math.round(e.max*MD.ehp));e.atk=Math.max(1,Math.round(e.atk*MD.eatk));if(S.mode==='hard'){e.blk=.5;e.ctr=Math.min(e.ctr,.3);const HL=hardLv();e.max=Math.round(e.max*HL.hp);e.atk=Math.round(e.atk*HL.atk);e.hlv=S.hardLv||1}
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
  let d;if(sc>=6)d=isBoss?3:(lv<=2?2:3);else if(sc===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
@@ -2487,7 +2496,7 @@ function startBattle(ch,lv){
 
 function renderBattle(){
  const el=$('#scr-battle'),C=B.C,e=B.e,ch=CHARS[S.cur];
- el.innerHTML=`<div class="banner"><span class="lvl">${C.name} · ${B.isBoss?'首领关':'第'+B.lv+'关'}</span><span class="modebadge m-${S.mode||'normal'}">${MODES[S.mode||'normal'].name}</span><span class="mission">任务：答对题目，击败 ${e.name}！</span>${e.lvl?`<span class="wl">怪物强化 Lv.${e.lvl}</span>`:''}<button class="retreat" type="button" id="bRetreat">撤退</button></div>
+ el.innerHTML=`<div class="banner"><span class="lvl">${C.name} · ${B.isBoss?'首领关':'第'+B.lv+'关'}</span><span class="modebadge m-${S.mode||'normal'}">${MODES[S.mode||'normal'].name}${B.e.hlv?' · 强度'+HARD_LV[B.e.hlv-1].n:''}</span><span class="mission">任务：答对题目，击败 ${e.name}！</span>${e.lvl?`<span class="wl">怪物强化 Lv.${e.lvl}</span>`:''}<button class="retreat" type="button" id="bRetreat">撤退</button></div>
  <div class="arena" id="arena">${ambientHTML(C.bg)}<div class="world" id="world">${BG[C.bg]()}${[.3,.55,.8].map((x,i)=>`<div class="pickup" data-at="${x}" style="left:${(25+x*60)/1.6}%"><span class="coin-ico"></span></div>`).join('')}</div>
   <div class="fighter hero ${S.cur==='giant'?'giant':''}" id="fHero" style="--hc:${HERO_COLOR[S.cur]||INK}"><div class="art-wrap">${groundInk(INK)}${ART[S.cur]()}</div>
    <div class="hud"><div class="nm">${ch.name}<small>攻击 ${B.hero.atk} · ${HERO_ATK[S.cur].name}</small></div><div class="bar hero" id="hpHero"><i></i><span></span></div>
@@ -3060,7 +3069,9 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=nu
    S.trophies=S.trophies||{};S.trophies[b.e.name]=(S.trophies[b.e.name]||0)+1;if(HARD){S.hardTro=S.hardTro||{};S.hardTro[b.e.name]=(S.hardTro[b.e.name]||0)+1}bossR={item:bi,pots,tro:S.trophies[b.e.name],hard:HARD}}else if(HARD&&Math.random()<.35){drop=7}else if(b.wrongs===0&&Math.random()<.3){drop=b.ch>=6?7:0}
   if(drop!==null)S.chests.push(drop)}
  else{coins=5;SFX.lose()}
- coins=Math.max(1,Math.round(coins*MODES[S.mode||'normal'].coin));S.coins+=coins;save();
+ const HLr=win&&b.e.hlv?HARD_LV[b.e.hlv-1]:null;coins=Math.max(1,Math.round(coins*MODES[S.mode||'normal'].coin*(HLr?HLr.coin:1)));let extra=[];
+ if(HLr&&HLr.chest){const n=b.isBoss?HLr.chest:(Math.random()<.3*HLr.chest?1:0);for(let i=0;i<n;i++){S.chests.push(8);extra.push(8)}}
+ S.coins+=coins;save();
  const el=$('#scr-result');const perfect=win&&b.wrongs===0;
  el.innerHTML=`<div class="result ${win?'win':''}"><div class="result-inner">
   ${win?ART[S.cur]():enemyArt(b.e)}
@@ -3076,6 +3087,7 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=nu
     <div class="bri">${bossR.pots.map(k=>potionIcon(k)).join('')}<b>药品 ×2</b><span>${bossR.pots.map(k=>POTIONS[k].name).join('、')}</span></div>
     <div class="bri"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 6 L34 6 L34 18 Q34 30 24 32 Q14 30 14 18Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/><path d="M14 10 Q4 10 6 18 Q8 24 14 22 M34 10 Q44 10 42 18 Q40 24 34 22" fill="none" stroke="${INK}" stroke-width="2.5"/><rect x="20" y="32" width="8" height="6" fill="${GOLD}" stroke="${INK}" stroke-width="2"/><rect x="14" y="38" width="20" height="6" rx="2" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/></svg><b>${bossR.hard?'困难奖杯':'首领奖杯'}</b><span>${bossR.hard?'困难模式 · ':''}击败 ${b.e.name} 第 ${bossR.tro} 次</span></div>
    </div></div>`:''}
+  ${HLr&&HLr.coin>1?`<div class="dropline"><span>怪物强度 <b>${HLr.n}（${HLr.tag}）</b>：金币 <b>×${HLr.coin}</b></span></div>`:''}${extra.length?`<div class="dropline">${chestSVG(8)}<span>强度奖励：<b>神话宝箱 ×${extra.length}</b> 已放进商店</span></div>`:''}
   ${drop!==null?`<div class="dropline">${chestSVG(drop)}<span>${b.isBoss?'首领掉落':S.mode==='hard'?'困难奖励':'全对奖励'}：<b>${CHESTS[drop].name}</b> 已放进商店</span></div>`:''}
   <div class="earn">获得 <div class="seal"><span class="coin-ico"></span><b id="earnNum">+0</b><small>金币</small></div></div>
   <div class="row" style="justify-content:center">
