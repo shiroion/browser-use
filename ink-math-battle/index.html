@@ -2372,7 +2372,7 @@ function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Ope
 function ch5Open(){return [1,2,3,4].filter(c=>S.prog[c]>=5).length>=3}
 function renderMap(){
  const el=$('#scr-map');const hs=heroStats();
- el.innerHTML=`<div class="map-head"><div class="row"><h2>选择关卡</h2>${worldLv()?`<span class="wl">怪物强化 Lv.${worldLv()}</span>`:''}</div>${S.mode==='hard'?`<div class="hlvbox"><b>选择怪物强度：</b><div class="hlvrow">${HARD_LV.map((h,i)=>`<button type="button" class="hlv ${(S.hardLv||1)===i+1?'on':''}" data-hlv="${i+1}"><b>${h.n} · ${h.tag}</b><small>生命×${h.hp} 攻击×${h.atk}</small><small class="rw">金币×${h.coin}${h.chest?` · 神话宝箱`:''}</small></button>`).join('')}</div><span class="muted" style="font-size:.85rem">怪物越强，奖励越多！（在困难模式原有奖励上再乘）</span></div>`:''}
+ el.innerHTML=`<div class="map-head"><div class="row"><h2>选择关卡</h2>${worldLv()?`<span class="wl">怪物强化 Lv.${worldLv()}</span>`:''}</div>${S.mode==='hard'?`<div class="hlvbox"><b>选择怪物强度：</b><div class="hlvrow">${HARD_LV.map((h,i)=>`<button type="button" class="hlv ${(S.hardLv||1)===i+1?'on':''}" data-hlv="${i+1}"><b>${h.n} · ${h.tag}</b><small>生命×${h.hp} 攻击×${h.atk}</small><small class="rw">金币×${h.coin}${h.chest?` · 神话宝箱`:''}</small>${i===4&&!S.gift3000?'<small class="rw">首次选择：开局金币变成3000</small>':''}</button>`).join('')}</div><span class="muted" style="font-size:.85rem">怪物越强，奖励越多！（在困难模式原有奖励上再乘）</span></div>`:''}
  <div class="curhero">${ART[S.cur]()}<div><b>${CHARS[S.cur].name}</b><div class="muted" style="font-size:.85rem">攻击 ${hs.atk} · 生命 ${hs.hp}</div></div><button class="chipbtn" id="mGear" type="button">换角色/装备</button></div></div>
  <div class="tabs">${TOWERS.map(t=>`<button type="button" class="tab ${mapTab===t.id?'on':''}" data-tab="${t.id}">${t.name}${t.open()?'':'（'+t.lock+'）'}</button>`).join('')}</div>
  <div class="chapters">${CHAPTERS.filter(C=>(C.tower||1)===mapTab).map(C=>{const locked=chLocked(C);const p=S.prog[C.id];
@@ -2381,7 +2381,7 @@ function renderMap(){
   <div class="bossline"><b>首领：${C.boss.name}</b> <span class="muted">— ${C.boss.desc}</span></div>
   ${locked?`<div class="lockmsg">${C.id===5?'打败前四个单元中任意三个首领后开启':C.id===6?'打败第一塔的墨魔王后开启':C.id===9?'打败第二塔的天狗后开启':C.id===11?'打败第三塔的东海龙王后开启':C.id===13?'打败第四塔的三足金蟾后开启':C.id===15?'打败第五塔的幽冥鬼帝后开启':'打败上一层的首领后开启'}</div>`:''}</div>`}).join('')}</div>`;
  el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{mapTab=+b.dataset.tab;renderMap()});
- el.querySelectorAll('[data-hlv]').forEach(b=>b.onclick=()=>{S.hardLv=+b.dataset.hlv;save();SFX.key&&SFX.key();renderMap()});
+ el.querySelectorAll('[data-hlv]').forEach(b=>b.onclick=()=>{S.hardLv=+b.dataset.hlv;let gift=false;if(S.hardLv===5&&!S.gift3000){S.gift3000=true;S.coins+=1000;gift=true}save();SFX.key&&SFX.key();renderMap();if(gift){updateCoins(true);SFX.coin();toast('选择地狱难度：开局金币从 2000 变成 3000！（+1000 金币）')}});
  el.querySelectorAll('.node').forEach(b=>b.onclick=()=>startBattle(+b.dataset.ch,+b.dataset.lv));
  $('#mGear').onclick=renderGear;
  show('map')}
