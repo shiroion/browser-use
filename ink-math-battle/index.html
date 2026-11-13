@@ -216,6 +216,7 @@ svg.art{display:block;overflow:visible}
 .hlv small{font-size:.78rem;color:var(--muted,#6d6a63)}.hlv small.rw{color:var(--cinnabar);font-weight:700}
 .hlv.on{background:var(--cinnabar);color:var(--card);border-color:var(--cinnabar)}.hlv.on small{color:var(--card)}
 @media (max-width:640px){.hlvrow{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.potlim{display:block;font-size:.72rem;color:var(--cinnabar);font-weight:700}
 .wl{background:var(--cinnabar);color:var(--card);border-radius:999px;padding:2px 12px;font-weight:700;font-size:.9rem;white-space:nowrap}
 .partbox{border:3px solid var(--gold);background:var(--card);border-radius:14px;padding:12px 18px;display:flex;flex-direction:column;gap:6px;max-width:640px;text-align:left;font-size:1.05rem}
 .partbox h3{font-size:1.8rem;color:var(--cinnabar);text-align:center}
@@ -2531,7 +2532,7 @@ function updateHud(){if(!B)return;const e=B.e;
  const fe=$('#fEnemy');if(fe)fe.classList.toggle('enraged',e.rage>=e.rageMax);
  const gp=$('#gPips');if(gp)gp.querySelectorAll('i').forEach((p,i)=>p.classList.toggle('on',i<B.gauge));
  document.querySelectorAll('#skills [data-sk]').forEach(b=>{const x=B.skills[+b.dataset.sk];const r=B.gauge>=x.cost;b.classList.toggle('ready',r);b.disabled=!r});const ea=$('#eAtk');if(ea)ea.textContent='攻击 '+e.atk;
- const pb=$('#potbar');if(pb){S.potions=S.potions||{};const ks=Object.keys(POTIONS).filter(k=>S.potions[k]>0);pb.hidden=!ks.length;pb.innerHTML=ks.map(k=>`<button type="button" class="potbtn" data-use-pot="${k}" title="${POTIONS[k].desc}" ${B.busy||B.review||B.def?'disabled':''}>${potionIcon(k)}${POTIONS[k].name}×${S.potions[k]}</button>`).join('')}
+ const pb=$('#potbar');if(pb){S.potions=S.potions||{};const ks=Object.keys(POTIONS).filter(k=>S.potions[k]>0);pb.hidden=!ks.length;pb.innerHTML=ks.map(k=>`<button type="button" class="potbtn" data-use-pot="${k}" title="${POTIONS[k].desc}" ${B.busy||B.review||B.def||(k==='energy'&&energyLeft()<=0)?'disabled':''}>${potionIcon(k)}${POTIONS[k].name}×${S.potions[k]}${k==='energy'&&S.mode==='hard'?`<small class="potlim">本场还能用 ${energyLeft()} 次</small>`:''}</button>`).join('')}
  const bf=[];if(B.blocks>0)bf.push('护体×'+B.blocks);if(B.poison>0)bf.push('中毒'+B.poison);if(B.weak>0)bf.push('虚弱'+B.weak);$('#buffs').textContent=bf.join(' ')}
 function floatText(fid,txt,cls,top){const f=$(fid);if(!f)return;const s=document.createElement('div');s.className='float '+cls;s.textContent=txt;if(top)s.style.top=top;f.appendChild(s);setTimeout(()=>s.remove(),1200)}
 function anim(fid,cls){const f=$(fid);if(!f)return;f.classList.remove(cls);void f.offsetWidth;f.classList.add(cls);setTimeout(()=>f.classList.remove(cls),500)}
@@ -2824,7 +2825,9 @@ function monsterShoot(opt,blocked,cb){const e=B.e,sk=opt.special;const hits=sk&&
  const one=()=>{anim('#fEnemy','lunge-l');if(blocked==='dodge')setTimeout(heroDodge,sk?120:40);if(sk)shoot('#fEnemy','#fHero',sk.fx,land);else setTimeout(()=>{if(!blocked)slash('#fHero',RED);land()},220)};
  one()}
 
-function usePotion(k){if(!B||B.over||B.busy||B.review||B.def||!(S.potions[k]>0))return;S.potions[k]--;save();SFX.skill();
+const HARD_ENERGY_MAX=5;
+function energyLeft(){return S.mode==='hard'?HARD_ENERGY_MAX-((B&&B.energyUsed)||0):Infinity}
+function usePotion(k){if(!B||B.over||B.busy||B.review||B.def||!(S.potions[k]>0))return;if(k==='energy'&&energyLeft()<=0){toast('困难模式：能量丹每场只能用 '+HARD_ENERGY_MAX+' 次');return}if(k==='energy')B.energyUsed=(B.energyUsed||0)+1;S.potions[k]--;save();SFX.skill();
  if(k==='heal'){const h=Math.round(B.hero.max*.5);B.hero.hp=Math.min(B.hero.max,B.hero.hp+h);floatText('#fHero','+'+h,'heal')}
  else if(k==='energy'){B.gauge=Math.min(GAUGE_MAX,B.gauge+3);floatText('#fHero','能量 +3','blue')}
  else{B.blocks++;guardFx('#fHero');floatText('#fHero','护身符','blue')}
@@ -3108,7 +3111,7 @@ function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=nu
 /* shop: chests / cloud shop / redeem codes */
 const POTIONS={
  heal:{name:'回血丹',price:40,desc:'战斗中使用：立刻恢复50%生命',c:'#b5352b'},
- energy:{name:'能量丹',price:50,desc:'战斗中使用：立刻获得3点技能能量',c:'#c98f17'},
+ energy:{name:'能量丹',price:50,desc:'战斗中使用：立刻获得3点技能能量（困难模式每场最多用5次）',c:'#c98f17'},
  guard:{name:'护身符',price:40,desc:'战斗中使用：挡住敌人的下一次攻击',c:'#2f6fb0'}};
 const CLOUD_GEAR=[
  {key:'cg1',type:'w',rar:2,val:20,name:'云霄剑',price:300,t2:false},
