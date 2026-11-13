@@ -218,6 +218,33 @@ svg.art{display:block;overflow:visible}
 @media (max-width:640px){.hlvrow{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .potlim{display:block;font-size:.72rem;color:var(--cinnabar);font-weight:700}
 .chipbtn.playerbtn{background:var(--paper);border-color:var(--cinnabar);color:var(--cinnabar);font-weight:700;max-width:12em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#scr-pvp{overflow:auto}
+.pvp-lobby{display:flex;flex-direction:column;gap:14px;max-width:980px;margin:0 auto;width:100%}
+.pvp-intro{font-size:1.15rem;line-height:1.7;margin:0}
+.pvp-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.pvp-card{background:var(--card);border:3px solid var(--ink);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:4px 4px 0 var(--ink)}
+.pvp-card h3{margin:0;font-size:1.4rem}.pvp-card p{margin:0}
+.pvp-lab{display:flex;gap:8px;align-items:center;font-weight:700}.pvp-lab select{font-size:1rem;padding:6px;border:2px solid var(--ink);border-radius:8px;background:var(--paper);min-width:0;flex:1}
+#pvCode{font-size:1.6rem;letter-spacing:.3em;width:100%;min-width:0;padding:6px 10px;border:2px solid var(--ink);border-radius:8px;background:var(--paper);font-variant-numeric:tabular-nums}
+.btn.big{font-size:1.25rem;padding:12px}
+.pvp-me{display:flex;gap:12px;align-items:center;background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:8px 12px}.pvp-me svg{width:64px;height:76px;flex:none}
+.pvp-msg{min-height:1.6em;font-size:1.1rem;text-align:center}
+.pvp-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px}.pvp-code{background:var(--cinnabar);color:var(--card);border-radius:999px;padding:4px 14px;font-size:1.1rem}.pvp-code b{letter-spacing:.2em;font-size:1.3rem}
+.pvp-top .btn{margin-left:auto}
+.pvparena{height:clamp(240px,42vh,360px);grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+.pvparena .pbg{position:absolute;inset:0;z-index:0;opacity:.85}.pvparena .pbg svg{width:100%;height:100%;display:block}
+.pvparena .fighter .art-wrap svg.art{height:100%;max-height:220px;width:auto}
+.mirror{transform:scaleX(-1);display:flex;align-items:flex-end;justify-content:center;width:100%;height:100%}
+.pvs{position:relative;z-index:1;align-self:center;font-size:2.2rem;font-weight:900;color:var(--cinnabar);text-shadow:2px 2px 0 var(--card)}
+.pplate{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:4px 10px;min-width:150px;text-align:center}
+.pplate b{display:block;max-width:12em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 auto}
+.phb{height:12px;border:2px solid var(--ink);border-radius:999px;overflow:hidden;background:var(--paper-2);margin:3px 0}.phb i{display:block;height:100%;background:#3f8a5a;transition:width .4s}#pB .phb i{background:var(--cinnabar)}
+.pvpdesk{margin-top:10px}
+#pvPad{display:flex;flex-direction:column;gap:8px;min-width:0}#pvPad .go{width:100%}
+#pvJoinForm .btn{white-space:nowrap;flex:none}
+.pvp-res{font-size:1.8rem;font-weight:900}.pvp-res.win{color:var(--cinnabar)}
+.pvpmini{display:flex;align-items:flex-end;gap:0}.pvpmini svg{width:44px;height:56px}.pvpmini .mirror{width:auto;height:auto}
+@media (max-width:700px){.pvp-cards{grid-template-columns:1fr}.pplate{min-width:0}}
 .wl{background:var(--cinnabar);color:var(--card);border-radius:999px;padding:2px 12px;font-weight:700;font-size:.9rem;white-space:nowrap}
 .partbox{border:3px solid var(--gold);background:var(--card);border-radius:14px;padding:12px 18px;display:flex;flex-direction:column;gap:6px;max-width:640px;text-align:left;font-size:1.05rem}
 .partbox h3{font-size:1.8rem;color:var(--cinnabar);text-align:center}
@@ -528,6 +555,7 @@ svg.art{display:block;overflow:visible}
     <section id="scr-shop" class="screen" hidden></section>
     <section id="scr-gear" class="screen" hidden></section>
     <section id="scr-book" class="screen" hidden></section>
+    <section id="scr-pvp" class="screen" hidden></section>
   </main>
   <div id="modal" class="modal" hidden></div>
   <div id="toast" class="toast" hidden></div>
@@ -2292,7 +2320,7 @@ function genQ(topic,d){const list=BANK[topic].filter(g=>g.min<=d);let q;for(let 
 
 /* ============ UI HELPERS ============ */
 let screen='home';
-function show(name){if(name!=='battle')musicStop();screen=name;document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!=='scr-'+name);const el=$('#scr-'+name);el.scrollTop=0;keyHandler=null}
+function show(name){if(name!=='battle')musicStop();if(name!=='pvp'&&typeof PV!=='undefined'&&PV)pvpLeave();screen=name;document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!=='scr-'+name);const el=$('#scr-'+name);el.scrollTop=0;keyHandler=null}
 function updateCoins(bump){$('#coinNum').textContent=S.coins;if(bump){const c=$('#coinIco');c.classList.remove('bump');void c.offsetWidth;c.classList.add('bump')}}
 let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,1700)}
 function heroStats(){const c=CHARS[S.cur];const w=S.inv.find(i=>i.id===S.eq.w),a=S.inv.find(i=>i.id===S.eq.a);return{atk:c.atk+(w?w.val:0),hp:c.hp+(a?a.val:0),w,a}}
@@ -2385,12 +2413,13 @@ function renderHome(){
    ${card('hShop','',chestSVG(2),'商店',S.chests.length?`有${S.chests.length}个宝箱待开`:'宝箱、药品、神兵、兑换码')}
    ${card('hGear','',ART[S.cur](),'英雄与装备',`${S.chars.length}位英雄 · 背包${S.inv.length}件`)}
    ${card('hBook','',ART.dragon(),'怪物图鉴',`已遇到 ${seen} 种怪物`)}
+   ${card('hPvp','pvpcard',`<span class="pvpmini">${ART[S.cur]()}<span class="mirror">${ART.sword()}</span></span>`,'双人对战','和同学开房间抢答，赢了得 100 金币')}
   </section>
   <section><h3 class="shoph">英雄</h3><div class="lineup">${CHAR_ORDER.map(k=>`<figure class="${S.chars.includes(k)?'':'locked'}">${ART[k]()}<figcaption>${CHARS[k].name}</figcaption></figure>`).join('')}</div></section>
   <footer class="credits"><span class="cstamp">墨</span><div><b>made by auri</b><span>作者：朱彬　来自：404班</span></div></footer>
  </div>`;
  el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{if(b.dataset.mode!==curMode)askModeSwitch(b.dataset.mode)});
- $('#hGo').onclick=()=>startBattle(next.id,nextLv);$('#hStart').onclick=renderMap;$('#hShop').onclick=()=>{shopTab='chest';renderShop()};$('#hGear').onclick=renderGear;$('#hBook').onclick=renderBook;$('#hHow').onclick=showHowTo;
+ $('#hGo').onclick=()=>startBattle(next.id,nextLv);$('#hStart').onclick=renderMap;$('#hShop').onclick=()=>{shopTab='chest';renderShop()};$('#hGear').onclick=renderGear;$('#hBook').onclick=renderBook;$('#hPvp').onclick=()=>renderPvpLobby();$('#hHow').onclick=showHowTo;
  show('home')}
 function showHowTo(){const m=$('#modal');m.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="玩法说明"><button class="closex" type="button" id="hwClose">关闭</button><h3>玩法说明</h3>
  <ol class="howlist"><li><b>选关卡：</b>在冒险地图选一座塔和一关，先走过场景捡金币。</li><li><b>答题出招：</b>答对题目，英雄就会出招打怪；答对还能攒能量（最多5点）。</li><li><b>放技能：</b>能量够了就点技能按钮，每位英雄有4个技能，完成更多部分会解锁更强的技能。</li><li><b>防御：</b>怪物攻击时有10秒防御题，可能是对错判断题，也可能是计算题。答对就能挡住或躲开！</li><li><b>怪物大招：</b>怪物的怒气满了会放大招，同样可以用防御题挡住。</li><li><b>赢金币：</b>打赢得金币，打首领还会掉宝箱；完成一个部分奖励金宝箱和50金币。</li><li><b>变强：</b>在商店买宝箱、药品和神兵，招募新英雄，打败四座塔的所有首领！</li></ol></div>`;
@@ -3101,6 +3130,149 @@ function useSkill(i){if(!B||B.over||B.busy||B.review||B.def)return;const x=B.ski
   const dmg=x.pmax?Math.round(e.max*x.pmax):Math.max(1,Math.round(a*x.mult));
   setTimeout(()=>heroAttackSeq(x.hits,dmg,x.fx,!!x.ign,()=>{if(x.steal)heal(dmg)},done),sfx?560:buff?480:0)})}
 
+/* ============ 双人对战: two players in one room ============
+   Everything travels in room presence (anyone may set it), inside a named
+   room "pvp-<code>". The host is the referee: it keeps both HPs, the round
+   number and the question seed in its presence object `g`. Both pages build
+   the same question from that seed, so the answer never travels. */
+let PV=null,roomNs;
+const PVP_HP=100,PVP_WIN=100,PVP_ROUND_MS=45000;
+const escT=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function getRoom(){if(roomNs!==undefined)return roomNs;roomNs=null;try{if(window.claude&&window.claude.use)roomNs=await window.claude.use('room')}catch(e){roomNs=null}return roomNs}
+function seededRand(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function pvpQ(seed,topics){const orig=Math.random;Math.random=seededRand(seed);try{const t=pick(topics);const list=BANK[t].filter(g=>g.min<=2);const q=pick(list).f(2);q.topic=t;q.unit=q.unit||'';return q}finally{Math.random=orig}}
+const pvpDmg=atk=>12+Math.round(Math.min(Math.max(+atk||0,0),200)/10);
+const PVP_TOPICS=[['all','全部单元'],['u1','第一单元 · 大数'],['u2','第二单元 · 线与角'],['u3','第三单元 · 乘法'],['u4','第四单元 · 运算律'],['u5','第五单元 · 方向与位置'],['u6','第六单元 · 除法'],['u7','第七单元 · 负数'],['u8','第八单元 · 可能性'],['u9','数学好玩']];
+function topicList(k){return k==='all'?['u1','u2','u3','u4','u5','u6','u7','u8','u9']:(BANK[k]?[k]:['u3'])}
+function myPvpBase(role){const hs=heroStats();return {pvp:1,role,name:curPlayer.slice(0,12),hero:S.cur,atk:hs.atk}}
+function safeHero(k){return CHARS[k]?k:'brush'}
+
+function renderPvpLobby(msg){if(!curPlayer){askName(()=>renderPvpLobby());return}
+ const el=$('#scr-pvp');let topic='all';try{topic=localStorage.getItem('moxia-pvp-topic')||'all'}catch(e){}
+ el.innerHTML=`<div class="pvp-lobby"><div class="map-head"><h2>双人对战</h2><button class="btn" type="button" id="pvBack">返回首页</button></div>
+  <p class="pvp-intro">两个人在<b>同一个房间</b>里，各站一边。同一道题，<b>谁先答对，谁就打对方一下</b>。先把对方的生命打到 0 的人获胜，赢的人得到 <b>${PVP_WIN} 金币</b>。</p>
+  <div class="pvp-cards">
+   <div class="pvp-card"><h3>开一个房间</h3><p class="muted">开好后把<b>房间号</b>告诉同学，让他加入。</p>
+    <label class="pvp-lab">题目范围 <select id="pvTopic">${PVP_TOPICS.map(([k,n])=>`<option value="${k}" ${k===topic?'selected':''}>${n}</option>`).join('')}</select></label>
+    <button class="btn primary big" type="button" id="pvOpen">开房间</button></div>
+   <div class="pvp-card"><h3>加入一个房间</h3><p class="muted">输入同学告诉你的 4 位房间号。</p>
+    <form id="pvJoinForm" class="row" style="flex-wrap:nowrap"><input id="pvCode" inputmode="numeric" maxlength="4" placeholder="房间号" autocomplete="off" aria-label="房间号"><button class="btn primary" type="submit">加入</button></form></div>
+  </div>
+  <div class="pvp-me">${ART[S.cur]()}<div><b>${escT(curPlayer)}</b> · ${CHARS[S.cur].name}<div class="muted">攻击 ${heroStats().atk} → 每次打中对方 ${pvpDmg(heroStats().atk)} 点（双方都是 ${PVP_HP} 生命）</div></div></div>
+  <div id="pvMsg" class="pvp-msg" role="status">${msg||''}</div></div>`;
+ show('pvp');
+ $('#pvBack').onclick=renderHome;
+ $('#pvTopic').onchange=e=>{try{localStorage.setItem('moxia-pvp-topic',e.target.value)}catch(_){}};
+ $('#pvOpen').onclick=()=>pvpOpen($('#pvTopic').value);
+ $('#pvJoinForm').onsubmit=ev=>{ev.preventDefault();const c=$('#pvCode').value.replace(/\D/g,'');if(c.length!==4){$('#pvMsg').textContent='房间号是 4 位数字。';return}pvpJoin(c)};
+ getRoom().then(R=>{if(!R&&$('#pvMsg')&&screen==='pvp')$('#pvMsg').innerHTML='<b>现在连不上房间。</b>双人对战需要在 claude.ai 上打开这个游戏，并且已经登录。'})}
+
+function pvpStatus(t){const m=$('#pvMsg');if(m)m.innerHTML=t}
+async function pvpOpen(topic){const R=await getRoom();if(!R){pvpStatus('<b>现在连不上房间。</b>双人对战需要在 claude.ai 上打开这个游戏，并且已经登录。');return}
+ pvpStatus('正在开房间……');
+ for(let tries=0;tries<4;tries++){const code=String(ri(1000,9999));let room;
+  try{room=await R.join('pvp-'+code)}catch(e){pvpStatus(e&&e.code==='not_permitted'?'这里不能开房间。':'开房间失败，请再试一次。');return}
+  await new Promise(r=>setTimeout(r,1200));
+  const taken=room.peers().some(p=>!p.sameTab&&p.presence&&p.presence.pvp);
+  if(taken){try{await room.leave()}catch(e){}continue}
+  PV={room,code,role:'host',topic,shown:0,locked:false,g:{gid:0,state:'wait',round:0,seed:0,topics:topic,hp:[PVP_HP,PVP_HP],last:null,win:null},opp:null,oppPeer:null,unsub:[]};
+  await pvpPush();pvpWire();renderPvpArena();return}
+ pvpStatus('开房间失败，请再试一次。')}
+
+async function pvpJoin(code){const R=await getRoom();if(!R){pvpStatus('<b>现在连不上房间。</b>双人对战需要在 claude.ai 上打开这个游戏，并且已经登录。');return}
+ pvpStatus('正在加入房间 '+code+'……');let room;
+ try{room=await R.join('pvp-'+code)}catch(e){pvpStatus('加入失败，请再试一次。');return}
+ await new Promise(r=>setTimeout(r,1500));
+ const others=room.peers().filter(p=>!p.sameTab&&p.presence&&p.presence.pvp);
+ const host=others.find(p=>p.presence.role==='host');
+ if(!host){try{await room.leave()}catch(e){}pvpStatus(`找不到房间 <b>${escT(code)}</b>，请检查房间号，或者让同学先开房间。`);return}
+ if(others.some(p=>p.presence.role==='guest')){try{await room.leave()}catch(e){}pvpStatus('这个房间已经有两个人了（一个房间只能两个人）。');return}
+ PV={room,code,role:'guest',shown:0,locked:false,g:null,opp:host.presence,oppPeer:host.peer,unsub:[]};
+ await pvpPush();pvpWire();renderPvpArena()}
+
+function pvpPush(){if(!PV)return Promise.resolve();const p=Object.assign(myPvpBase(PV.role),{ans:PV.ans||null});if(PV.role==='host')p.g=PV.g;return PV.room.presence(p).catch(()=>{})}
+
+function pvpWire(){const room=PV.room;
+ PV.unsub.push(room.onPeers(ch=>{if(!PV)return;
+  const others=ch.peers.filter(p=>!p.sameTab&&p.presence&&p.presence.pvp);
+  let opp=PV.oppPeer?others.find(p=>p.peer===PV.oppPeer):null;
+  if(!opp&&PV.role==='host'&&!PV.oppPeer){opp=others.find(p=>p.presence.role==='guest');if(opp){PV.oppPeer=opp.peer;pvpStart()}}
+  if(PV.oppPeer&&!opp&&ch.left.some(p=>p.peer===PV.oppPeer)){pvpOppLeft();return}
+  if(!opp)return;PV.opp=opp.presence;
+  if(PV.role==='guest'){const g=opp.presence.g;if(g&&typeof g==='object'&&(!PV.g||g!==PV.gRaw)){PV.gRaw=g;pvpApply(g)}}
+  else{const a=opp.presence.ans;if(PV.g.state==='play'&&a&&a.ok===true&&a.r===PV.g.round&&a.gid===PV.g.gid)pvpHit('guest')}
+  pvpPlates()},()=>{if(PV)pvpStatusArena('房间连接断开了。')}));
+ PV.unsub.push(room.onConnection(c=>{if(PV)$('#pvConn')&&($('#pvConn').textContent=c?'':'连接中……')}))}
+
+function pvpStart(){const g=PV.g;PV.g={gid:Date.now(),state:'play',round:1,seed:ri(1,2e9),topics:PV.topic,hp:[PVP_HP,PVP_HP],last:null,win:null};pvpPush();pvpApply(PV.g)}
+function pvpHit(by){const g=PV.g;if(g.state!=='play')return;clearTimeout(PV.rt);
+ const atk=by==='host'?heroStats().atk:(PV.opp&&PV.opp.atk);const dmg=pvpDmg(atk);const hp=g.hp.slice();const i=by==='host'?1:0;hp[i]=Math.max(0,hp[i]-dmg);
+ const over=hp[i]<=0;PV.g=Object.assign({},g,{hp,last:{r:g.round,by,dmg},round:over?g.round:g.round+1,seed:over?g.seed:ri(1,2e9),state:over?'over':'play',win:over?by:null});pvpPush();pvpApply(PV.g)}
+function pvpSkip(r){if(!PV||PV.role!=='host'||PV.g.state!=='play'||PV.g.round!==r)return;PV.g=Object.assign({},PV.g,{last:{r,by:null,dmg:0},round:r+1,seed:ri(1,2e9)});pvpPush();pvpApply(PV.g)}
+
+function pvpApply(g){if(!PV)return;
+ const okNum=v=>Number.isFinite(+v);if(!okNum(g.round)||!Array.isArray(g.hp))return;
+ if(PV.role==='guest'){if(PV.g&&g.gid!==PV.g.gid){PV.shown=0;['#pA','#pB'].forEach(x=>$(x)&&$(x).classList.remove('dead'))}PV.g=g}
+ const prev=PV.shown;
+ if(g.state==='wait'){pvpStatusArena('等待同学加入……把房间号 <b>'+escT(PV.code)+'</b> 告诉他。');return}
+ const lastFresh=g.last&&g.last.r===prev&&prev>0&&PV.lastShown!==g.gid+':'+prev;
+ if(lastFresh){PV.lastShown=g.gid+':'+prev;pvpHitFx(g.last)}
+ pvpPlates();
+ if(g.state==='over'){if(PV.overShown===g.gid)return;PV.overShown=g.gid;setTimeout(()=>pvpOver(g),lastFresh?900:0);return}
+ if(g.round>prev){PV.shown=g.round;setTimeout(()=>{if(PV&&PV.g&&PV.g.round===g.round&&PV.g.gid===g.gid)pvpQuestion(g)},lastFresh?950:0);
+  if(PV.role==='host'){clearTimeout(PV.rt);const r=g.round;PV.rt=setTimeout(()=>pvpSkip(r),PVP_ROUND_MS)}}}
+
+function sideOf(by){return by===PV.role?'#pA':'#pB'}
+function pvpHitFx(last){if(!last.by){pvpStatusArena('没人答对，下一题！');return}
+ const att=sideOf(last.by),def=att==='#pA'?'#pB':'#pA';
+ anim(att,att==='#pA'?'lunge-r':'lunge-l');SFX.hit();
+ setTimeout(()=>{anim(def,'hurt');burst(def,att==='#pA'?(HERO_ATK[S.cur]||{}).fx||'ink':'ink');floatText(def,'−'+last.dmg,'dmg')},180);
+ pvpStatusArena(last.by===PV.role?'你先答对了，打中对方！':'对方先答对了，你被打中了！')}
+
+function renderPvpArena(){const el=$('#scr-pvp');const opp=PV.opp||{};const oh=safeHero(opp.hero);
+ el.innerHTML=`<div class="pvp-top"><span class="pvp-code">房间号 <b>${escT(PV.code)}</b></span><span class="muted">${PV.role==='host'?'你是房主':'你已加入'} · 题目：${escT((PVP_TOPICS.find(t=>t[0]===(PV.g?PV.g.topics:PV.topic))||PVP_TOPICS[0])[1])}</span><span id="pvConn" class="muted"></span><button class="btn" type="button" id="pvLeave">离开房间</button></div>
+ <div class="arena pvparena"><div class="pbg">${BG.palace()}</div>
+  <div class="fighter hero" id="pA"><div class="art-wrap">${ART[S.cur]()}</div><div class="pplate"><b>${escT(curPlayer)}（你）</b><div class="phb"><i id="pHpA" style="width:100%"></i></div><span id="pHpAt">${PVP_HP}/${PVP_HP}</span></div></div>
+  <div class="pvs">VS</div>
+  <div class="fighter" id="pB"><div class="art-wrap"><div class="mirror" id="pBart">${PV.opp?ART[oh]():''}</div></div><div class="pplate"><b id="pBname">${PV.opp?escT(opp.name||'对手'):'等待对手……'}</b><div class="phb"><i id="pHpB" style="width:100%"></i></div><span id="pHpBt">${PVP_HP}/${PVP_HP}</span></div></div>
+ </div>
+ <div class="desk pvpdesk"><div class="qbox"><div class="qtext" id="pvQ">准备开始……</div><div id="pvFig"></div></div><div id="pvPad"></div></div>
+ <div id="pvArenaMsg" class="pvp-msg" role="status"></div>`;
+ show('pvp');
+ PV.pad=makePad($('#pvPad'),pvpSubmit);PV.pad.lock(true);keyHandler=k=>PV&&PV.pad?PV.pad.press(k):false;
+ $('#pvLeave').onclick=()=>{pvpLeave();renderPvpLobby('你离开了房间。')};
+ if(PV.role==='host'&&PV.g.state==='wait')pvpStatusArena('房间开好了！把房间号 <b>'+escT(PV.code)+'</b> 告诉同学，等他加入。');
+ else if(PV.g)pvpApply(PV.g)}
+
+function pvpPlates(){if(!PV)return;const g=PV.g;const me=PV.role==='host'?0:1;const hpMe=g?g.hp[me]:PVP_HP,hpOp=g?g.hp[1-me]:PVP_HP;
+ const a=$('#pHpA'),b=$('#pHpB');if(a)a.style.width=Math.max(0,hpMe)/PVP_HP*100+'%';if(b)b.style.width=Math.max(0,hpOp)/PVP_HP*100+'%';
+ if($('#pHpAt'))$('#pHpAt').textContent=`${Math.max(0,hpMe)}/${PVP_HP}`;if($('#pHpBt'))$('#pHpBt').textContent=`${Math.max(0,hpOp)}/${PVP_HP}`;
+ const o=PV.opp;if(o&&$('#pBname')){$('#pBname').textContent=String(o.name||'对手').slice(0,12);const k=safeHero(o.hero);if(PV.oppHero!==k){PV.oppHero=k;$('#pBart').innerHTML=ART[k]()}}}
+
+function pvpQuestion(g){if(!PV||screen!=='pvp')return;const q=pvpQ(g.seed,topicList(g.topics));PV.q=q;PV.qr=g.round;PV.locked=false;
+ $('#pvQ').innerHTML=`<span class="qtag">第 ${g.round} 题 · ${TOPIC_NAME[q.topic]}</span><br>${q.text}`;const f=$('#pvFig');f.innerHTML=q.fig||'';
+ PV.pad.clear();PV.pad.setUnit(q.unit);PV.pad.lock(false);pvpStatusArena('抢答！谁先答对谁出手。')}
+
+function pvpSubmit(v){if(!PV||!PV.q||PV.locked||PV.g.state!=='play')return;const r=PV.qr;
+ if(Number(v)===PV.q.ans){PV.locked=true;PV.pad.lock(true);SFX.right();pvpStatusArena('答对了！出招……');
+  if(PV.role==='host'){if(PV.g.round===r)pvpHit('host')}else{PV.ans={gid:PV.g.gid,r,ok:true};pvpPush()}}
+ else{SFX.wrong();PV.locked=true;PV.pad.lock(true);PV.pad.clear();pvpStatusArena('答错了！3 秒后才能再答……');
+  setTimeout(()=>{if(PV&&PV.qr===r&&PV.g.state==='play'){PV.locked=false;PV.pad.lock(false);pvpStatusArena('再试一次！')}},3000)}}
+
+function pvpOver(g){if(!PV)return;const won=g.win===PV.role;S.pvp=S.pvp||{w:0,l:0,done:{}};
+ if(!S.pvp.done[g.gid]){S.pvp.done[g.gid]=1;const ks=Object.keys(S.pvp.done);if(ks.length>40)delete S.pvp.done[ks[0]];if(won){S.pvp.w++;S.coins+=PVP_WIN;SFX.win()}else{S.pvp.l++;SFX.lose()}save();updateCoins(won)}
+ if(PV.pad)PV.pad.lock(true);anim(won?'#pB':'#pA','hurt');$(won?'#pB':'#pA').classList.add('dead');
+ $('#pvQ').innerHTML=`<span class="big pvp-res ${won?'win':''}">${won?`你赢了！获得 ${PVP_WIN} 金币`:'你输了，再接再厉！'}</span><br><span class="muted">你的战绩：赢 ${S.pvp.w} 场 · 输 ${S.pvp.l} 场</span>`;$('#pvFig').innerHTML='';
+ const m=$('#pvArenaMsg');m.innerHTML=PV.role==='host'?'<button class="btn primary" type="button" id="pvAgain">再来一局</button>':'等房主开始下一局……';
+ if($('#pvAgain'))$('#pvAgain').onclick=()=>{if(!PV||!PV.oppPeer)return;['#pA','#pB'].forEach(s=>$(s).classList.remove('dead'));PV.shown=0;pvpStart()};
+ if(PV.role==='guest')PV.waitNext=g.gid}
+
+function pvpStatusArena(t){const m=$('#pvArenaMsg');if(m)m.innerHTML=t}
+function pvpOppLeft(){if(!PV)return;clearTimeout(PV.rt);if(PV.pad)PV.pad.lock(true);
+ if(PV.role==='host'){PV.oppPeer=null;PV.opp=null;PV.oppHero=null;PV.shown=0;PV.g={gid:0,state:'wait',round:0,seed:0,topics:PV.topic,hp:[PVP_HP,PVP_HP],last:null,win:null};pvpPush();renderPvpArena();pvpStatusArena('对手离开了。房间还开着，房间号 <b>'+escT(PV.code)+'</b>，可以等别人加入。')}
+ else{pvpLeave();renderPvpLobby('房主离开了，房间关闭了。')}}
+function pvpLeave(){if(!PV)return;const p=PV;PV=null;clearTimeout(p.rt);p.unsub.forEach(u=>{try{u()}catch(e){}});try{p.room.leave()}catch(e){}}
+
 /* ============ RESULT ============ */
 function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=null,bossR=null;
  if(win){coins=b.isBoss?80+30*(b.sc||b.ch)+(b.wrongs===0?40:0):20+5*(b.sc||b.ch)+(b.wrongs===0?10:0);if(S.prog[b.ch]<b.lv)S.prog[b.ch]=b.lv;S.stats.wins++;SFX.win();
@@ -3283,7 +3455,7 @@ function renderGear(){
  const sc=el.scrollTop;show('gear');el.scrollTop=sc}
 
 /* ============ BOOT ============ */
-window.__moxia={genQ,judgeQ,toCN,BANK,ART,BG,updateHud,itemIcon,NAMES,get B(){return B},get CC(){return chestCtx}};
+window.__moxia={genQ,judgeQ,toCN,BANK,ART,BG,updateHud,itemIcon,NAMES,get B(){return B},get CC(){return chestCtx},get PV(){return PV}};
 $('#soundBtn').textContent='音效：'+(S.sound?'开':'关');$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');
 renderPlayerChip();if(curPlayer&&!S.gift2000){const g=grantStartGift();if(g)setTimeout(()=>{toast('礼物：获得 '+g+' 金币！');SFX.coin()},400)}
 updateCoins();renderHome();
