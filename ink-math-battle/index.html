@@ -544,7 +544,11 @@ const INK='#1d1b18',RED='#b5352b',GOLD='#d89b1d',PAPER='#f8f1e2',JADE='#2e6a58';
 /* ============ SAVE ============ */
 const SAVE_KEY='moxia-math-save-v1',MODE_KEY='moxia-mode';
 let curMode=(()=>{try{return localStorage.getItem(MODE_KEY)||'normal'}catch(e){return 'normal'}})();
-function saveKey(m){m=m||curMode;return m==='normal'?SAVE_KEY:SAVE_KEY+'-'+m}
+const HLV_KEY='moxia-hardlv';
+let curHardLv=(()=>{try{return Math.min(5,Math.max(1,+localStorage.getItem(HLV_KEY)||1))}catch(e){return 1}})();
+/* every mode has its own save, and in hard mode every monster strength has its own save too */
+function saveKey(m,lv){m=m||curMode;if(m==='normal')return SAVE_KEY;if(m==='hard'){lv=lv||curHardLv;return SAVE_KEY+'-hard'+(lv>1?'-L'+lv:'')}return SAVE_KEY+'-'+m}
+function startGift(){return curMode==='hard'&&curHardLv===5?3000:2000}
 const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0},seen:{},trophies:{},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{},potions:{},codes:{},t2open:false});
 function load(){try{const r=localStorage.getItem(saveKey());if(r){const o=JSON.parse(r);const d=defaultSave();return Object.assign(d,o,{prog:Object.assign(d.prog,o.prog||{}),eq:Object.assign(d.eq,o.eq||{}),stats:Object.assign(d.stats,o.stats||{})})}}catch(e){}return defaultSave()}
 function save(){try{localStorage.setItem(saveKey(),JSON.stringify(S))}catch(e){}}
@@ -2306,7 +2310,17 @@ function makePad(host,onSubmit){
 
 /* ============ HOME ============ */
 const HARD_LV=[{n:'1级',hp:1,atk:1,coin:1,tag:'标准'},{n:'2级',hp:1.5,atk:1.3,coin:2,tag:'较强'},{n:'3级',hp:2,atk:1.6,coin:3,tag:'很强'},{n:'4级',hp:3,atk:2,coin:5,tag:'超强',chest:1},{n:'5级',hp:5,atk:3,coin:10,tag:'地狱',chest:2}];
-function hardLv(){return S.mode==='hard'?HARD_LV[Math.min(4,Math.max(0,(S.hardLv||1)-1))]:null}
+function hardLv(){return S.mode==='hard'?HARD_LV[curHardLv-1]:null}
+function hlvInfo(lv){try{const r=localStorage.getItem(saveKey('hard',lv));if(!r)return null;const o=JSON.parse(r);return {parts:Object.values(o.prog||{}).filter(v=>v>=5).length,coins:o.coins||0}}catch(e){return null}}
+function askHardLv(lv){if(lv===curHardLv)return;const h=HARD_LV[lv-1],info=hlvInfo(lv),box=$('#modal');
+ box.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true" aria-label="切换怪物强度"><h3>切换到怪物强度「${h.n} · ${h.tag}」？</h3>
+  <p style="font-size:1.1rem;line-height:1.6;margin:0">每个怪物强度都有<b>自己的独立存档</b>，金币、英雄、装备<b>不能带到别的强度或别的模式</b>。${info?`你在「${h.n}」已经完成 ${info.parts} 个部分，有 ${info.coins} 金币，切换后继续玩。`:`第一次进入「${h.n}」要<b style="color:var(--cinnabar)">从头开始</b>（送你 ${lv===5?3000:2000} 金币）。`}</p>
+  <p class="muted" style="margin:0">现在「${HARD_LV[curHardLv-1].n}」的进度会保存好，随时可以切换回来。</p>
+  <div class="row" style="justify-content:center"><button class="btn primary" type="button" id="hlYes">确定切换</button><button class="btn" type="button" id="hlNo">取消</button></div></div>`;
+ box.hidden=false;$('#hlNo').onclick=()=>{box.hidden=true;box.innerHTML=''};
+ $('#hlYes').onclick=()=>{save();const snd=S.sound,mus=S.music;curHardLv=lv;try{localStorage.setItem(HLV_KEY,String(lv))}catch(e){}
+  S=load();S.mode='hard';S.sound=snd;S.music=mus;const g=startGift(),fresh=!S.gift2000;if(fresh){S.gift2000=true;S.coins+=g}save();
+  box.hidden=true;box.innerHTML='';updateCoins(true);SFX.chest();renderMap();toast(fresh?`进入怪物强度「${h.n}」：从头开始，获得 ${g} 金币！`:`回到怪物强度「${h.n}」的存档`)}}
 const MODES={easy:{name:'简单',desc:'怪物生命75%，奖励60%',ehp:.75,eatk:1,php:1,patk:1,coin:.6},normal:{name:'普通',desc:'标准难度',ehp:1,eatk:1,php:1,patk:1,coin:1},hard:{name:'困难',desc:'怪物生命攻击×2，8个大招，怒气2格就满，一次放4个，一半机会闪避或格挡；你的生命攻击减半，防御只挡一半；奖励×5，还有特别奖励',ehp:2,eatk:2,php:.5,patk:.5,coin:5}};
 function modeInfo(m){try{const r=localStorage.getItem(saveKey(m));if(!r)return null;const o=JSON.parse(r);return {parts:Object.values(o.prog||{}).filter(v=>v>=5).length,coins:o.coins||0}}catch(e){return null}}
 function askModeSwitch(m){const md=MODES[m],cur=MODES[curMode],info=modeInfo(m);const box=$('#modal');
@@ -2316,8 +2330,8 @@ function askModeSwitch(m){const md=MODES[m],cur=MODES[curMode],info=modeInfo(m);
   <div class="row" style="justify-content:center"><button class="btn primary" type="button" id="msYes">确定切换</button><button class="btn" type="button" id="msNo">取消</button></div></div>`;
  box.hidden=false;$('#msNo').onclick=()=>{box.hidden=true;box.innerHTML=''};
  $('#msYes').onclick=()=>{save();const snd=S.sound,mus=S.music;curMode=m;try{localStorage.setItem(MODE_KEY,m)}catch(e){}
-  S=load();S.mode=m;S.sound=snd;S.music=mus;const fresh=!S.gift2000;if(fresh){S.gift2000=true;S.coins+=2000}save();
-  box.hidden=true;box.innerHTML='';updateCoins(true);SFX.chest();renderHome();toast(fresh?`进入「${md.name}」模式：从头开始，获得 2000 金币！`:`回到「${md.name}」模式的存档`)}}
+  S=load();S.mode=m;S.sound=snd;S.music=mus;const g=startGift(),fresh=!S.gift2000;if(fresh){S.gift2000=true;S.coins+=g}save();
+  box.hidden=true;box.innerHTML='';updateCoins(true);SFX.chest();renderHome();toast(fresh?`进入「${md.name}」模式：从头开始，获得 ${g} 金币！`:`回到「${md.name}」模式的存档`)}}
 function monsterList(){const L=[];CHAPTERS.forEach(C=>{C.enemies.forEach(([n,a,o])=>L.push({key:n,name:n,art:a,opt:o,C,boss:false}));L.push({key:C.boss.name,name:C.boss.name,art:C.boss.art,opt:{},C,boss:true})});return L}
 function renderHome(){
  const el=$('#scr-home');const hs=heroStats(),parts=worldLv(),total=CHAPTERS.length,mons=monsterList();S.seen=S.seen||{};const seen=mons.filter(m=>S.seen[m.key]).length;
@@ -2372,7 +2386,7 @@ function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Ope
 function ch5Open(){return [1,2,3,4].filter(c=>S.prog[c]>=5).length>=3}
 function renderMap(){
  const el=$('#scr-map');const hs=heroStats();
- el.innerHTML=`<div class="map-head"><div class="row"><h2>选择关卡</h2>${worldLv()?`<span class="wl">怪物强化 Lv.${worldLv()}</span>`:''}</div>${S.mode==='hard'?`<div class="hlvbox"><b>选择怪物强度：</b><div class="hlvrow">${HARD_LV.map((h,i)=>`<button type="button" class="hlv ${(S.hardLv||1)===i+1?'on':''}" data-hlv="${i+1}"><b>${h.n} · ${h.tag}</b><small>生命×${h.hp} 攻击×${h.atk}</small><small class="rw">金币×${h.coin}${h.chest?` · 神话宝箱`:''}</small>${i===4&&!S.gift3000?'<small class="rw">首次选择：开局金币变成3000</small>':''}</button>`).join('')}</div><span class="muted" style="font-size:.85rem">怪物越强，奖励越多！（在困难模式原有奖励上再乘）</span></div>`:''}
+ el.innerHTML=`<div class="map-head"><div class="row"><h2>选择关卡</h2>${worldLv()?`<span class="wl">怪物强化 Lv.${worldLv()}</span>`:''}</div>${S.mode==='hard'?`<div class="hlvbox"><b>选择怪物强度：</b><div class="hlvrow">${HARD_LV.map((h,i)=>`<button type="button" class="hlv ${curHardLv===i+1?'on':''}" data-hlv="${i+1}"><b>${h.n} · ${h.tag}</b><small>生命×${h.hp} 攻击×${h.atk}</small><small class="rw">金币×${h.coin}${h.chest?` · 神话宝箱`:''}</small>${i===4?'<small class="rw">开局金币 3000</small>':''}${(()=>{const f=hlvInfo(i+1);return f&&curHardLv!==i+1?`<small>存档：${f.coins} 金币</small>`:''})()}</button>`).join('')}</div><span class="muted" style="font-size:.85rem">怪物越强，奖励越多！（在困难模式原有奖励上再乘）每个强度都是<b>独立存档</b>，金币不能带到别的强度或模式。</span></div>`:''}
  <div class="curhero">${ART[S.cur]()}<div><b>${CHARS[S.cur].name}</b><div class="muted" style="font-size:.85rem">攻击 ${hs.atk} · 生命 ${hs.hp}</div></div><button class="chipbtn" id="mGear" type="button">换角色/装备</button></div></div>
  <div class="tabs">${TOWERS.map(t=>`<button type="button" class="tab ${mapTab===t.id?'on':''}" data-tab="${t.id}">${t.name}${t.open()?'':'（'+t.lock+'）'}</button>`).join('')}</div>
  <div class="chapters">${CHAPTERS.filter(C=>(C.tower||1)===mapTab).map(C=>{const locked=chLocked(C);const p=S.prog[C.id];
@@ -2381,7 +2395,7 @@ function renderMap(){
   <div class="bossline"><b>首领：${C.boss.name}</b> <span class="muted">— ${C.boss.desc}</span></div>
   ${locked?`<div class="lockmsg">${C.id===5?'打败前四个单元中任意三个首领后开启':C.id===6?'打败第一塔的墨魔王后开启':C.id===9?'打败第二塔的天狗后开启':C.id===11?'打败第三塔的东海龙王后开启':C.id===13?'打败第四塔的三足金蟾后开启':C.id===15?'打败第五塔的幽冥鬼帝后开启':'打败上一层的首领后开启'}</div>`:''}</div>`}).join('')}</div>`;
  el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{mapTab=+b.dataset.tab;renderMap()});
- el.querySelectorAll('[data-hlv]').forEach(b=>b.onclick=()=>{S.hardLv=+b.dataset.hlv;let gift=false;if(S.hardLv===5&&!S.gift3000){S.gift3000=true;S.coins+=1000;gift=true}save();SFX.key&&SFX.key();renderMap();if(gift){updateCoins(true);SFX.coin();toast('选择地狱难度：开局金币从 2000 变成 3000！（+1000 金币）')}});
+ el.querySelectorAll('[data-hlv]').forEach(b=>b.onclick=()=>askHardLv(+b.dataset.hlv));
  el.querySelectorAll('.node').forEach(b=>b.onclick=()=>startBattle(+b.dataset.ch,+b.dataset.lv));
  $('#mGear').onclick=renderGear;
  show('map')}
@@ -2488,7 +2502,7 @@ function startBattle(ch,lv){
  e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
  const wl=worldLv();e.lvl=wl;e.max=Math.round(e.max*(1+.1*wl));e.atk=Math.round(e.atk*(1+.05*wl));e.sk2=wl>=1?MSKILL2[e.art]:null;
  if(S.mode==='hard'){e.rageMax=2;e.sk2=MSKILL2[e.art]||null;const pool=[...Object.values(MSKILL),...Object.values(MSKILL2)].filter(x=>x!==e.sk&&x!==e.sk2);e.hardSk=[e.sk,e.sk2].filter(Boolean).concat(shuffle(pool.slice()).slice(0,8-[e.sk,e.sk2].filter(Boolean).length))}e.burn=0;
- const MD=MODES[S.mode||'normal'];e.max=Math.max(1,Math.round(e.max*MD.ehp));e.atk=Math.max(1,Math.round(e.atk*MD.eatk));if(S.mode==='hard'){e.blk=.5;e.ctr=Math.min(e.ctr,.3);const HL=hardLv();e.max=Math.round(e.max*HL.hp);e.atk=Math.round(e.atk*HL.atk);e.hlv=S.hardLv||1}
+ const MD=MODES[S.mode||'normal'];e.max=Math.max(1,Math.round(e.max*MD.ehp));e.atk=Math.max(1,Math.round(e.atk*MD.eatk));if(S.mode==='hard'){e.blk=.5;e.ctr=Math.min(e.ctr,.3);const HL=hardLv();e.max=Math.round(e.max*HL.hp);e.atk=Math.round(e.atk*HL.atk);e.hlv=curHardLv}
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
  let d;if(sc>=6)d=isBoss?3:(lv<=2?2:3);else if(sc===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
@@ -3245,7 +3259,7 @@ function renderGear(){
 /* ============ BOOT ============ */
 window.__moxia={genQ,judgeQ,toCN,BANK,ART,BG,updateHud,itemIcon,NAMES,get B(){return B},get CC(){return chestCtx}};
 $('#soundBtn').textContent='音效：'+(S.sound?'开':'关');$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');
-if(!S.gift2000){S.gift2000=true;S.coins+=2000;save();setTimeout(()=>{toast('礼物：获得 2000 金币！');SFX.coin()},400)}
+if(!S.gift2000){const g=startGift();S.gift2000=true;S.coins+=g;save();setTimeout(()=>{toast('礼物：获得 '+g+' 金币！');SFX.coin()},400)}
 updateCoins();renderHome();
 })();
 </script>
