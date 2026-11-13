@@ -262,7 +262,9 @@ svg.art{display:block;overflow:visible}
 .ansbox:empty::before{content:"输入答案";font-size:1.1rem;color:var(--ink-soft);letter-spacing:0;font-weight:400}
 .ansunit{font-family:var(--f-display);font-size:1.6rem;font-weight:700}
 .ansmeta{font-size:.82rem;color:var(--ink-soft);min-height:1.1em;text-align:right}
-.pad{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.pad{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.pad button[data-k="clear"]{grid-column:span 2}
+.pad button.neg{font-size:1.6rem}
 .pad button{min-height:46px;border:2px solid var(--ink);border-radius:8px;background:var(--paper);font-size:1.45rem;font-weight:700;font-variant-numeric:tabular-nums}
 .pad button:active{background:var(--paper-2)}
 .pad button.fn{font-size:1rem;background:var(--paper-2)}
@@ -536,7 +538,7 @@ const INK='#1d1b18',RED='#b5352b',GOLD='#d89b1d',PAPER='#f8f1e2',JADE='#2e6a58';
 const SAVE_KEY='moxia-math-save-v1',MODE_KEY='moxia-mode';
 let curMode=(()=>{try{return localStorage.getItem(MODE_KEY)||'normal'}catch(e){return 'normal'}})();
 function saveKey(m){m=m||curMode;return m==='normal'?SAVE_KEY:SAVE_KEY+'-'+m}
-const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0},seen:{},trophies:{},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{},potions:{},codes:{},t2open:false});
+const defaultSave=()=>({coins:0,chars:['brush'],cur:'brush',inv:[],eq:{w:null,a:null},prog:{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0},seen:{},trophies:{},chests:[],sound:true,music:true,nextId:1,stats:{right:0,wrong:0,wins:0},partDone:{},potions:{},codes:{},t2open:false});
 function load(){try{const r=localStorage.getItem(saveKey());if(r){const o=JSON.parse(r);const d=defaultSave();return Object.assign(d,o,{prog:Object.assign(d.prog,o.prog||{}),eq:Object.assign(d.eq,o.eq||{}),stats:Object.assign(d.stats,o.stats||{})})}}catch(e){}return defaultSave()}
 function save(){try{localStorage.setItem(saveKey(),JSON.stringify(S))}catch(e){}}
 let S=load();S.mode=curMode;
@@ -1809,7 +1811,7 @@ const ULT={
  knight:{name:'圣光审判',desc:'圣光3击无视护盾，并恢复20%生命',heal:.2,hits:3,mult:1.8,ign:1,fx:'ice'}};
 Object.keys(ULT).forEach(k=>{if(SKILLS[k])SKILLS[k].push(Object.assign({cost:5,unlock:5},ULT[k]))});
 const GAUGE_MAX=5;
-function worldLv(){return [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].filter(c=>S.prog[c]>=5).length}
+function worldLv(){return [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21].filter(c=>S.prog[c]>=5).length}
 const CHAR_ORDER=['brush','monk','panda','liondance','hand','taoist','archer','qin','mech','reaper','sword','taiji','hammer','fan','frost','blades','ninja','spear','healer','kitegirl','rider','monkey','painter','drummer','bee','knight','giant'];
 /* ===== new strong heroes + tower 6 monsters ===== */
 Object.assign(ART,{
@@ -2181,6 +2183,87 @@ const U4=[
 ];
 const BANK={u1:U1,u2:U2,u3:U3,u4:U4};
 const recent=[];
+/* ===== 第五至八单元 + 数学好玩 (book part 2) ===== */
+function figGrid(pts){const s=34,o=30,n=6;let g='';
+ for(let i=0;i<=n;i++){g+=`<line x1="${o}" y1="${o+i*s}" x2="${o+n*s}" y2="${o+i*s}" stroke="#b9b2a2" stroke-width="1.5"/><line x1="${o+i*s}" y1="${o}" x2="${o+i*s}" y2="${o+n*s}" stroke="#b9b2a2" stroke-width="1.5"/>`;
+  g+=`<text x="${o+i*s}" y="${o+n*s+20}" text-anchor="middle" font-size="19" font-weight="700" fill="${INK}">${i}</text>`;if(i)g+=`<text x="${o-14}" y="${o+(n-i)*s+5}" text-anchor="middle" font-size="19" font-weight="700" fill="${INK}">${i}</text>`}
+ pts.forEach(([x,y,l,c])=>{g+=`<circle cx="${o+x*s}" cy="${o+(n-y)*s}" r="10" fill="${c||RED}" stroke="${INK}" stroke-width="2"/><text x="${o+x*s+10}" y="${o+(n-y)*s-9}" font-size="22" font-weight="700" fill="${INK}">${l}</text>`});
+ return `<svg viewBox="0 0 ${o*2+n*s} ${o*2+n*s}" width="300" style="max-width:100%;height:auto" aria-hidden="true">${g}</svg>`}
+const DIRS=['东','南','西','北'],OPP={东:'西',西:'东',南:'北',北:'南'};
+const PLACES=['图书馆','游乐场','报刊亭','医院','商场','公园','少年宫','超市','邮局','书店'];
+const U5=[
+ {min:1,f:()=>{const x=ri(1,6),y=ri(1,6),first=Math.random()<.5;return{text:`淘气坐在第 ${x} 列第 ${y} 行，用数对表示是（${first?'□':x}，${first?y:'□'}）。□里填几？`,ans:first?x:y,explain:`数对先写列，再写行：（${x}，${y}），□里填 ${first?x:y}。`}}},
+ {min:1,f:()=>{const x=ri(1,6),y=ri(1,6),L=pick(['A','B','C','M','P']);const ask=Math.random()<.5;return{text:`看方格图，点 ${L} 的位置用数对表示是（□，□）。${ask?'第一个':'第二个'}□里填几？`,fig:figGrid([[x,y,L]]),ans:ask?x:y,explain:`点 ${L} 在第 ${x} 列第 ${y} 行，是（${x}，${y}）。`}}},
+ {min:2,f:()=>{const x=ri(1,4),y=ri(1,4),dx=ri(1,6-x),dy=ri(1,6-y);const mv=Math.random()<.5;return mv?{text:`点 A 在（${x}，${y}），向右平移 ${dx} 格后到了（□，${y}）。□里填几？`,fig:figGrid([[x,y,'A']]),ans:x+dx,explain:`向右平移，列数增加：${x}+${dx}=${x+dx}，行数不变。`}
+  :{text:`点 B 在（${x}，${y}），向上平移 ${dy} 格后到了（${x}，□）。□里填几？`,fig:figGrid([[x,y,'B']]),ans:y+dy,explain:`向上平移，行数增加：${y}+${dy}=${y+dy}，列数不变。`}}},
+ {min:1,f:()=>{const[p1,p2,p3]=shuffle(PLACES.slice()).slice(0,3);const a=ri(2,9)*100,b=ri(1,6)*50,c=ri(3,9)*100;const d1=pick(['西','东']),d2=pick(['北','南']);
+  return{text:`从家出发，先向${d1}走 ${a} 米到${p1}，再向${d2}走 ${b} 米到${p2}，最后向${d1}走 ${c} 米到${p3}。一共走了多少米？`,ans:a+b+c,unit:'米',explain:`把每一段路程加起来：${a}+${b}+${c}=${a+b+c}（米）。`}}},
+ {min:1,f:()=>{const d=pick(DIRS),p=pick(PLACES);const back=OPP[d];return{text:`去${p}时，一路向${d}走。从${p}原路回家，要向哪个方向走？<br>（填序号：1.东 2.南 3.西 4.北）`,ans:DIRS.indexOf(back)+1,explain:`回来的方向和去的方向相反：去时向${d}，回来向${back}。`}}},
+ {min:2,f:()=>{const d1=pick(DIRS),d2=pick(DIRS.filter(x=>x!==d1&&x!==OPP[d1]));const a=ri(2,8)*100,b=ri(2,8)*100;return{text:`笑笑先向${d1}走 ${a} 米，再向${d2}走 ${b} 米到了学校。放学原路回家，第一段路要向哪个方向走？<br>（填序号：1.东 2.南 3.西 4.北）`,ans:DIRS.indexOf(OPP[d2])+1,explain:`回家要倒着走：先把最后一段反过来，向${OPP[d2]}走 ${b} 米，再向${OPP[d1]}走 ${a} 米。`}}},
+ {min:2,f:()=>{const a=ri(3,9)*100,b=ri(2,8)*100,c=ri(2,9)*100,d=ri(1,6)*100;const r1=a+b,r2=c+d;if(r1===r2)return{text:`两条路：第一条先走 ${a} 米再走 ${b} 米，第二条也一样长。两条路相差多少米？`,ans:0,unit:'米',explain:'一样长，相差0米。'};
+  return{text:`去公园有两条路线：路线一先走 ${a} 米再走 ${b} 米；路线二先走 ${c} 米再走 ${d} 米。较近的路线比较远的近多少米？`,ans:Math.abs(r1-r2),unit:'米',explain:`路线一 ${r1} 米，路线二 ${r2} 米，相差 ${Math.abs(r1-r2)} 米。`}}},
+ {min:3,f:()=>{const x1=ri(0,6),y=ri(0,6),x2=ri(0,6);if(x1===x2)return{text:`点 A（${x1}，${y}）和点 B（${x1}，${y}）之间相距几格？`,ans:0,explain:'是同一个点，相距0格。'};return{text:`点 A（${x1}，${y}）和点 B（${x2}，${y}）在同一行，它们相距几格？`,fig:figGrid([[x1,y,'A'],[x2,y,'B','#2f6fb0']]),ans:Math.abs(x1-x2),explain:`行数相同，看列数相差多少：${Math.max(x1,x2)}−${Math.min(x1,x2)}=${Math.abs(x1-x2)}。`}}}
+];
+const U6=[
+ {min:1,f:()=>{const b=ri(2,9)*10,q=ri(2,9),a=b*q;return{text:`口算：${N(a+' ÷ '+b)} = ？`,ans:q,explain:`想乘法：${b}×${q}=${a}，所以 ${a}÷${b}=${q}。`}}},
+ {min:1,f:()=>{const b=ri(2,9)*10,q=ri(2,9)*10,a=b*q;return a>9999?{text:`口算：${N('800 ÷ 40')} = ？`,ans:20,explain:'80÷4=20，所以 800÷40=20。'}:{text:`口算：${N(a+' ÷ '+b)} = ？`,ans:q,explain:`去掉被除数和除数末尾同样多的0：${a/10}÷${b/10}=${q}。`}}},
+ {min:1,f:()=>{const b=ri(2,9)*10,q=ri(2,9),r=ri(1,b-1),a=b*q+r;const askR=Math.random()<.5;return{text:`用竖式计算 ${N(a+' ÷ '+b)}，${askR?'余数':'商'}是多少？`,ans:askR?r:q,explain:`${b}×${q}=${b*q}，${a}−${b*q}=${r}，所以 ${a}÷${b}=${q}……${r}。`}}},
+ {min:2,f:()=>{const b=ri(12,89),q=ri(2,9),r=ri(0,b-1),a=b*q+r;const askR=r>0&&Math.random()<.5;return{text:`用竖式计算 ${N(a+' ÷ '+b)}，${askR?'余数':'商'}是多少？`,ans:askR?r:q,explain:`把 ${b} 看作 ${Math.round(b/10)*10} 试商，商 ${q}：${b}×${q}=${b*q}，${a}−${b*q}=${r}。${r?`所以商 ${q}，余 ${r}。`:`正好除尽，商 ${q}。`}`}}},
+ {min:3,f:()=>{const b=ri(12,49),q=ri(11,39),r=ri(0,b-1),a=b*q+r;if(a>999)return{text:`用竖式计算 ${N('744 ÷ 24')}，商是多少？`,ans:31,explain:'24×31=744，正好除尽，商 31。'};const askR=r>0&&Math.random()<.4;return{text:`用竖式计算 ${N(a+' ÷ '+b)}，${askR?'余数':'商'}是多少？`,ans:askR?r:q,explain:`被除数前两位 ${String(a).slice(0,2)} ${+String(a).slice(0,2)>=b?'够':'不够'}除，商是两位数。${b}×${q}=${b*q}，${a}−${b*q}=${r}。`}}},
+ {min:2,f:()=>{const b=ri(2,9)*10+pick([1,2,3,7,8,9]);const r=Math.round(b/10)*10;return{text:`计算 ${N(ri(150,900)+' ÷ '+b)} 试商时，用“四舍五入”法把 ${b} 看作几十来试商？`,ans:r,explain:`${b} 的个位是 ${b%10}，${b%10<5?'四舍':'五入'}，看作 ${r}。`}}},
+ {min:2,f:()=>{const b=ri(21,79),two=Math.random()<.5;const a=two?ri(b*10,999):ri(100,b*10-1);return{text:`${N(a+' ÷ '+b)} 的商是几位数？`,ans:two?2:1,explain:`看被除数的前两位 ${String(a).slice(0,2)}，${two?`比 ${b} 大（或相等），商是两位数`:`比 ${b} 小，要看前三位，商是一位数`}。`}}},
+ {min:1,f:()=>{const b=ri(2,9),q=ri(4,30),k=pick([10,100]);return{text:`已知 ${N((b*q)+' ÷ '+b+' = '+q)}，那么 ${N((b*q*k)+' ÷ '+(b*k))} = ？`,ans:q,explain:`商不变的规律：被除数和除数同时乘 ${k}，商不变，还是 ${q}。`}}},
+ {min:2,f:()=>{const b=ri(2,9)*10,q=ri(3,20);const A=b*q;const T=[[`${A*10} ÷ □ = ${q}`,b*10,`被除数乘10，除数也要乘10：${b*10}`],[`${A} ÷ ${b} = ${A/10} ÷ □`,b/10,`被除数和除数同时除以10，商不变：□是 ${b/10}`]];const[t,a,e]=pick(T);return{text:`已知 ${N(A+' ÷ '+b+' = '+q)}，在□里填数：<br>${N(t)}`,ans:a,explain:e+'。'}}},
+ {min:1,f:()=>{const m=ri(3,9)*10,lim=m*ri(3,8)+ri(1,m-1);const ans=Math.floor((lim-1)/m);return{text:`括号里最大能填几？<br>${N(m+' × ( ) < '+lim)}`,ans,explain:`${m}×${ans}=${m*ans} < ${lim}，${m}×${ans+1}=${m*(ans+1)} 不小于 ${lim}，最大填 ${ans}。`}}},
+ {min:1,f:()=>{const T=[
+  ()=>{const t=ri(2,6),v=ri(6,15)*10;return[`小兔 ${t} 分钟跑了 ${v*t} 米，它每分钟跑多少米？`,v,'米',`速度＝路程÷时间：${v*t}÷${t}=${v}（米/分）`]},
+  ()=>{const t=ri(2,6),v=ri(40,90);return[`一辆汽车每时行 ${v} 千米，${t} 时行多少千米？`,v*t,'千米',`路程＝速度×时间：${v}×${t}=${v*t}（千米）`]},
+  ()=>{const t=ri(2,9),v=ri(4,12)*10;return[`甲地到乙地有 ${v*t} 千米，汽车每时行 ${v} 千米，要几时到？`,t,'时',`时间＝路程÷速度：${v*t}÷${v}=${t}（时）`]},
+  ()=>{const n=ri(3,9),p=ri(3,12);return[`${n} 千克黄豆 ${n*p} 元，每千克多少元？`,p,'元',`单价＝总价÷数量：${n*p}÷${n}=${p}（元）`]},
+  ()=>{const n=ri(4,15),p=ri(12,35);return[`每支钢笔 ${p} 元，买 ${n} 支要多少元？`,n*p,'元',`总价＝单价×数量：${p}×${n}=${p*n}（元）`]},
+  ()=>{const n=ri(3,12),p=ri(12,30);return[`用 ${n*p} 元买单价 ${p} 元的书包，能买几个？`,n,'个',`数量＝总价÷单价：${n*p}÷${p}=${n}（个）`]}];
+  const[t,a,u,e]=pick(T)();return{text:t,ans:a,unit:u,explain:e+'。'}}},
+ {min:2,f:()=>{const T=[
+  ()=>{const k=ri(12,36),q=ri(6,15);return[`学校图书馆拿出 ${k*q} 本书，平均分给 ${k} 个班，每班分到多少本？`,q,'本',`${k*q}÷${k}=${q}（本）`]},
+  ()=>{const b=ri(12,25),q=ri(5,14),r=ri(1,b-1);return[`有 ${b*q+r} 盆花，每 ${b} 盆摆一个图案，最多能摆几个图案？`,q,'个',`${b*q+r}÷${b}=${q}……${r}，最多摆 ${q} 个`]},
+  ()=>{const b=ri(30,45),q=ri(5,12),r=ri(1,b-1);return[`${b*q+r} 名同学去秋游，每辆车坐 ${b} 人，至少要几辆车？`,q+1,'辆',`${b*q+r}÷${b}=${q}……${r}，剩下的 ${r} 人也要坐车，所以要 ${q}+1=${q+1}（辆）`]},
+  ()=>{const pg=ri(12,20),d=ri(10,20);return[`一本书 ${pg*d} 页，每天看 ${pg} 页，几天能看完？`,d,'天',`${pg*d}÷${pg}=${d}（天）`]}];
+  const[t,a,u,e]=pick(T)();return{text:t,ans:a,unit:u,explain:e+'。'}}},
+ {min:3,f:()=>{const a=ri(3,8),b=ri(3,8);const t1=ri(3,6),t2=ri(3,6);const v1=ri(5,9)*10,v2=ri(5,9)*10;const s1=v1*t1,s2=v2*t2;if(v1===v2)return{text:`松鼠 ${t1} 分跑 ${s1} 米，猴子 ${t2} 分跑 ${s2} 米。谁每分钟跑得多？跑多的比少的多跑几米？`,ans:0,unit:'米',explain:`两个一样快，都是每分 ${v1} 米，多 0 米。`};return{text:`松鼠 ${t1} 分跑 ${s1} 米，猴子 ${t2} 分跑 ${s2} 米。跑得快的每分钟比慢的多跑多少米？`,ans:Math.abs(v1-v2),unit:'米',explain:`松鼠每分 ${s1}÷${t1}=${v1} 米，猴子每分 ${s2}÷${t2}=${v2} 米，相差 ${Math.abs(v1-v2)} 米。`}}}
+];
+const U7=[
+ {min:1,f:()=>{const t=ri(1,25);return{text:`零下 ${t} 摄氏度写作多少 ℃？（负数用“−”键）`,ans:-t,unit:'℃',explain:`零下的温度用负数表示：零下 ${t} ℃ 写作 −${t} ℃。`}}},
+ {min:1,f:()=>{const a=ri(2,20),b=ri(2,20);const lo=-Math.max(a,b);return{text:`−${a} ℃ 和 −${b} ℃，哪个温度更低？把更低的温度填进去。（负数用“−”键）`,ans:a===b?-a:lo,unit:'℃',explain:a===b?'两个一样低。':`负号后面的数越大，温度越低：−${Math.max(a,b)} ℃ 更低。`}}},
+ {min:1,f:()=>{const a=ri(1,15),b=ri(1,15);return{text:`早上气温是 −${a} ℃，中午是 ${b} ℃。中午比早上高了多少度？`,ans:a+b,unit:'℃',explain:`从 −${a} ℃ 升到 0 ℃ 升了 ${a} 度，再升到 ${b} ℃ 又升了 ${b} 度，一共 ${a}+${b}=${a+b} 度。`}}},
+ {min:1,f:()=>{const T=[
+  ()=>{const s=ri(1,9)*100,t=ri(1,9)*100;return[`存入 ${s} 元记作 +${s} 元，那么取出 ${t} 元记作多少元？`,-t,'元',`存入用正数，取出用负数：−${t} 元`]},
+  ()=>{const u=ri(2,9),d=ri(2,9);return[`电梯上升 ${u} 层记作 +${u}，下降 ${d} 层记作多少？`,-d,'',`上升用正数，下降用负数：−${d}`]},
+  ()=>{const g=ri(5,30),l=ri(5,30);return[`比赛赢了 ${g} 分记作 +${g} 分，输了 ${l} 分记作多少分？`,-l,'分',`赢用正数，输用负数：−${l} 分`]},
+  ()=>{const m=ri(50,400);return[`海平面以上记作正数。一个盆地比海平面低 ${m} 米，海拔记作多少米？`,-m,'米',`比海平面低用负数：−${m} 米`]}];
+  const[t,a,u,e]=pick(T)();return{text:t+'（负数用“−”键）',ans:a,unit:u,explain:e+'。'}}},
+ {min:2,f:()=>{const k=ri(1,6),dir=Math.random()<.5;return{text:`在数轴上，从 0 向${dir?'左':'右'}数 ${k} 格是几？（负数用“−”键）`,ans:dir?-k:k,explain:`0 的${dir?'左边是负数':'右边是正数'}，所以是 ${dir?'−':''}${k}。`}}},
+ {min:2,f:()=>{const c=[ri(1,9),-ri(1,12),ri(10,25),-ri(13,20)];const lo=Math.min(...c),hi=Math.max(...c);const askHi=Math.random()<.5;return{text:`四个城市的最低气温是：${c.map(x=>x+' ℃').join('，')}。${askHi?'最高':'最低'}的是多少 ℃？（负数用“−”键）`,ans:askHi?hi:lo,unit:'℃',explain:`温度从低到高：${c.slice().sort((a,b)=>a-b).join(' < ')}。`}}},
+ {min:2,f:()=>{const h=ri(3,9)*1000+ri(0,999),l=ri(50,400);return{text:`一座山顶的海拔是 +${h} 米，一个盆地的海拔是 −${l} 米。它们相差多少米？`,ans:h+l,unit:'米',explain:`山顶比海平面高 ${h} 米，盆地比海平面低 ${l} 米，相差 ${h}+${l}=${h+l}（米）。`}}},
+ {min:3,f:()=>{const a=ri(2,9),d=ri(a+1,a+12);return{text:`晚上气温是 ${a} ℃，夜里下降了 ${d} 度。现在是多少 ℃？（负数用“−”键）`,ans:a-d,unit:'℃',explain:`${a} ℃ 下降 ${a} 度到 0 ℃，再下降 ${d-a} 度，就是 −${d-a} ℃。`}}}
+];
+const U8=[
+ {min:1,f:()=>{const r=ri(2,9),y=ri(1,9);if(r===y)return{text:`盒子里有 ${r} 个红球和 ${y} 个黄球。摸到红球和黄球的可能性一样大吗？（1.一样大 2.不一样大）`,ans:1,explain:'两种球个数一样多，可能性一样大。'};const big=r>y?1:2;return{text:`盒子里有 ${r} 个红球和 ${y} 个黄球，任意摸一个，摸到哪种颜色的可能性大？<br>（填序号：1.红球 2.黄球）`,ans:big,explain:`${r>y?'红':'黄'}球多，摸到${r>y?'红':'黄'}球的可能性大。`}}},
+ {min:1,f:()=>{const n=ri(5,12);const T=[[`盒子里只有 ${n} 个白球，任意摸一个，“摸到白球”是：`,1,'只有白球，一定摸到白球'],[`盒子里只有 ${n} 个白球，任意摸一个，“摸到红球”是：`,3,'没有红球，不可能摸到红球'],[`盒子里有 ${n} 个白球和 2 个红球，任意摸一个，“摸到红球”是：`,2,'有红球也有白球，可能摸到红球']];const[t,a,e]=pick(T);return{text:`${t}<br>（填序号：1.一定 2.可能 3.不可能）`,ans:a,explain:e+'。'}}},
+ {min:1,f:()=>{const T=[['抛一枚硬币，落地后可能出现几种结果？',2,'正面朝上或反面朝上，共2种'],['掷一个普通的骰子，朝上的点数可能有几种？',6,'1、2、3、4、5、6，共6种'],['路口的红绿灯，到达时可能遇到几种颜色？',3,'红灯、绿灯、黄灯，共3种'],['一个转盘上写着1到8，转一次，指针可能停在几种不同的数上？',8,'1到8共8种']];const[t,a,e]=pick(T);return{text:t,ans:a,unit:'种',explain:e+'。'}}},
+ {min:2,f:()=>{const c=shuffle([ri(1,6),ri(1,6),ri(1,6)]);const names=['红','黄','蓝'];if(new Set(c).size<3)c[2]=c[0]+c[1]+1;const mx=c.indexOf(Math.max(...c));return{text:`一个转盘平均分成 ${c[0]+c[1]+c[2]} 份：红色 ${c[0]} 份，黄色 ${c[1]} 份，蓝色 ${c[2]} 份。指针停在哪种颜色的可能性最大？<br>（填序号：1.红 2.黄 3.蓝）`,ans:mx+1,explain:`${names[mx]}色占的份数最多，可能性最大。`}}},
+ {min:2,f:()=>{const r=ri(2,6),y=ri(2,6),b=ri(2,6);return{text:`袋子里有 ${r} 个红球、${y} 个黄球、${b} 个蓝球。至少要再放进几个红球，才能保证红球比黄球和蓝球都多？`,ans:Math.max(0,Math.max(y,b)+1-r),unit:'个',explain:`红球要比 ${Math.max(y,b)} 个多，至少要 ${Math.max(y,b)+1} 个，${Math.max(y,b)+1>r?`再放 ${Math.max(y,b)+1-r} 个`:'现在已经够了，放 0 个'}。`}}},
+ {min:3,f:()=>{const d=shuffle([1,2,3,4,5,6,7,8,9]).slice(0,3);const big=+d.slice().sort((a,b)=>b-a).join('');const small=+d.slice().sort((a,b)=>a-b).join('');const ask=Math.random()<.5;return{text:`转盘转了三次，得到 ${d.join('、')}。用这三个数字组成三位数，${ask?'最大':'最小'}是多少？`,ans:ask?big:small,explain:`${ask?'大数放高位':'小数放高位'}：${ask?big:small}。`}}}
+];
+const U9=[
+ {min:1,f:()=>{const m=ri(2,6)*10,h=24;return{text:`滴水实验：一个没关紧的水龙头每时滴水大约 ${m} 毫升，一天（24 时）大约浪费多少毫升水？`,ans:m*h,unit:'毫升',explain:`${m}×24=${m*h}（毫升）。`}}},
+ {min:2,f:()=>{const m=ri(2,6)*10,d=pick([7,10,30]);return{text:`滴水实验：水龙头每分钟滴水 ${m} 滴，${d} 分钟一共滴多少滴？`,ans:m*d,unit:'滴',explain:`${m}×${d}=${m*d}（滴）。`}}},
+ {min:1,f:()=>{const T=[['我国的邮政编码一共有几位数字？',6,'邮政编码由6位数字组成'],['我国的居民身份证号码一共有几位？',18,'身份证号码有18位'],['身份证号码里，表示出生年份的数字有几位？',4,'出生日期写成8位：年4位、月2位、日2位']];const[t,a,e]=pick(T);return{text:t,ans:a,unit:'位',explain:e+'。'}}},
+ {min:1,f:()=>{const g=ri(1,9),c=ri(1,40),s=ri(1,45);const code=`${ri(2021,2024)}${g}${String(c).padStart(2,'0')}${String(s).padStart(2,'0')}`;return{text:`学校给学生编学号：入学年份＋年级＋班号（两位）＋座号（两位）。学号 ${code} 的同学在几班？`,ans:c,unit:'班',explain:`年份后面一位是年级 ${g}，接着两位是班号 ${String(c).padStart(2,'0')}，也就是 ${c} 班。`}}},
+ {min:1,f:()=>{const n=ri(4,12);const T=[[`用小棒摆三角形：摆 1 个用 3 根，摆 2 个（连在一起）用 5 根，摆 3 个用 7 根……摆 ${n} 个用几根？`,2*n+1,`每多一个三角形多 2 根：3+2×(${n}−1)=${2*n+1}`],[`用小棒摆正方形：摆 1 个用 4 根，摆 2 个（连在一起）用 7 根，摆 3 个用 10 根……摆 ${n} 个用几根？`,3*n+1,`每多一个正方形多 3 根：4+3×(${n}−1)=${3*n+1}`],[`一排桌子拼起来，1 张桌子坐 6 人，2 张坐 10 人，3 张坐 14 人……${n} 张坐几人？`,4*n+2,`每多一张多坐 4 人：6+4×(${n}−1)=${4*n+2}`]];const[t,a,e]=pick(T);return{text:t,ans:a,explain:e+'。'}}},
+ {min:2,f:()=>{const a=ri(1,5),k=ri(2,4),n=ri(5,8);const seq=[...Array(n)].map((_,i)=>a+k*i);return{text:`找规律填数：${seq.slice(0,n-1).join('，')}，□。□里填几？`,ans:seq[n-1],explain:`每次加 ${k}：${seq[n-2]}+${k}=${seq[n-1]}。`}}}
+];
+Object.assign(BANK,{u5:U5,u6:U6,u7:U7,u8:U8,u9:U9});
+Object.assign(TOPIC_NAME,{u5:'方向与位置',u6:'除法',u7:'生活中的负数',u8:'可能性',u9:'数学好玩'});
 function genQ(topic,d){const list=BANK[topic].filter(g=>g.min<=d);let q;for(let i=0;i<8;i++){q=pick(list).f(d);if(!recent.includes(q.text))break}
  recent.push(q.text);if(recent.length>12)recent.shift();q.topic=topic;q.unit=q.unit||'';return q}
 
@@ -2203,12 +2286,12 @@ $('#soundBtn').onclick=()=>{S.sound=!S.sound;save();$('#soundBtn').textContent='
 
 function makePad(host,onSubmit){
  host.innerHTML=`<div class="ansline"><div class="ansbox" aria-live="polite"></div><span class="ansunit"></span></div><div class="ansmeta"></div>
- <div class="pad">${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button type="button" data-k="${n}">${n}</button>`).join('')}<button type="button" class="fn" data-k="Backspace">退格</button><button type="button" class="fn" data-k="clear">清空</button></div>
+ <div class="pad">${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button type="button" data-k="${n}">${n}</button>`).join('')}<button type="button" class="fn neg" data-k="-" title="负号">−</button><button type="button" class="fn" data-k="Backspace">退格</button><button type="button" class="fn" data-k="clear">清空</button></div>
  <button type="button" class="go">确定</button>`;
  const box=host.querySelector('.ansbox'),meta=host.querySelector('.ansmeta'),unit=host.querySelector('.ansunit'),go=host.querySelector('.go');
  let v='',locked=false;
  const draw=()=>{box.textContent=v;meta.textContent=v.length>=4?`已输入 ${v.length} 位数`:''};
- const api={press(k){if(locked)return false;if(/^[0-9]$/.test(k)){if(v.length>=13)return true;if(v==='0')v='';v+=k;SFX.key()}else if(k==='Backspace'){v=v.slice(0,-1)}else if(k==='clear'||k==='Delete'||k==='Escape'){v=''}else if(k==='Enter'){if(v===''){toast('请先输入答案');return true}onSubmit(v);return true}else return false;draw();return true},
+ const api={press(k){if(locked)return false;if(/^[0-9]$/.test(k)){if(v.length>=13)return true;if(v==='0')v='';if(v==='-0')v='-';v+=k;SFX.key()}else if(k==='-'||k==='−'){v=v.startsWith('-')?v.slice(1):'-'+v;SFX.key()}else if(k==='Backspace'){v=v.slice(0,-1)}else if(k==='clear'||k==='Delete'||k==='Escape'){v=''}else if(k==='Enter'){if(v===''||v==='-'){toast('请先输入答案');return true}onSubmit(v);return true}else return false;draw();return true},
   clear(){v='';draw()},setUnit(u){unit.textContent=u||''},lock(b){locked=b;go.disabled=b}};
  host.querySelector('.pad').addEventListener('click',e=>{const b=e.target.closest('button');if(b)api.press(b.dataset.k)});
  go.onclick=()=>api.press('Enter');
@@ -2276,7 +2359,7 @@ function tower3Open(){return S.prog[8]>=5||!!S.t3open}
 function tower4Open(){return S.prog[10]>=5||!!S.t4open}
 function tower5Open(){return S.prog[12]>=5||!!S.t5open}
 const TOWERS=[{id:1,name:'第一塔 · 墨之塔',open:()=>true,lock:''},{id:2,name:'第二塔 · 云霄塔',open:()=>tower2Open(),lock:'打败墨魔王后开启'},{id:3,name:'第三塔 · 龙宫',open:()=>tower3Open(),lock:'打败天狗后开启'},{id:4,name:'第四塔 · 炎月塔',open:()=>tower4Open(),lock:'打败东海龙王后开启'},{id:5,name:'第五塔 · 幽冥塔',open:()=>tower5Open(),lock:'打败三足金蟾后开启'}];
-function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Open();if(C.id===9)return !tower3Open();if(C.id===11)return !tower4Open();if(C.id===13)return !tower5Open();if(C.id===15)return !tower6Open();if(C.id>=7)return S.prog[C.id-1]<5;return false}
+function chLocked(C){if(C.id===5)return !ch5Open();if(C.id===6)return !tower2Open();if(C.id===9)return !tower3Open();if(C.id===11)return !tower4Open();if(C.id===13)return !tower5Open();if(C.id===15)return !tower6Open();if(C.id===17)return false;if(C.id>=7)return S.prog[C.id-1]<5;return false}
 function ch5Open(){return [1,2,3,4].filter(c=>S.prog[c]>=5).length>=3}
 function renderMap(){
  const el=$('#scr-map');const hs=heroStats();
@@ -2387,9 +2470,9 @@ const MSKILL2={
  dragonking:{name:'龙王召雨',type:'heal',fx:'ice',desc:'召来大雨，恢复20%生命'}};
 function startBattle(ch,lv){
  mapTab=CHAPTERS[ch-1].tower||1;
- const C=CHAPTERS[ch-1],isBoss=lv===5,m=ch>=15?4.6+.3*(ch-15):ch>=13?3.8+.25*(ch-13):ch>=11?3.2+.25*(ch-11):ch>=9?2.6+.25*(ch-9):ch>=6?2+.2*(ch-6):1+.25*(ch-1);let e;
- if(isBoss)e={name:C.boss.name,art:C.boss.art,opt:{},max:Math.round(100*m),atk:Math.round(12+1.5*ch),powers:C.boss.powers.slice()};
- else{const[n,a,o]=C.enemies[lv-1];e={name:n,art:a,opt:o,max:Math.round((36+lv*6)*m),atk:6+ch+lv,powers:[]}}
+ const C=CHAPTERS[ch-1],isBoss=lv===5,sc=C.tower===7?C.id-15:ch,m=C.tower===7?1.3+.35*(sc-2):ch>=15?4.6+.3*(ch-15):ch>=13?3.8+.25*(ch-13):ch>=11?3.2+.25*(ch-11):ch>=9?2.6+.25*(ch-9):ch>=6?2+.2*(ch-6):1+.25*(ch-1);let e;
+ if(isBoss)e={name:C.boss.name,art:C.boss.art,opt:{},max:Math.round(100*m),atk:Math.round(12+1.5*sc),powers:C.boss.powers.slice()};
+ else{const[n,a,o]=C.enemies[lv-1];e={name:n,art:a,opt:o,max:Math.round((36+lv*6)*m),atk:6+sc+lv,powers:[]}}
  const bh=BEHAV[e.art]||{blk:.2,ctr:.15,verb:'格挡'};e.blk=bh.blk;e.ctr=bh.ctr;e.verb=bh.verb;
  S.seen=S.seen||{};if(!S.seen[e.name]){S.seen[e.name]=true;save()}
  e.sk=MSKILL[e.art]||MSKILL.blob;e.rage=0;e.rageMax=isBoss?3:4;
@@ -2398,8 +2481,8 @@ function startBattle(ch,lv){
  const MD=MODES[S.mode||'normal'];e.max=Math.max(1,Math.round(e.max*MD.ehp));e.atk=Math.max(1,Math.round(e.atk*MD.eatk));if(S.mode==='hard'){e.blk=.5;e.ctr=Math.min(e.ctr,.3)}
  e.hp=e.max;e.shieldMax=e.powers.includes('shield')?Math.round(e.max*.3):0;e.shield=e.shieldMax;
  const hs=heroStats();
- let d;if(ch>=6)d=isBoss?3:(lv<=2?2:3);else if(ch===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
- B={skills:SKILLS[S.cur].filter(x=>x.unlock<=wl),ch,lv,isBoss,C,e,d,hero:{hp:Math.max(1,Math.round(hs.hp*MD.php)),max:Math.max(1,Math.round(hs.hp*MD.php)),atk:Math.max(1,Math.round(hs.atk*MD.patk))},combo:0,gauge:0,blocks:0,poison:0,weak:0,rights:0,wrongs:0,regenUsed:false,busy:true,over:false};
+ let d;if(sc>=6)d=isBoss?3:(lv<=2?2:3);else if(sc===5)d=isBoss?3:(lv<=2?2:pick([2,3]));else d=isBoss?pick([2,3]):(lv<=2?1:2);
+ B={skills:SKILLS[S.cur].filter(x=>x.unlock<=wl),ch,sc,lv,isBoss,C,e,d,hero:{hp:Math.max(1,Math.round(hs.hp*MD.php)),max:Math.max(1,Math.round(hs.hp*MD.php)),atk:Math.max(1,Math.round(hs.atk*MD.patk))},combo:0,gauge:0,blocks:0,poison:0,weak:0,rights:0,wrongs:0,regenUsed:false,busy:true,over:false};
  renderBattle();show('battle');musicStart(isBoss?'boss':(C.tower===5?'horror':(C.tower||1)>=2?'tower':'battle'));keyHandler=battleKey;startWalk()}
 
 function renderBattle(){
@@ -2684,6 +2767,13 @@ function judgeQ(){const T=[
  ()=>{const n=ri(1,9)*100000+ri(0,9)*10000+ri(0,9)*1000+ri(0,999);const r=Math.round(n/1e4),ok=Math.random()<.5,v=ok?r:r+pick([-1,1]);return[`${n} 四舍五入到万位约是 ${v}万`,ok,`看千位，${n} ≈ ${r}万`]},
  ()=>{const x=ri(2,16)*10,ok=Math.random()<.5,v=ok?180-x:90-x>0?Math.abs(90-x):180-x+10;return[`平角被分成两个角，一个是 ${x}°，另一个是 ${v}°`,ok,`平角是180°：180° − ${x}° = ${180-x}°`]},
  ()=>pick([['射线只有一个端点',true,'射线有一个端点，可以向一端无限延长'],['线段可以无限延长',false,'线段有两个端点，不能延长'],['直线没有端点',true,'直线向两端无限延长，没有端点'],['1个周角等于4个直角',true,'360° = 4 × 90°'],['钝角比直角小',false,'钝角大于90°，比直角大'],['1个平角等于2个直角',true,'180° = 2 × 90°'],['在同一平面内，两条平行线永远不相交',true,'这就是平行线'],['10个一万是十万',true,'10个一万 = 100000'],['1亿里面有100个一千万',false,'1亿 = 10个一千万'],['最小的六位数是100000',true,'100000 是最小的六位数'],['最大的五位数是99999',true,'五个9'],['25 × 4 = 100',true,'25 × 4 = 100'],['125 × 8 = 100',false,'125 × 8 = 1000'],['a × b = b × a 是乘法交换律',true,'交换两个因数的位置，积不变'],['(a + b) + c = a + (b + c) 是加法交换律',false,'这是加法结合律'],['锐角一定小于90°',true,'锐角小于90°'],['两点之间线段最短',true,'两点之间，线段最短']])];
+T.push(
+ ()=>{const b=ri(2,9),q=ri(3,20),k=pick([10,100]),ok=Math.random()<.5;return[`${b*q} ÷ ${b} = ${b*q*k} ÷ ${ok?b*k:b}`,ok,`商不变：被除数和除数要同时乘 ${k}，${b*q}÷${b} = ${b*q*k}÷${b*k}`]},
+ ()=>{const a=ri(1,15),c=ri(1,15);if(a===c)return[`−${a} ℃ 和 −${c} ℃ 一样冷`,true,'两个温度相同'];const ok=Math.random()<.5,lo=Math.max(a,c),hi=Math.min(a,c);return ok?[`−${lo} ℃ 比 −${hi} ℃ 低`,true,`负号后面的数越大越冷，−${lo} ℃ 更低`]:[`−${hi} ℃ 比 −${lo} ℃ 低`,false,`负号后面的数越大越冷，−${lo} ℃ 更低`]},
+ ()=>{const t=ri(1,9);return pick([[`0 ℃ 比 −${t} ℃ 高`,true,`0 ℃ 比任何零下温度都高`],[`−${t} 比 0 大`,false,'负数都比 0 小'],[`+${t} 和 ${t} 表示同一个数`,true,`正号可以省略，+${t} 就是 ${t}`]])},
+ ()=>pick([['抛硬币时，一定是正面朝上',false,'可能正面朝上，也可能反面朝上'],['盒子里只有红球，摸出的一定是红球',true,'只有红球，一定摸到红球'],['太阳从西边升起是可能的',false,'太阳从东边升起，从西边升起是不可能的'],['掷骰子，可能掷出 7 点',false,'骰子只有 1 到 6 点，不可能掷出 7 点']]),
+ ()=>{const x=ri(1,5),y=ri(1,5),ok=Math.random()<.5;return[`数对（${x}，${y}）表示第 ${ok?x:y} 列第 ${ok?y:x} 行`,ok||x===y,`数对先写列再写行：（${x}，${y}）是第 ${x} 列第 ${y} 行`]},
+ ()=>{const v=ri(4,9)*10,t=ri(2,6),ok=Math.random()<.5;return[`每分钟走 ${v} 米，${t} 分钟走 ${ok?v*t:v+t} 米`,ok,`路程＝速度×时间：${v}×${t}=${v*t}（米）`]});
  const[t,ans,ex]=pick(T)();return{text:`<span class="judgeq">${t}</span>`,ans,explain:ex,unit:''}}
 function startDefense(opt){if(!B||B.over)return;const e=B.e;
  if(B.blocks>0){$('#fEnemy').classList.remove('windup');B.blocks--;anim('#fEnemy','lunge-l');setTimeout(()=>{guardFx('#fHero');floatText('#fHero','护体挡住了！','blue');updateHud()},220);afterEnemy(1100);return}
@@ -2846,6 +2936,98 @@ CHAPTERS.push(
   boss:{name:'混沌魔神',art:'chaosgod',powers:['shield','heal','timer'],desc:'真正的最强首领！护盾、答错回血、每题限时60秒。'}});
 function tower6Open(){return S.prog[14]>=5||!!S.t6open}
 TOWERS.push({id:6,name:'第六塔 · 雷霆魔塔',open:()=>tower6Open(),lock:'打败幽冥鬼帝后开启'});
+/* ===== tower 7: 智慧塔 (units 5-8 + 数学好玩 + 总复习) ===== */
+Object.assign(ART,{
+compassbeast:()=>wrap(`${shadow(100,84)}
+<path d="M40 150 C34 110 70 86 110 88 C150 90 176 116 172 152 C170 176 156 188 140 190 L60 190 C46 184 42 168 40 150Z" fill="#5f7d3a" stroke="${INK}" stroke-width="3.5"/>
+<circle cx="106" cy="138" r="40" fill="#e9e2cf" stroke="${INK}" stroke-width="3.5"/><circle cx="106" cy="138" r="32" fill="none" stroke="#8a6a3a" stroke-width="2"/>
+<text x="106" y="112" text-anchor="middle" font-size="13" font-weight="700" fill="${RED}">北</text><text x="106" y="174" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">南</text><text x="136" y="143" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">东</text><text x="76" y="143" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">西</text>
+<path d="M106 138 L98 132 L106 106 L114 132Z" fill="${RED}" stroke="${INK}" stroke-width="1.5"/><path d="M106 138 L98 144 L106 168 L114 144Z" fill="#3a3a3a" stroke="${INK}" stroke-width="1.5"/>
+${[[54,190],[84,190],[124,190],[152,190]].map(([x,y])=>`<rect x="${x-9}" y="${y}" width="18" height="32" rx="6" fill="#5f7d3a" stroke="${INK}" stroke-width="3"/>`).join('')}
+<path d="M44 140 C24 130 10 136 6 150 C12 166 28 168 44 160Z" fill="#5f7d3a" stroke="${INK}" stroke-width="3"/><circle cx="20" cy="146" r="4" fill="#ffe58a"/><circle cx="19" cy="146" r="1.8" fill="${INK}"/>
+<path d="M8 156 L14 160 L20 156" ${st(2)}/><path d="M170 160 L190 170 L182 178" ${st(6,'#5f7d3a')}/>`),
+
+sandgenie:()=>wrap(`${shadow(100,70)}
+<g filter="url(#flame)"><path d="M70 160 C60 190 100 200 92 226 C120 214 140 196 128 160Z" fill="#d9a03a" opacity=".85"/></g>
+<path d="M66 96 C60 130 70 156 100 166 C130 156 140 130 134 96 C120 84 80 84 66 96Z" fill="#c98a4a" stroke="${INK}" stroke-width="3"/>
+<path d="M76 110 L124 110 M80 130 L120 130" ${st(2.5,'#8a5a2b')}/><text x="100" y="152" text-anchor="middle" font-size="22" font-weight="700" fill="${INK}">÷</text>
+<circle cx="100" cy="68" r="26" fill="#c98a4a" stroke="${INK}" stroke-width="3"/>
+<path d="M72 56 Q100 22 128 56 Q114 46 100 48 Q86 46 72 56Z" fill="${RED}" stroke="${INK}" stroke-width="2.5"/><circle cx="100" cy="40" r="6" fill="#9fd3ea" stroke="${INK}" stroke-width="2"/>
+<path d="M86 66 L94 68 M106 68 L114 66" ${st(3)}/><path d="M88 82 Q100 90 112 82" ${st(2.5)}/><path d="M90 88 Q100 104 110 88" fill="${INK}" opacity=".6"/>
+<path d="M68 104 L36 86 L24 100 M132 104 L164 86 L176 100" ${st(10,'#c98a4a')}/>
+<path d="M14 92 L34 92 M24 82 L24 102" ${st(2)} opacity="0"/><circle cx="20" cy="100" r="11" fill="#e8c23a" stroke="${INK}" stroke-width="2"/><circle cx="180" cy="100" r="11" fill="#e8c23a" stroke="${INK}" stroke-width="2"/>
+<text x="20" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">÷</text><text x="180" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">÷</text>`),
+
+frostdragon:()=>wrap(`${shadow(100,90)}
+<path d="M150 70 C190 40 196 90 176 110 C196 100 198 130 176 140" fill="#cdeef8" stroke="${INK}" stroke-width="3"/>
+<path d="M60 120 C70 90 130 80 160 110 C184 134 170 176 140 186 L150 222 L132 222 L124 190 L86 192 L80 222 L62 222 L64 186 C50 170 52 140 60 120Z" fill="#9fd3ea" stroke="${INK}" stroke-width="3.5"/>
+<path d="M76 140 Q100 130 124 142 M72 162 Q100 152 130 164" ${st(2.5,'#2c6f8a')}/>
+<path d="M66 120 C50 96 52 70 66 56 L52 60 L40 44 L66 48 L84 60 C96 76 90 104 80 118Z" fill="#9fd3ea" stroke="${INK}" stroke-width="3"/>
+<path d="M40 44 L16 50 L22 64 L52 60" fill="#cdeef8" stroke="${INK}" stroke-width="2.5"/><circle cx="58" cy="54" r="4" fill="#2f6fb0"/>
+<path d="M60 42 L56 22 M70 46 L74 26" ${st(4,'#f4f8fb')}/><path d="M60 42 L56 22 M70 46 L74 26" ${st(1.4)}/>
+${[[92,96],[110,92],[128,98],[144,108]].map(([x,y])=>`<path d="M${x-6} ${y} L${x} ${y-14} L${x+6} ${y}" fill="#f4f8fb" stroke="${INK}" stroke-width="2"/>`).join('')}
+<text x="22" y="92" font-size="18" font-weight="700" fill="#2f6fb0">−20℃</text>
+<path d="M18 62 Q6 72 12 84" ${st(3,'#cdeef8')}/>`),
+
+dicelord:()=>wrap(`${shadow(100,70)}
+<polygon points="${spikes(100,110,58,90,20)}" fill="#d9487a" opacity=".22" filter="url(#flame)"/>
+<rect x="56" y="80" width="90" height="90" rx="14" fill="#f4f8fb" stroke="${INK}" stroke-width="4"/>
+${[[76,100],[126,100],[76,150],[126,150],[101,125]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="7" fill="${RED}"/>`).join('')}
+<path d="M56 94 L80 68 L170 68 L146 94Z" fill="#e9e2cf" stroke="${INK}" stroke-width="3"/><path d="M146 94 L170 68 L170 156 L146 170Z" fill="#cfc8b4" stroke="${INK}" stroke-width="3"/>
+<circle cx="113" cy="81" r="5" fill="${INK}"/><circle cx="158" cy="100" r="4" fill="${INK}"/><circle cx="158" cy="136" r="4" fill="${INK}"/>
+<path d="M78 62 L84 36 L98 52 L112 30 L126 52 L140 36 L146 62Z" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/>
+<path d="M76 116 Q86 108 96 116 M106 116 Q116 108 126 116" ${st(3)} opacity="0"/>
+<path d="M56 120 L30 110 L18 90 M146 120 L176 108" ${st(8,INK)}/>
+<circle cx="18" cy="86" r="12" fill="#f2b62e" stroke="${INK}" stroke-width="2.5"/><text x="18" y="91" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">?</text>
+<rect x="68" y="170" width="18" height="50" rx="5" fill="${INK}"/><rect x="118" y="170" width="18" height="50" rx="5" fill="${INK}"/>`),
+
+inksage:()=>wrap(`${shadow(100,90)}
+<polygon points="${spikes(100,100,66,104,26)}" fill="${GOLD}" opacity=".22" filter="url(#flame)"/>
+<path d="M100 92 C70 120 56 180 48 222 L152 222 C144 180 130 120 100 92Z" fill="#2a2a32" stroke="${INK}" stroke-width="3.5"/>
+<path d="M100 96 L100 222" ${st(3,GOLD)}/><path d="M64 180 L136 180 M58 204 L142 204" ${st(2.5,GOLD)}/>
+${['+','−','×','÷'].map((s,i)=>`<text x="${70+i*20}" y="${158+((i%2)*10)}" text-anchor="middle" font-size="16" font-weight="700" fill="${GOLD}">${s}</text>`).join('')}
+<circle cx="100" cy="66" r="26" fill="#e9e2cf" stroke="${INK}" stroke-width="3"/>
+<path d="M72 52 Q100 18 128 52 Z" fill="${INK}"/><rect x="92" y="18" width="16" height="16" fill="${RED}" stroke="${INK}" stroke-width="2"/><text x="100" y="31" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">算</text>
+<path d="M86 64 L94 64 M106 64 L114 64" ${st(3)}/><path d="M80 82 Q100 120 120 82" fill="#f4f8fb" stroke="${INK}" stroke-width="2"/>
+<path d="M70 110 L36 132 L24 120 M130 110 L164 92" ${st(9,'#2a2a32')}/>
+<line x1="166" y1="96" x2="186" y2="20" stroke="#6b4a2a" stroke-width="6" stroke-linecap="round"/><path d="M186 20 L196 4 L180 14Z" fill="${INK}"/>
+<path d="M14 112 L38 108 L40 140 L16 144Z" fill="#f6efd0" stroke="${INK}" stroke-width="2"/><path d="M20 120 L34 118 M20 128 L34 126 M20 136 L30 135" ${st(1.5)}/>`)
+});
+Object.assign(BG,{
+maze:()=>{let h='';for(let i=0;i<9;i++)h+=`<rect x="${i*140-20}" y="${210+(i%3)*20}" width="${90+(i%2)*40}" height="${126-(i%3)*20}" rx="10" fill="#3f6a34" stroke="#2a4a22" stroke-width="3"/>`;
+ return bgWrap(`<rect width="1200" height="400" fill="#bfe0c8"/><circle cx="1020" cy="80" r="44" fill="#fff3a0"/>
+ ${[80,360,700,980].map((x,i)=>`<ellipse cx="${x}" cy="${70+(i%2)*24}" rx="90" ry="22" fill="#fff" opacity=".7"/>`).join('')}
+ <path d="M0 240 Q300 200 600 236 Q900 210 1200 240 L1200 336 L0 336Z" fill="#7aa86a"/>${h}
+ <circle cx="600" cy="170" r="54" fill="#e9e2cf" stroke="#5a4a3a" stroke-width="5"/><path d="M600 170 L590 160 L600 124 L610 160Z" fill="${RED}"/><path d="M600 170 L590 180 L600 216 L610 180Z" fill="#3a3a3a"/>
+ <rect x="0" y="336" width="1200" height="64" fill="#8a6a3a"/><path d="M0 344 L1200 344" stroke="#6b4a2a" stroke-width="3"/>`)},
+desert:()=>bgWrap(`<rect width="1200" height="400" fill="#f4d69a"/><circle cx="200" cy="90" r="56" fill="#ffd23a" opacity=".9"/>
+ <path d="M0 230 Q200 170 420 220 Q640 260 860 200 Q1040 160 1200 210 L1200 336 L0 336Z" fill="#e2b062"/>
+ <path d="M0 280 Q300 250 600 286 Q900 310 1200 270 L1200 336 L0 336Z" fill="#d49a4a"/>
+ <polygon points="760,250 860,130 960,250" fill="#c98a4a" stroke="#8a5a2b" stroke-width="3"/><polygon points="900,250 970,170 1040,250" fill="#b07a3a" stroke="#8a5a2b" stroke-width="3"/>
+ ${[120,380,620].map(x=>`<path d="M${x} 300 L${x} 240 M${x} 262 Q${x-20} 262 ${x-20} 244 M${x} 256 Q${x+18} 256 ${x+18} 236" stroke="#5f7d3a" stroke-width="12" stroke-linecap="round" fill="none"/>`).join('')}
+ <rect x="0" y="336" width="1200" height="64" fill="#c98a4a"/>`),
+carnival:()=>{let l='';for(let i=0;i<24;i++)l+=`<circle cx="${i*52+20}" cy="${60+Math.sin(i)*14}" r="6" fill="${['#ffd23a','#d9487a','#5fb0d8'][i%3]}"/>`;
+ return bgWrap(`<rect width="1200" height="400" fill="#2a1a4a"/><path d="M0 50 Q300 90 600 50 Q900 90 1200 50" stroke="#e9e2cf" stroke-width="2" fill="none"/>${l}
+ <circle cx="900" cy="190" r="110" fill="none" stroke="#d9487a" stroke-width="10"/>${[...Array(12)].map((_,i)=>{const a=i*Math.PI/6;return `<line x1="900" y1="190" x2="${900+110*Math.cos(a)}" y2="${190+110*Math.sin(a)}" stroke="#f2b62e" stroke-width="3"/><circle cx="${900+110*Math.cos(a)}" cy="${190+110*Math.sin(a)}" r="12" fill="${['#d9487a','#5fb0d8','#f2b62e'][i%3]}"/>`}).join('')}
+ <path d="M200 336 L200 160 L300 110 L400 160 L400 336Z" fill="#7a3fa6" stroke="#2a1236" stroke-width="3"/><path d="M200 160 L300 110 L400 160Z" fill="#d23a2a"/>
+ ${[230,270,310,350].map((x,i)=>`<rect x="${x}" y="200" width="24" height="40" fill="${i%2?'#ffd23a':'#f4f8fb'}"/>`).join('')}
+ <rect x="0" y="336" width="1200" height="64" fill="#3a2a5a"/><path d="M0 340 L1200 340" stroke="#d9487a" stroke-width="3"/>`)}
+});
+Object.assign(BEHAV,{compassbeast:{blk:.4,ctr:.15,verb:'缩进龟壳挡住'},sandgenie:{blk:.25,ctr:.3,verb:'化成沙子散开'},frostdragon:{blk:.3,ctr:.3,verb:'用冰鳞挡住'},dicelord:{blk:.3,ctr:.3,verb:'掷出好运躲开'},inksage:{blk:.35,ctr:.3,verb:'用算盘挡住'}});
+Object.assign(MSKILL,{compassbeast:{name:'迷路漩涡',type:'charm',mult:1.2,fx:'wind',desc:'让你转晕了方向，偷走技能能量'},sandgenie:{name:'平分沙暴',type:'double',mult:1.1,fx:'stone',desc:'沙暴平均分成两股连击'},frostdragon:{name:'零下吐息',type:'big',mult:2,fx:'ice',desc:'把温度降到零下，伤害×2'},dicelord:{name:'命运骰子',type:'big',mult:2.2,fx:'gold',desc:'掷出六点，伤害×2.2'},inksage:{name:'万算归一',type:'drain',mult:2,fx:'ink',desc:'算尽一切，并吸走你的生命'}});
+Object.assign(MSKILL2,{compassbeast:{name:'龟壳护体',type:'shield',fx:'stone',desc:'缩进龟壳，加护盾'},sandgenie:{name:'沙漏回春',type:'heal',fx:'stone',desc:'沙漏倒转，恢复20%生命'},frostdragon:{name:'冰封护甲',type:'shield',fx:'ice',desc:'结出冰甲，加护盾'},dicelord:{name:'幸运七',type:'buff',fx:'gold',desc:'运气爆棚，攻击力提高'},inksage:{name:'墨卷封印',type:'weaken',mult:1.2,fx:'ink',desc:'墨卷缠身，攻击力下降2回合'}});
+CHAPTERS.push(
+ {id:17,tower:7,name:'方向迷宫',bg:'maze',unit:'第五单元 · 方向与位置',topics:['u5'],enemies:[['迷宫墨狼','wolf',{c:'#2e4a2a'}],['路标灯笼妖','lantern',{c:'#2f6fb0'}],['迷路蝙蝠','bat',{c:'#3a3a5a'}],['树篱老妖','treant',{c:'#2e5a2a'}]],
+  boss:{name:'司南神龟',art:'compassbeast',powers:['shield'],desc:'背着罗盘的神龟，开场带着护盾。'}},
+ {id:18,tower:7,name:'除法沙漠',bg:'desert',unit:'第六单元 · 除法',topics:['u6'],enemies:[['沙漠蝎子','scorpion',{}],['沙丘毒蛇','snake',{c:'#b07a3a'}],['仙人掌怪','mushroom',{c:'#5f7d3a'}],['沙漠秃鹫','crow',{c:'#8a5a2b'}]],
+  boss:{name:'平分沙王',art:'sandgenie',powers:['heal'],desc:'你每答错一题，它就恢复15%的生命。'}},
+ {id:19,tower:7,name:'负数冰原',bg:'ice',unit:'第七单元 · 生活中的负数',topics:['u7'],enemies:[['零下雪人','snowman',{}],['寒霜蜘蛛','spider',{}],['冻土龟','turtle',{}],['冰原雪怪','yeti',{}]],
+  boss:{name:'零下冰龙',art:'frostdragon',powers:['shield','timer'],desc:'带着护盾，而且每道题只有60秒。'}},
+ {id:20,tower:7,name:'幸运星城',bg:'carnival',unit:'第八单元 · 可能性 + 数学好玩',topics:['u8','u9'],enemies:[['硬币小鬼','imp',{}],['幸运灯笼','lantern',{c:'#d9487a'}],['纸牌人','paperman',{}],['魔术兔','rabbit',{}]],
+  boss:{name:'骰子魔王',art:'dicelord',powers:['shield','heal'],desc:'带着护盾，答错它就回血。'}},
+ {id:21,tower:7,name:'智慧之巅',bg:'sky',unit:'总复习 · 第一至八单元',topics:['u1','u2','u3','u4','u5','u6','u7','u8','u9'],enemies:[['墨团大将','blob',{c:'#2f4a8a'}],['金甲天兵','soldier',{}],['铜钟怪王','bell',{}],['神算石狮','lion',{}]],
+  boss:{name:'墨算圣人',art:'inksage',powers:['shield','heal','timer'],desc:'全书总复习！护盾、答错回血、每题限时60秒。'}});
+TOWERS.push({id:7,name:'第七塔 · 智慧塔（第五至八单元）',open:()=>true,lock:''});
 /* player special skill */
 function useSkill(i){if(!B||B.over||B.busy||B.review||B.def)return;const x=B.skills[i];if(!x||B.gauge<x.cost)return;
  B.gauge-=x.cost;B.busy=true;pad.lock(true);updateHud();const k=S.cur,a=B.hero.atk,e=B.e;
@@ -2869,11 +3051,11 @@ function useSkill(i){if(!B||B.over||B.busy||B.review||B.def)return;const x=B.ski
 
 /* ============ RESULT ============ */
 function finishBattle(win){stopTimer();const b=B;let coins,partWin=false,drop=null,bossR=null;
- if(win){coins=b.isBoss?80+30*b.ch+(b.wrongs===0?40:0):20+5*b.ch+(b.wrongs===0?10:0);if(S.prog[b.ch]<b.lv)S.prog[b.ch]=b.lv;S.stats.wins++;SFX.win();
+ if(win){coins=b.isBoss?80+30*(b.sc||b.ch)+(b.wrongs===0?40:0):20+5*(b.sc||b.ch)+(b.wrongs===0?10:0);if(S.prog[b.ch]<b.lv)S.prog[b.ch]=b.lv;S.stats.wins++;SFX.win();
   if(b.isBoss&&!S.partDone[b.ch]){S.partDone[b.ch]=true;S.chests.push(2);coins+=50;partWin=true}
   const HARD=S.mode==='hard';
-  if(b.isBoss){drop=HARD?(b.ch>=6?8:2):(b.ch>=11?8:b.ch>=6?3:1);
-   const tw=b.C.tower||1,rr=Math.min(4,(tw===1?pick([1,2]):tw===2?2:tw===3?pick([2,3]):tw===4?pick([3,4]):4)+(HARD?1:0));const ty=Math.random()<.5?'w':'a';const[lo,hi]=RANGE[ty][rr];
+  if(b.isBoss){const bc=b.sc||b.ch;drop=HARD?(bc>=6?8:2):(bc>=11?8:bc>=6?3:1);
+   const tw=b.C.tower===7?2:b.C.tower||1,rr=Math.min(4,(tw===1?pick([1,2]):tw===2?2:tw===3?pick([2,3]):tw===4?pick([3,4]):4)+(HARD?1:0));const ty=Math.random()<.5?'w':'a';const[lo,hi]=RANGE[ty][rr];
    const bi={id:S.nextId++,type:ty,rar:rr,val:ri(lo,hi),name:pick(NAMES[ty][rr])};S.inv.push(bi);S.potions=S.potions||{};const pots=[pick(Object.keys(POTIONS)),pick(Object.keys(POTIONS))];pots.forEach(k=>S.potions[k]=(S.potions[k]||0)+1);
    S.trophies=S.trophies||{};S.trophies[b.e.name]=(S.trophies[b.e.name]||0)+1;if(HARD){S.hardTro=S.hardTro||{};S.hardTro[b.e.name]=(S.hardTro[b.e.name]||0)+1}bossR={item:bi,pots,tro:S.trophies[b.e.name],hard:HARD}}else if(HARD&&Math.random()<.35){drop=7}else if(b.wrongs===0&&Math.random()<.3){drop=b.ch>=6?7:0}
   if(drop!==null)S.chests.push(drop)}
@@ -3046,7 +3228,7 @@ function renderGear(){
  const sc=el.scrollTop;show('gear');el.scrollTop=sc}
 
 /* ============ BOOT ============ */
-window.__moxia={genQ,toCN,BANK,ART,BG,updateHud,itemIcon,NAMES,get B(){return B},get CC(){return chestCtx}};
+window.__moxia={genQ,judgeQ,toCN,BANK,ART,BG,updateHud,itemIcon,NAMES,get B(){return B},get CC(){return chestCtx}};
 $('#soundBtn').textContent='音效：'+(S.sound?'开':'关');$('#musicBtn').textContent='音乐：'+(S.music?'开':'关');
 if(!S.gift2000){S.gift2000=true;S.coins+=2000;save();setTimeout(()=>{toast('礼物：获得 2000 金币！');SFX.coin()},400)}
 updateCoins();renderHome();
